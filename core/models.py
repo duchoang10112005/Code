@@ -14,11 +14,6 @@ from django.db.models import F, Q
 from django.utils import timezone
 
 
-def tach_dong(chu):
-    """Văn bản nhiều dòng → danh sách dòng (bỏ dòng trống, gạch đầu dòng)."""
-    ky_tu_bo = " -•\t"
-    return [d.strip(ky_tu_bo) for d in (chu or "").splitlines() if d.strip(ky_tu_bo)]
-
 
 # =============================================================================
 # D1 – Tài khoản người dùng (PB-01, PB-24)
@@ -65,56 +60,9 @@ class User(AbstractUser):
 # =============================================================================
 # D2 – Hồ sơ gia sư (PB-04; BRULE-09, BRULE-10)
 # =============================================================================
-class LoaiMon(models.Model):
-    """Loại môn học (VD: Môn phổ thông, IELTS). Mỗi loại có các cấp độ học với giá riêng."""
-
-    ten = models.CharField("Tên loại môn", max_length=100, unique=True)
-
-    class Meta:
-        verbose_name = "Loại môn"
-        verbose_name_plural = "D6 · Loại môn"
-        ordering = ["ten"]
-
-    def __str__(self):
-        return self.ten
-
-
-class CapDo(models.Model):
-    """Cấp độ học trong một loại môn – nơi đặt GIÁ (VD: Phổ thông – Nâng cao 130.000đ/giờ, giữ 10%)."""
-
-    loai_mon = models.ForeignKey(LoaiMon, on_delete=models.CASCADE, related_name="cap_do", verbose_name="Loại môn")
-    ten = models.CharField("Tên cấp độ", max_length=100)
-    mo_ta = models.CharField("Dành cho", max_length=200, blank=True,
-                             help_text="VD: Ôn thi chuyên, học sinh giỏi; Tăng band 6.5 → 7.5")
-    thu_tu = models.PositiveSmallIntegerField("Thứ tự", default=1)
-    don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ (đ)")
-    ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2,
-                                          help_text="Phần trăm trên giá gốc mỗi buổi; gia sư nhận phần còn lại.")
-
-    class Meta:
-        verbose_name = "Cấp độ học"
-        verbose_name_plural = "D6 · Cấp độ học (bảng giá)"
-        ordering = ["loai_mon__ten", "thu_tu", "don_gia_gio"]
-        constraints = [
-            models.UniqueConstraint(fields=["loai_mon", "ten"], name="cap_do_khong_trung_trong_loai"),
-            models.CheckConstraint(condition=Q(ty_le_trung_tam__gte=0, ty_le_trung_tam__lt=100),
-                                   name="cap_do_ty_le_hop_le"),
-        ]
-
-    def __str__(self):
-        return f"{self.loai_mon} – {self.ten}"
-
-    @property
-    def thu_lao_gio(self):
-        from decimal import Decimal
-        return int(Decimal(self.don_gia_gio) * (100 - self.ty_le_trung_tam) / 100)
-
-
 class MonHoc(models.Model):
     ma = models.CharField("Mã môn", max_length=20, unique=True)
     ten = models.CharField("Tên môn", max_length=100)
-    loai_mon = models.ForeignKey(LoaiMon, null=True, blank=True, on_delete=models.PROTECT,
-                                 related_name="mon_hoc", verbose_name="Loại môn")
 
     class Meta:
         verbose_name = "Môn học"
@@ -254,8 +202,6 @@ class YeuCauHocTap(models.Model):
 
     hoc_vien = models.ForeignKey(HocVien, on_delete=models.PROTECT, related_name="yeu_cau")
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.PROTECT)
-    cap_do = models.ForeignKey(CapDo, null=True, blank=True, on_delete=models.PROTECT, related_name="+",
-                               verbose_name="Cấp độ học")
     trinh_do = models.CharField("Trình độ / lớp", max_length=100)
     muc_tieu = models.TextField("Mục tiêu học tập")
     lich_mong_muon = models.CharField("Thời gian mong muốn", max_length=200)
@@ -366,15 +312,6 @@ class KhoaHoc(models.Model):
 
     thoi_luong_phut = models.PositiveIntegerField("Thời lượng mỗi buổi", choices=ThoiLuong.choices,
                                                   default=ThoiLuong.GIO_1_5)
-    cap_do = models.ForeignKey(CapDo, null=True, blank=True, on_delete=models.SET_NULL, related_name="+",
-                               verbose_name="Cấp độ học")
-    # Giá được CHỤP LẠI lúc tạo khóa → Admin đổi bảng giá sau này không ảnh hưởng khóa cũ.
-    ten_cap_do = models.CharField("Cấp độ lúc đăng ký", max_length=200, blank=True)
-    don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ lúc tạo (đ)", default=0)
-    hoc_phi_goc_moi_buoi = models.PositiveIntegerField("Học phí gốc mỗi buổi (đ)", default=0)
-    ty_le_giam = models.DecimalField("Giảm giá theo gói (%)", max_digits=5, decimal_places=2, default=0)
-    ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2, default=0)
-    quyen_loi_goi = models.TextField("Quyền lợi gói lúc đăng ký", blank=True)
     hoc_phi_moi_buoi = models.PositiveIntegerField("Học phí mỗi buổi (đ)")
     thu_lao_moi_buoi = models.PositiveIntegerField("Thù lao gia sư mỗi buổi (đ)")
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DANG_HOC)
@@ -414,10 +351,6 @@ class KhoaHoc(models.Model):
         return round(self.so_buoi_da_dung * 100 / self.so_buoi_dang_ky) if self.so_buoi_dang_ky else 0
 
     @property
-    def ds_quyen_loi(self):
-        return tach_dong(self.quyen_loi_goi)
-
-    @property
     def tong_hoc_phi(self):
         return self.so_buoi_dang_ky * self.hoc_phi_moi_buoi
 
@@ -433,43 +366,6 @@ class KhoaHoc(models.Model):
     def so_buoi_co_the_xep(self):
         """Còn có thể xếp lịch = đăng ký − đã hoàn tất − đang lên lịch (tránh xếp vượt)."""
         return max(self.so_buoi_con_lai - self.so_buoi_dang_len_lich, 0)
-
-
-class GoiKhoaHoc(models.Model):
-    """% giảm giá theo gói 10/20/30 buổi, Admin đặt cho từng giai đoạn (từ ngày – đến ngày)."""
-
-    class SoBuoi(models.IntegerChoices):
-        B10 = 10, "Gói 10 buổi"
-        B20 = 20, "Gói 20 buổi"
-        B30 = 30, "Gói 30 buổi"
-
-    so_buoi = models.PositiveIntegerField("Gói", choices=SoBuoi.choices)
-    ty_le_giam = models.DecimalField("Giảm giá (%)", max_digits=5, decimal_places=2, default=0)
-    hieu_luc_tu = models.DateField("Áp dụng từ ngày")
-    hieu_luc_den = models.DateField("Đến ngày", null=True, blank=True, help_text="Để trống = không thời hạn")
-    quyen_loi = models.TextField("Quyền lợi của gói", blank=True,
-                                 help_text="Mỗi dòng một quyền lợi, hiện cho NV tuyển sinh khi báo giá.")
-    tao_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
-    tao_luc = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def ds_quyen_loi(self):
-        return tach_dong(self.quyen_loi)
-
-    class Meta:
-        verbose_name = "Gói khóa học"
-        verbose_name_plural = "D6 · Gói khóa học (giảm giá theo giai đoạn)"
-        ordering = ["so_buoi", "-hieu_luc_tu"]
-        constraints = [
-            models.UniqueConstraint(fields=["so_buoi", "hieu_luc_tu"], name="goi_mot_muc_moi_ngay_bat_dau"),
-            models.CheckConstraint(condition=Q(ty_le_giam__gte=0, ty_le_giam__lt=100), name="goi_giam_hop_le"),
-            models.CheckConstraint(condition=Q(hieu_luc_den__isnull=True) | Q(hieu_luc_den__gte=F("hieu_luc_tu")),
-                                   name="goi_ngay_hop_le"),
-        ]
-
-    def __str__(self):
-        from core.services.tien_ich import dinh_dang_phan_tram
-        return f"{self.get_so_buoi_display()} – giảm {dinh_dang_phan_tram(self.ty_le_giam)}"
 
 
 # =============================================================================

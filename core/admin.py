@@ -59,5 +59,5 @@ class NhatKyGuiTinAdmin(admin.ModelAdmin):
     list_display = ("thoi_diem", "kenh", "nguoi_nhan", "thanh_cong")
 
 
-for model in (m.LoaiMon, m.CapDo, m.GoiKhoaHoc, m.MonHoc, m.MonGiaSu, m.LichRanh, m.HocVien, m.LoiMoi, m.ThuLao, m.DieuChinhThuLao, m.DoiSoatThang):
+for model in (m.MonHoc, m.MonGiaSu, m.LichRanh, m.HocVien, m.LoiMoi, m.ThuLao, m.DieuChinhThuLao, m.DoiSoatThang):
     admin.site.register(model)

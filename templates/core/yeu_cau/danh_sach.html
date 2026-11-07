@@ -29,7 +29,7 @@
     <tr>
       <td class="fw-semibold so text-nowrap">{{ yc.ma }}</td>
       <td><div class="fw-semibold">{{ yc.hoc_vien.ho_ten }}</div><div class="small text-muted">{{ yc.hoc_vien.lop|default:"" }}</div></td>
-      <td>{{ yc.mon_hoc }}{% if yc.cap_do %} · <span class="small">{{ yc.cap_do.ten }}</span>{% endif %}<div class="small text-muted">{{ yc.trinh_do }}</div></td>
+      <td>{{ yc.mon_hoc }}<div class="small text-muted">{{ yc.trinh_do }}</div></td>
       <td>{% nhan_trang_thai yc "trang_thai" %}
         {% if yc.trang_thai == "DANG_TIM" and not yc.so_cho %}<div class="mt-1">{% nhan_tuy_chinh "CHO_DUYET" "Cần mời thêm" %}</div>{% endif %}</td>
       <td class="small text-nowrap">

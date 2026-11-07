@@ -32,7 +32,6 @@
         <li><a class="nav-link {% if 'khoa_hoc' in p %}active{% endif %}" href="{% url 'khoa_hoc_danh_sach' %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Khóa học</a></li>
         {% include "partials/muc_sap_co.html" with icon="exclamation-triangle" ten="Buổi đang xem xét" %}
         {% include "partials/muc_sap_co.html" with icon="speedometer2" ten="Dashboard vận hành" %}
-        <li><a class="nav-link {% if 'bang_gia' in p %}active{% endif %}" href="{% url 'bang_gia' %}"><i class="bi bi-tags" aria-hidden="true"></i>Bảng giá</a></li>
         <li><a class="nav-link {% if p == 'nhat_ky' %}active{% endif %}" href="{% url 'nhat_ky' %}"><i class="bi bi-journal-text" aria-hidden="true"></i>Nhật ký thao tác</a></li>
       {% endif %}
 

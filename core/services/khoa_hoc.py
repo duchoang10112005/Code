@@ -17,8 +17,7 @@ from django.utils import timezone
 from core.models import BuoiHoc, KhoaHoc, YeuCauHocTap
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
-from core.services.bang_gia import tinh_gia
-from core.services.tien_ich import dinh_dang_phan_tram, dinh_dang_tien
+from core.services.tien_ich import dinh_dang_tien
 from core.services.yeu_cau import la_du_dieu_kien
 
 YC = YeuCauHocTap.TrangThai
@@ -106,9 +105,8 @@ def ghi_ket_qua_hoc_thu(nvts, yc, ket_qua, ghi_chu=""):
 # =============================================================================
 # 4.2 Tạo khóa học chính thức
 # =============================================================================
-def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut, cap_do=None):
-    """NVTS chọn cấp độ (mặc định theo yêu cầu), gói (10/20/30 buổi) và khung giờ (1h/1,5h/2h); giá do hệ thống tính từ Bảng giá
-    rồi CHỤP LẠI vào khóa (Admin đổi bảng giá sau này không ảnh hưởng khóa đã tạo)."""
+def tao_khoa_hoc(nvts, yc, du_lieu):
+    """du_lieu: so_buoi_dang_ky, thoi_luong_phut, hoc_phi_moi_buoi, thu_lao_moi_buoi (NV tuyển sinh nhập)."""
     yc.refresh_from_db()
     if yc.trang_thai == YC.DA_PHAN_CONG and co_buoi_hoc_thu(yc):
         raise ValidationError("Yêu cầu này đã học thử: cần ghi kết quả \"Tiếp tục\" trước khi tạo khóa.")
@@ -118,8 +116,6 @@ def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut, cap_do=None):
     if not co_the_tao_khoa(yc):
         raise ValidationError("Chỉ tạo khóa cho yêu cầu đã phân công (đăng ký thẳng) "
                               "hoặc đã học thử với kết quả Tiếp tục.")
-    cap_do = cap_do or yc.cap_do
-    bao_gia = tinh_gia(yc.mon_hoc, cap_do, so_buoi, thoi_luong_phut)
     trang_thai_cu = yc.trang_thai
     try:
         with transaction.atomic():
@@ -127,18 +123,12 @@ def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut, cap_do=None):
                 trang_thai=YC.CHINH_THUC, cap_nhat_luc=timezone.now())
             if n == 0:
                 raise ValidationError("Yêu cầu vừa được người khác cập nhật, vui lòng tải lại trang.")
-            khoa = KhoaHoc.objects.create(
-                yeu_cau=yc, hoc_vien=yc.hoc_vien, gia_su=yc.gia_su, tao_boi=nvts,
-                cap_do=cap_do, ten_cap_do=str(cap_do),
-                so_buoi_dang_ky=bao_gia.so_buoi, thoi_luong_phut=bao_gia.thoi_luong_phut,
-                don_gia_gio=bao_gia.don_gia_gio, hoc_phi_goc_moi_buoi=bao_gia.hoc_phi_goc,
-                ty_le_giam=bao_gia.ty_le_giam, ty_le_trung_tam=bao_gia.ty_le_trung_tam,
-                hoc_phi_moi_buoi=bao_gia.hoc_phi, thu_lao_moi_buoi=bao_gia.thu_lao,
-                quyen_loi_goi=bao_gia.quyen_loi)
+            khoa = KhoaHoc.objects.create(yeu_cau=yc, hoc_vien=yc.hoc_vien, gia_su=yc.gia_su,
+                                          tao_boi=nvts, **du_lieu)
             nhanh = "nhánh A – đăng ký thẳng" if trang_thai_cu == YC.DA_PHAN_CONG else "sau học thử"
             ghi_nhat_ky(nvts, "Tạo khóa học chính thức", str(khoa),
-                        f"{nhanh}; {cap_do.ten}; gói {khoa.so_buoi_dang_ky} buổi × {khoa.get_thoi_luong_phut_display()}, "
-                        f"giảm {dinh_dang_phan_tram(khoa.ty_le_giam)} → {dinh_dang_tien(khoa.hoc_phi_moi_buoi)}/buổi; "
+                        f"{nhanh}; {khoa.so_buoi_dang_ky} buổi × {khoa.get_thoi_luong_phut_display()}, "
+                        f"học phí {dinh_dang_tien(khoa.hoc_phi_moi_buoi)}/buổi; "
                         f"thù lao {dinh_dang_tien(khoa.thu_lao_moi_buoi)}/buổi")
     except IntegrityError:
         raise ValidationError("Yêu cầu này đã có khóa học.")

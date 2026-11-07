@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from core.views import bang_gia, chung, gia_su, khoa_hoc, quy_chuan, tai_khoan, yeu_cau
+from core.views import chung, gia_su, khoa_hoc, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -53,15 +53,6 @@ urlpatterns = [
     path("khoa-hoc/<int:pk>/trang-thai/", khoa_hoc.doi_trang_thai, name="khoa_hoc_doi_trang_thai"),
     path("lop-cua-toi/", khoa_hoc.lop_cua_toi, name="lop_cua_toi"),
     path("lop-cua-toi/khoa/<int:pk>/", khoa_hoc.khoa_cua_toi, name="khoa_cua_toi"),
-
-    # Bảng giá (Admin cấu hình, NVTS xem để báo giá)
-    path("bang-gia/", bang_gia.xem, name="bang_gia"),
-    path("bang-gia/cap-do/<int:pk>/", bang_gia.sua_cap_do, name="bang_gia_sua_cap_do"),
-    path("bang-gia/cap-do/them/", bang_gia.them_cap_do, name="bang_gia_them_cap_do"),
-    path("bang-gia/loai-mon/them/", bang_gia.them_loai_mon, name="bang_gia_them_loai_mon"),
-    path("bang-gia/gan-mon/", bang_gia.gan_mon, name="bang_gia_gan_mon"),
-    path("bang-gia/goi/", bang_gia.them_goi, name="bang_gia_them_goi"),
-    path("bang-gia/goi/<int:pk>/quyen-loi/", bang_gia.sua_quyen_loi, name="bang_gia_sua_quyen_loi"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

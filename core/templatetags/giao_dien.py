@@ -116,15 +116,3 @@ def tien(so):
     from core.services.tien_ich import dinh_dang_tien
     return dinh_dang_tien(so)
 
-
-@register.filter
-def lay(tu_dien, khoa):
-    """{{ dict|lay:key }} – lấy phần tử của dict trong template."""
-    return tu_dien.get(khoa) if tu_dien else None
-
-
-@register.filter
-def phan_tram(so):
-    """{{ goi.ty_le_giam|phan_tram }} → 3%"""
-    from core.services.tien_ich import dinh_dang_phan_tram
-    return dinh_dang_phan_tram(so)

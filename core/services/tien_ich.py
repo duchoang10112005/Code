@@ -27,10 +27,3 @@ def dinh_dang_tien(so):
         return "—"
     return f"{int(so):,}".replace(",", ".") + "đ"
 
-
-def dinh_dang_phan_tram(so):
-    """Decimal('3.00') → "3%", Decimal('2.50') → "2,5%"."""
-    from decimal import Decimal
-    d = Decimal(so or 0).normalize()
-    chu = format(d, "f")
-    return chu.replace(".", ",") + "%"

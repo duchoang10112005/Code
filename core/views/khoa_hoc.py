@@ -10,10 +10,9 @@ from django.db.models import F, Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.forms import KetQuaHocThuForm, LocKhoaHocForm, TaoKhoaHocForm
+from core.forms import KetQuaHocThuForm, KhoaHocForm, LocKhoaHocForm
 from core.models import BuoiHoc, KhoaHoc, YeuCauHocTap
 from core.permissions import ADMIN, GIA_SU, TUYEN_SINH, vai_tro_required
-from core.services import bang_gia
 from core.services import khoa_hoc as dv
 from core.services.tien_ich import thong_diep_loi as _loi
 
@@ -55,21 +54,16 @@ def tao(request, pk):
     if not dv.co_the_tao_khoa(yc):
         messages.error(request, "Yêu cầu này chưa đủ điều kiện tạo khóa (đã học thử thì cần kết quả Tiếp tục).")
         return redirect("yeu_cau_chi_tiet", pk=pk)
-    goi = bang_gia.goi_dang_ap_dung()
-    loai_mon = yc.mon_hoc.loai_mon
-    form = TaoKhoaHocForm(request.POST or None, goi=goi, loai_mon=loai_mon, initial={"cap_do": yc.cap_do_id})
+    form = KhoaHocForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         try:
-            d = form.cleaned_data
-            khoa = dv.tao_khoa_hoc(request.user, yc, d["so_buoi"], d["thoi_luong_phut"], cap_do=d["cap_do"])
+            khoa = dv.tao_khoa_hoc(request.user, yc, form.cleaned_data)
             messages.success(request, f"Đã mở {khoa}. Gia sư được báo qua email để bắt đầu tạo buổi học.")
             return redirect("khoa_hoc_chi_tiet", pk=khoa.pk)
         except ValidationError as e:
             form.add_error(None, _loi(e))
     return render(request, "core/khoa_hoc/tao.html", {
-        "yc": yc, "form": form, "nhanh_a": yc.trang_thai == YC.DA_PHAN_CONG, "loai_mon": loai_mon,
-        # Bảng báo giá của loại môn này để JS hiện giá ngay khi chọn (server vẫn tính lại khi lưu).
-        "bao_gia": bang_gia.bang_bao_gia(loai_mon) if loai_mon else [],
+        "yc": yc, "form": form, "nhanh_a": yc.trang_thai == YC.DA_PHAN_CONG,
     })
 
 

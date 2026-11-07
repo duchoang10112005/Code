@@ -66,7 +66,7 @@
         <div class="row g-3">
           <div class="col-md-6"><div class="border rounded p-3 h-100">
             <div class="fw-semibold mb-1">A. Đăng ký chính thức ngay</div>
-            <div class="small text-muted mb-2">Phụ huynh không cần học thử. Chọn gói 10 / 20 / 30 buổi và khung giờ — học phí tự tính theo bảng giá.</div>
+            <div class="small text-muted mb-2">Phụ huynh không cần học thử. Mở khóa với số buổi, thời lượng, học phí và thù lao.</div>
             {% if user.la_tuyen_sinh and co_the_tao_khoa %}<a href="{% url 'khoa_hoc_tao' yc.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-journal-plus" aria-hidden="true"></i>Tạo khóa chính thức</a>{% endif %}
           </div></div>
           <div class="col-md-6"><div class="border rounded p-3 h-100">
@@ -90,7 +90,6 @@
       <div class="card-header">Nhu cầu học</div>
       <div class="card-body small">
         <div class="text-muted">Môn · trình độ</div><div class="mb-2">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
-        <div class="text-muted">Cấp độ học</div><div class="mb-2">{% if yc.cap_do %}{{ yc.cap_do.ten }} · {{ yc.cap_do.don_gia_gio|tien }}/giờ{% else %}—{% endif %}</div>
         <div class="text-muted">Mục tiêu</div><div class="mb-2">{{ yc.muc_tieu|linebreaksbr }}</div>
         <div class="text-muted">Thời gian mong muốn</div><div>{{ yc.ten_thu_mong_muon }} · {{ yc.lich_mong_muon }}</div>
       </div>

@@ -18,8 +18,7 @@
     <div class="card-body">
       <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
         <div>
-          <div class="fw-semibold" style="font-size:var(--gs-fs-h3)">{{ yc.mon_hoc }}{% if yc.cap_do %} · {{ yc.cap_do.ten }}{% endif %} · {{ yc.trinh_do }}</div>
-          {% if yc.cap_do %}<div class="small" style="color:var(--gs-tone-success-fg)">Thù lao khoảng {{ yc.cap_do.thu_lao_gio|tien }}/giờ</div>{% endif %}
+          <div class="fw-semibold" style="font-size:var(--gs-fs-h3)">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
           <div class="small text-muted">Học viên {{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %} · {{ yc.hoc_vien.lop }}{% endif %} · mã {{ yc.ma }}</div>
         </div>
         <div class="text-end">
