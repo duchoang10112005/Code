@@ -10,8 +10,9 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from core.models import (BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoiMoi, MonGiaSu, MonHoc, ThuLao,
-                         User, YeuCauHocTap)
+from core.models import (BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoiMoi, MonGiaSu, MonHoc, NhomGia,
+                         ThuLao, User, YeuCauHocTap)
+from core.services.bang_gia import tinh_gia
 
 MAT_KHAU_DEMO = "Demo@2026"
 
@@ -45,9 +46,15 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
+        # Bảng giá mặc định đã được migration 0006 tạo; gán môn còn thiếu nhóm giá.
+        thuong = NhomGia.objects.filter(ten="Môn thường").first()
+        ielts = NhomGia.objects.filter(ten="IELTS").first()
         mon = {}
         for ma, ten in MON_HOC:
             mon[ma], _ = MonHoc.objects.get_or_create(ma=ma, defaults={"ten": ten})
+            if not mon[ma].nhom_gia_id:
+                mon[ma].nhom_gia = ielts if ma == "IELTS" else thuong
+                mon[ma].save(update_fields=["nhom_gia"])
 
         admin_user = None
         for username, ho_ten, vai_tro, email in TAI_KHOAN:
@@ -158,9 +165,12 @@ class Command(BaseCommand):
             gia_su=gs3, phan_cong_luc=now - timedelta(days=40), tao_boi=nvts)
         LoiMoi.objects.create(yeu_cau=yc2, gia_su=gs3, gui_boi=nvts, trang_thai=LoiMoi.TrangThai.ACCEPTED,
                               phan_hoi_luc=now - timedelta(days=40))
-        khoa = KhoaHoc.objects.create(yeu_cau=yc2, hoc_vien=hv, gia_su=gs3, so_buoi_dang_ky=10, so_buoi_da_dung=8,
-                                      thoi_luong_phut=90, hoc_phi_moi_buoi=200_000, thu_lao_moi_buoi=120_000,
-                                      tao_boi=nvts)
+        bg = tinh_gia(mon["TOAN"], 10, 90)  # giá theo Bảng giá: gói 10 buổi × 1,5 giờ
+        khoa = KhoaHoc.objects.create(
+            yeu_cau=yc2, hoc_vien=hv, gia_su=gs3, so_buoi_dang_ky=10, so_buoi_da_dung=8, thoi_luong_phut=90,
+            don_gia_gio=bg.don_gia_gio, hoc_phi_goc_moi_buoi=bg.hoc_phi_goc, ty_le_giam=bg.ty_le_giam,
+            ty_le_trung_tam=bg.ty_le_trung_tam, hoc_phi_moi_buoi=bg.hoc_phi, thu_lao_moi_buoi=bg.thu_lao,
+            tao_boi=nvts)
         # 8 buổi đã hoàn tất (mỗi buổi có đúng 1 bản ghi thù lao) để số liệu khớp nhau.
         for i in range(8):
             bat_dau = now - timedelta(days=35 - i * 4, hours=3)

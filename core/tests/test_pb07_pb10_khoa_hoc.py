@@ -8,20 +8,20 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, MonGiaSu, MonHoc, NhatKy, User, YeuCauHocTap
+from core.models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, MonGiaSu, MonHoc, NhatKy, NhomGia, User, YeuCauHocTap
 from core.services import khoa_hoc as dv
 from core.services import yeu_cau as dv_yc
 
 MK = "MatKhau@Manh123"
 YC, KQ, KH = YeuCauHocTap.TrangThai, YeuCauHocTap.KetQuaHocThu, KhoaHoc.TrangThai
-KHOA = {"so_buoi_dang_ky": 12, "thoi_luong_phut": 90, "hoc_phi_moi_buoi": 200_000, "thu_lao_moi_buoi": 120_000}
+KHOA = {"so_buoi": 10, "thoi_luong_phut": 90}  # gói 10 buổi × 1,5h – Môn thường 70.000đ/giờ
 
 
 class DuLieu(TestCase):
     def setUp(self):
         self.nvts = User.objects.create_user("ts", password=MK, vai_tro=User.VaiTro.TUYEN_SINH, ho_ten="NVTS")
         self.admin = User.objects.create_user("ad", password=MK, vai_tro=User.VaiTro.ADMIN, ho_ten="Admin")
-        self.toan = MonHoc.objects.create(ma="TOAN", ten="Toán")
+        self.toan = MonHoc.objects.create(ma="TOAN", ten="Toán", nhom_gia=NhomGia.objects.get(ten="Môn thường"))
         self.gs = self.tao_gia_su("gs", "Gia Sư A")
         self.gs2 = self.tao_gia_su("gs2", "Gia Sư B")
         self.hv = HocVien.objects.create(ho_ten="Học Viên", lop="Lớp 9", ten_phu_huynh="Phụ Huynh",
@@ -51,11 +51,11 @@ class DuLieu(TestCase):
 # ------------------------------------------------------------ nhánh A / PB-09
 class NhanhATest(DuLieu):
     def test_BRULE14_nhanh_A_tao_khoa_thang_tu_da_phan_cong(self):
-        khoa = dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+        khoa = dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
         self.yc.refresh_from_db()
         self.assertEqual(self.yc.trang_thai, YC.CHINH_THUC)
         self.assertEqual((khoa.gia_su, khoa.hoc_vien), (self.gs, self.hv))   # PB-08: kế thừa đúng
-        self.assertEqual((khoa.so_buoi_da_dung, khoa.so_buoi_con_lai), (0, 12))  # PB-09
+        self.assertEqual((khoa.so_buoi_da_dung, khoa.so_buoi_con_lai), (0, 10))  # PB-09
         self.assertTrue(NhatKy.objects.filter(hanh_dong="Tạo khóa học chính thức").exists())
 
     def test_PB09_tao_khoa_qua_giao_dien(self):
@@ -64,17 +64,7 @@ class NhanhATest(DuLieu):
         khoa = KhoaHoc.objects.get(yeu_cau=self.yc)
         self.assertRedirects(r, reverse("khoa_hoc_chi_tiet", args=[khoa.pk]))
 
-    def test_BRULE16_thu_lao_lon_hon_hoc_phi_bi_bao_loi(self):
-        self.dang_nhap(self.nvts)
-        r = self.client.post(reverse("khoa_hoc_tao", args=[self.yc.pk]), {**KHOA, "thu_lao_moi_buoi": 250_000})
-        self.assertContains(r, "không được lớn hơn học phí")
-        self.assertFalse(KhoaHoc.objects.exists())
 
-    def test_BRULE15_so_buoi_bang_0_bi_bao_loi(self):
-        self.dang_nhap(self.nvts)
-        r = self.client.post(reverse("khoa_hoc_tao", args=[self.yc.pk]), {**KHOA, "so_buoi_dang_ky": 0})
-        self.assertEqual(r.status_code, 200)
-        self.assertFalse(KhoaHoc.objects.exists())
 
     def test_BRULE16_database_chan_thu_lao_vuot_hoc_phi(self):
         with self.assertRaises(IntegrityError), transaction.atomic():
@@ -82,15 +72,15 @@ class NhanhATest(DuLieu):
                                    hoc_phi_moi_buoi=100, thu_lao_moi_buoi=200)
 
     def test_PB09_khong_tao_duoc_khoa_thu_hai(self):
-        dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+        dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
         with self.assertRaises(ValidationError):
-            dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+            dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
         self.assertEqual(KhoaHoc.objects.count(), 1)
 
     def test_PB09_yeu_cau_chua_phan_cong_khong_tao_khoa(self):
         YeuCauHocTap.objects.filter(pk=self.yc.pk).update(trang_thai=YC.DANG_TIM, gia_su=None)
         with self.assertRaises(ValidationError):
-            dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+            dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
 
 
 # ------------------------------------------------------------ nhánh B / PB-08
@@ -103,10 +93,10 @@ class NhanhBTest(DuLieu):
     def test_BRULE14_da_hoc_thu_thi_phai_co_ket_qua_tiep_tuc_moi_tao_khoa(self):
         self.tao_buoi_thu()
         with self.assertRaisesMessage(ValidationError, "Tiếp tục"):
-            dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+            dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
         dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.TIEP_TUC)
         self.assertEqual(self.yc.trang_thai, YC.HOC_THU_XONG)
-        khoa = dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+        khoa = dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
         self.assertEqual(khoa.gia_su, self.gs)
 
     def test_PB08_khong_tiep_tuc_thi_dong_yeu_cau_va_khong_tao_khoa(self):
@@ -116,7 +106,7 @@ class NhanhBTest(DuLieu):
         dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.DUNG, "Gia đình chuyển nhà")
         self.assertEqual(self.yc.trang_thai, YC.DONG)
         with self.assertRaises(ValidationError):
-            dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+            dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
 
     def test_PB08_tim_gia_su_khac_quay_ve_dang_tim_va_moi_duoc_nguoi_moi(self):
         self.tao_buoi_thu()
@@ -127,7 +117,7 @@ class NhanhBTest(DuLieu):
         self.yc.refresh_from_db()
         # Học thử cũ là với gia sư A → với gia sư B được đăng ký thẳng (nhánh A).
         self.assertTrue(dv.co_the_tao_khoa(self.yc))
-        khoa = dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+        khoa = dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
         self.assertEqual(khoa.gia_su, self.gs2)
 
     def test_PB08_ghi_ket_qua_qua_giao_dien_chuyen_sang_trang_tao_khoa(self):
@@ -141,7 +131,7 @@ class NhanhBTest(DuLieu):
 class TheoDoiKhoaTest(DuLieu):
     def setUp(self):
         super().setUp()
-        self.khoa = dv.tao_khoa_hoc(self.nvts, self.yc, {**KHOA, "so_buoi_dang_ky": 10})
+        self.khoa = dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
 
     def test_PB10_so_con_lai_va_co_the_xep(self):
         KhoaHoc.objects.filter(pk=self.khoa.pk).update(so_buoi_da_dung=8)
@@ -173,13 +163,13 @@ class TheoDoiKhoaTest(DuLieu):
 class PhanQuyenKhoaTest(DuLieu):
     def setUp(self):
         super().setUp()
-        self.khoa = dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+        self.khoa = dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
 
     def test_PB24_gia_su_xem_khoa_cua_minh_khong_thay_hoc_phi_va_sdt(self):
         self.dang_nhap(self.gs)
         r = self.client.get(reverse("khoa_cua_toi", args=[self.khoa.pk]))
-        self.assertContains(r, "120.000đ")       # thù lao
-        self.assertNotContains(r, "200.000")     # học phí
+        self.assertContains(r, "96.600đ")        # thù lao = 105.000 × 92%
+        self.assertNotContains(r, "105.000")     # học phí
         self.assertNotContains(r, "84905123456")  # SĐT phụ huynh
         self.assertContains(self.client.get(reverse("lop_cua_toi")), self.khoa.ma)
 
@@ -216,7 +206,7 @@ class SuaLoiCodeReviewPhan4Test(DuLieu):
     def test_BRULE11_khong_tao_khoa_cho_gia_su_het_dieu_kien(self):
         HoSoGiaSu.objects.filter(user=self.gs).update(trang_thai=HoSoGiaSu.TrangThai.TAM_NGUNG)
         with self.assertRaisesMessage(ValidationError, "không còn đủ điều kiện"):
-            dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
+            dv.tao_khoa_hoc(self.nvts, self.yc, **KHOA)
 
     def test_PB08_tim_gia_su_khac_huy_buoi_thu_chua_hoc_cua_gia_su_cu(self):
         self.tao_buoi_thu()

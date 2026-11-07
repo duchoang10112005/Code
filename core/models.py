@@ -59,9 +59,32 @@ class User(AbstractUser):
 # =============================================================================
 # D2 – Hồ sơ gia sư (PB-04; BRULE-09, BRULE-10)
 # =============================================================================
+class NhomGia(models.Model):
+    """Nhóm giá môn học do Admin cấu hình (VD: Môn thường 70.000đ/giờ – trung tâm 8%; IELTS 130.000đ/giờ – 10%)."""
+
+    ten = models.CharField("Tên nhóm giá", max_length=100, unique=True)
+    don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ (đ)")
+    ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2,
+                                          help_text="Phần trăm trên giá gốc mỗi buổi; gia sư nhận phần còn lại.")
+
+    class Meta:
+        verbose_name = "Nhóm giá"
+        verbose_name_plural = "D6 · Nhóm giá"
+        ordering = ["don_gia_gio"]
+        constraints = [
+            models.CheckConstraint(condition=Q(ty_le_trung_tam__gte=0, ty_le_trung_tam__lt=100),
+                                   name="nhom_gia_ty_le_hop_le"),
+        ]
+
+    def __str__(self):
+        return self.ten
+
+
 class MonHoc(models.Model):
     ma = models.CharField("Mã môn", max_length=20, unique=True)
     ten = models.CharField("Tên môn", max_length=100)
+    nhom_gia = models.ForeignKey(NhomGia, null=True, blank=True, on_delete=models.PROTECT,
+                                 related_name="mon_hoc", verbose_name="Nhóm giá")
 
     class Meta:
         verbose_name = "Môn học"
@@ -304,7 +327,18 @@ class KhoaHoc(models.Model):
     )
     so_buoi_dang_ky = models.PositiveIntegerField("Số buổi đăng ký")
     so_buoi_da_dung = models.PositiveIntegerField("Số buổi đã hoàn thành", default=0)
-    thoi_luong_phut = models.PositiveIntegerField("Thời lượng mỗi buổi (phút)", default=90)
+    class ThoiLuong(models.IntegerChoices):
+        GIO_1 = 60, "1 giờ"
+        GIO_1_5 = 90, "1,5 giờ"
+        GIO_2 = 120, "2 giờ"
+
+    thoi_luong_phut = models.PositiveIntegerField("Thời lượng mỗi buổi", choices=ThoiLuong.choices,
+                                                  default=ThoiLuong.GIO_1_5)
+    # Giá được CHỤP LẠI lúc tạo khóa → Admin đổi bảng giá sau này không ảnh hưởng khóa cũ.
+    don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ lúc tạo (đ)", default=0)
+    hoc_phi_goc_moi_buoi = models.PositiveIntegerField("Học phí gốc mỗi buổi (đ)", default=0)
+    ty_le_giam = models.DecimalField("Giảm giá theo gói (%)", max_digits=5, decimal_places=2, default=0)
+    ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2, default=0)
     hoc_phi_moi_buoi = models.PositiveIntegerField("Học phí mỗi buổi (đ)")
     thu_lao_moi_buoi = models.PositiveIntegerField("Thù lao gia sư mỗi buổi (đ)")
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DANG_HOC)
@@ -359,6 +393,37 @@ class KhoaHoc(models.Model):
     def so_buoi_co_the_xep(self):
         """Còn có thể xếp lịch = đăng ký − đã hoàn tất − đang lên lịch (tránh xếp vượt)."""
         return max(self.so_buoi_con_lai - self.so_buoi_dang_len_lich, 0)
+
+
+class GoiKhoaHoc(models.Model):
+    """% giảm giá theo gói 10/20/30 buổi, Admin đặt cho từng giai đoạn (từ ngày – đến ngày)."""
+
+    class SoBuoi(models.IntegerChoices):
+        B10 = 10, "Gói 10 buổi"
+        B20 = 20, "Gói 20 buổi"
+        B30 = 30, "Gói 30 buổi"
+
+    so_buoi = models.PositiveIntegerField("Gói", choices=SoBuoi.choices)
+    ty_le_giam = models.DecimalField("Giảm giá (%)", max_digits=5, decimal_places=2, default=0)
+    hieu_luc_tu = models.DateField("Áp dụng từ ngày")
+    hieu_luc_den = models.DateField("Đến ngày", null=True, blank=True, help_text="Để trống = không thời hạn")
+    tao_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Gói khóa học"
+        verbose_name_plural = "D6 · Gói khóa học (giảm giá theo giai đoạn)"
+        ordering = ["so_buoi", "-hieu_luc_tu"]
+        constraints = [
+            models.UniqueConstraint(fields=["so_buoi", "hieu_luc_tu"], name="goi_mot_muc_moi_ngay_bat_dau"),
+            models.CheckConstraint(condition=Q(ty_le_giam__gte=0, ty_le_giam__lt=100), name="goi_giam_hop_le"),
+            models.CheckConstraint(condition=Q(hieu_luc_den__isnull=True) | Q(hieu_luc_den__gte=F("hieu_luc_tu")),
+                                   name="goi_ngay_hop_le"),
+        ]
+
+    def __str__(self):
+        from core.services.tien_ich import dinh_dang_phan_tram
+        return f"{self.get_so_buoi_display()} – giảm {dinh_dang_phan_tram(self.ty_le_giam)}"
 
 
 # =============================================================================

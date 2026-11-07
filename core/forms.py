@@ -2,8 +2,9 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.password_validation import validate_password
 
-from .models import HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
-from .services.tien_ich import chuan_hoa_sdt
+from .models import (GoiKhoaHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, NhomGia, User,
+                     YeuCauHocTap)
+from .services.tien_ich import chuan_hoa_sdt, dinh_dang_phan_tram
 
 
 class BootstrapMixin:
@@ -253,32 +254,57 @@ class KetQuaHocThuForm(BootstrapMixin, forms.Form):
         return d
 
 
-class KhoaHocForm(BootstrapMixin, forms.ModelForm):
-    class Meta:
-        model = KhoaHoc
-        fields = ["so_buoi_dang_ky", "thoi_luong_phut", "hoc_phi_moi_buoi", "thu_lao_moi_buoi"]
-        help_texts = {
-            "hoc_phi_moi_buoi": "Số tiền phụ huynh đóng cho mỗi buổi (đồng).",
-            "thu_lao_moi_buoi": "Số tiền trả gia sư cho mỗi buổi hợp lệ, không vượt học phí.",
-        }
+class TaoKhoaHocForm(BootstrapMixin, forms.Form):
+    """NVTS chỉ chọn gói và khung giờ; học phí / thù lao do hệ thống tính theo Bảng giá."""
+    so_buoi = forms.TypedChoiceField(label="Gói khóa học", coerce=int, widget=forms.RadioSelect)
+    thoi_luong_phut = forms.TypedChoiceField(label="Thời lượng mỗi buổi", coerce=int, widget=forms.RadioSelect,
+                                             choices=KhoaHoc.ThoiLuong.choices, initial=KhoaHoc.ThoiLuong.GIO_1_5)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, goi=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["so_buoi_dang_ky"].min_value = 1
-        self.fields["so_buoi_dang_ky"].widget.attrs["min"] = 1
-        self.fields["thoi_luong_phut"].widget.attrs.update(min=30, step=15)
+        goi = goi or {}
+        self.fields["so_buoi"].choices = [
+            (so, f"{so} buổi" + (f" – giảm {dinh_dang_phan_tram(g.ty_le_giam)}" if g.ty_le_giam else "")) for so, g in sorted(goi.items())
+        ]
+        if goi:
+            self.fields["so_buoi"].initial = min(goi)
 
-    def clean_so_buoi_dang_ky(self):
-        so = self.cleaned_data["so_buoi_dang_ky"]
-        if so < 1:
-            raise forms.ValidationError("Số buổi đăng ký phải lớn hơn 0.")
-        return so
+
+class NhomGiaForm(BootstrapMixin, forms.ModelForm):
+    class Meta:
+        model = NhomGia
+        fields = ["don_gia_gio", "ty_le_trung_tam"]
+        labels = {"don_gia_gio": "Đơn giá / giờ (đ)", "ty_le_trung_tam": "Trung tâm giữ lại (%)"}
+
+    def clean_ty_le_trung_tam(self):
+        from .services.bang_gia import goi_dang_ap_dung
+        tl = self.cleaned_data["ty_le_trung_tam"]
+        giam_max = max((g.ty_le_giam for g in goi_dang_ap_dung().values()), default=0)
+        if tl < giam_max:
+            raise forms.ValidationError(
+                f"Phải ≥ mức giảm giá lớn nhất đang áp dụng ({dinh_dang_phan_tram(giam_max)}), nếu không trung tâm sẽ lỗ mỗi buổi.")
+        if not 0 <= tl < 100:
+            raise forms.ValidationError("Tỉ lệ phải từ 0 đến dưới 100%.")
+        return tl
+
+
+class GoiKhoaHocForm(BootstrapMixin, forms.ModelForm):
+    class Meta:
+        model = GoiKhoaHoc
+        fields = ["so_buoi", "ty_le_giam", "hieu_luc_tu", "hieu_luc_den"]
+        widgets = {"hieu_luc_tu": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+                   "hieu_luc_den": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
 
     def clean(self):
+        from .services.bang_gia import gioi_han_giam
         d = super().clean()
-        hp, tl = d.get("hoc_phi_moi_buoi"), d.get("thu_lao_moi_buoi")
-        if hp is not None and tl is not None and tl > hp:
-            self.add_error("thu_lao_moi_buoi", "Thù lao gia sư mỗi buổi không được lớn hơn học phí mỗi buổi.")
+        giam, tu, den = d.get("ty_le_giam"), d.get("hieu_luc_tu"), d.get("hieu_luc_den")
+        gioi_han = gioi_han_giam()
+        if giam is not None and gioi_han is not None and giam > gioi_han:
+            self.add_error("ty_le_giam", f"Tối đa {dinh_dang_phan_tram(gioi_han)} (bằng % trung tâm giữ lại nhỏ nhất). "
+                                         "Thù lao gia sư tính trên giá gốc nên giảm sâu hơn trung tâm sẽ lỗ.")
+        if tu and den and den < tu:
+            self.add_error("hieu_luc_den", "Ngày kết thúc phải sau ngày bắt đầu.")
         return d
 
 
