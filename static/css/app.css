@@ -178,4 +178,5 @@ h1, .h1-trang { font-size: var(--gs-fs-h2); font-weight: 600; letter-spacing: -.
 .sidebar .nav-link.sap-co { color: #99c9c3; cursor: default; }          /* 5.2:1 trên --gs-nav-bg */
 .sidebar .nav-link.sap-co:hover { background: transparent; color: #99c9c3; }
 .sidebar .nhan-sap-co { margin-left: auto; font-size: .65rem; font-weight: 600; text-transform: uppercase;
-                        letter-spacing: .04em; border: 1px solid #5f9e98; border-radius: 999px; padding: 0 .4rem; }
+                        letter-spacing: .04em; border: 1px solid #5f9e98; border-radius: 999px; padding: 0 .4rem;
+                        white-space: nowrap; flex-shrink: 0; }
