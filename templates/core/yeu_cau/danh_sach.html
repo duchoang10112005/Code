@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Yêu cầu học tập · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Yêu cầu học tập</h1>
+    <p class="mo-ta">Theo dõi yêu cầu từ lúc tiếp nhận đến khi có gia sư nhận lớp</p></div>
+  {% if user.la_tuyen_sinh %}
+  <a href="{% url 'yeu_cau_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tiếp nhận yêu cầu</a>
+  {% endif %}
+</div>
+
+<form class="row g-2 mb-3 align-items-end" method="get" role="search">
+  <div class="col-lg-4"><label class="form-label" for="{{ form.q.id_for_label }}">Tìm kiếm</label>{{ form.q }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.mon.id_for_label }}">Môn</label>{{ form.mon }}</div>
+  <div class="col-lg-3 pb-2"><div class="form-check">{{ form.can_moi_them }}<label class="form-check-label" for="{{ form.can_moi_them.id_for_label }}">Cần mời thêm gia sư</label></div></div>
+  <div class="col-lg-1"><button class="btn btn-outline-primary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
+</form>
+
+<div class="card"><div class="table-responsive">
+<table class="table table-hover">
+  <thead><tr><th>Mã</th><th>Học viên</th><th>Môn · trình độ</th><th>Trạng thái</th><th>Lời mời</th><th>Gia sư nhận lớp</th><th>Tiếp nhận</th><th class="cot-thao-tac"></th></tr></thead>
+  <tbody>
+  {% for yc in trang %}
+    <tr>
+      <td class="fw-semibold so text-nowrap">{{ yc.ma }}</td>
+      <td><div class="fw-semibold">{{ yc.hoc_vien.ho_ten }}</div><div class="small text-muted">{{ yc.hoc_vien.lop|default:"" }}</div></td>
+      <td>{{ yc.mon_hoc }}<div class="small text-muted">{{ yc.trinh_do }}</div></td>
+      <td>{% nhan_trang_thai yc "trang_thai" %}
+        {% if yc.trang_thai == "DANG_TIM" and not yc.so_cho %}<div class="mt-1">{% nhan_tuy_chinh "CHO_DUYET" "Cần mời thêm" %}</div>{% endif %}</td>
+      <td class="small text-nowrap">
+        {% if yc.so_cho %}<div>{{ yc.so_cho }} đang chờ</div>{% endif %}
+        {% if yc.so_tu_choi %}<div class="text-muted">{{ yc.so_tu_choi }} từ chối</div>{% endif %}
+        {% if yc.so_het_han %}<div class="text-muted">{{ yc.so_het_han }} hết hạn</div>{% endif %}
+        {% if not yc.so_cho and not yc.so_tu_choi and not yc.so_het_han %}<span class="text-muted">—</span>{% endif %}
+      </td>
+      <td>{{ yc.gia_su.ho_ten|default:"—" }}</td>
+      <td class="small text-muted so text-nowrap">{{ yc.tao_luc|date:"d/m/Y H:i" }}</td>
+      <td class="cot-thao-tac"><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-sm btn-outline-primary">Mở</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8"><div class="trang-rong"><i class="bi bi-inbox" aria-hidden="true"></i>Không có yêu cầu nào phù hợp.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% include "partials/phan_trang.html" %}
+{% endblock %}

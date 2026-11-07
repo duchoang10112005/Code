@@ -86,3 +86,23 @@ def nhan_tai_khoan(user):
     if user.is_active:
         return _nhan("HOAT_DONG", "Hoạt động")
     return format_html('<span class="nhan-tt tone-danger"><i class="bi bi-lock-fill" aria-hidden="true"></i>Bị khóa</span>')
+
+
+@register.simple_tag
+def ten_thu(so):
+    """0 → "Thứ 2" … 6 → "Chủ nhật"."""
+    from core.models import LichRanh
+    return dict(LichRanh.Thu.choices).get(so, so)
+
+
+@register.filter
+def con_lai(thoi_diem):
+    """Thời gian còn lại đến `thoi_diem`, tiếng Việt: "23 giờ 54 phút", "12 phút", "đã quá hạn"."""
+    from django.utils import timezone
+    giay = int((thoi_diem - timezone.now()).total_seconds())
+    if giay <= 0:
+        return "đã quá hạn"
+    gio, phut = divmod(giay // 60, 60)
+    if gio and phut:
+        return f"{gio} giờ {phut} phút"
+    return f"{gio} giờ" if gio else f"{max(phut, 1)} phút"

@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 
 from core.forms import DangNhapForm, DoiMatKhauForm
 from core.models import BuoiHoc, HocVien, KhoaHoc, User, YeuCauHocTap
+from core.services.yeu_cau import quet_loi_moi_het_han
 
 
 class DangNhapView(auth_views.LoginView):
@@ -37,9 +38,15 @@ def trang_chu(request):
         }
         return render(request, "core/trang_chu_admin.html", ctx)
     if u.la_tuyen_sinh:
+        quet_loi_moi_het_han()
+        YC = YeuCauHocTap.TrangThai
         ctx = {
-            "so_yeu_cau_moi": YeuCauHocTap.objects.filter(trang_thai=YeuCauHocTap.TrangThai.MOI).count(),
-            "so_dang_tim": YeuCauHocTap.objects.filter(trang_thai=YeuCauHocTap.TrangThai.DANG_TIM).count(),
+            "so_yeu_cau_moi": YeuCauHocTap.objects.filter(trang_thai=YC.MOI).count(),
+            "so_dang_tim": YeuCauHocTap.objects.filter(trang_thai=YC.DANG_TIM).count(),
+            # Đang tìm nhưng không còn lời mời nào đang chờ → cần NVTS mời thêm gia sư.
+            "so_can_moi_them": YeuCauHocTap.objects.filter(trang_thai=YC.DANG_TIM)
+                                .exclude(loi_moi__trang_thai="CHO").count(),
+            "so_vua_phan_cong": YeuCauHocTap.objects.filter(trang_thai=YC.DA_PHAN_CONG).count(),
             "so_khoa_dang_hoc": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).count(),
         }
         return render(request, "core/trang_chu_tuyen_sinh.html", ctx)

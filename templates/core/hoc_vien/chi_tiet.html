@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}{{ hv.ho_ten }} · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
+  <li class="breadcrumb-item"><a href="{% url 'hoc_vien_danh_sach' %}">Học viên</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ hv.ho_ten }}</li>
+</ol></nav>
+<div class="dau-trang">
+  <div><h1 class="mb-1">{{ hv.ho_ten }}</h1><p class="mo-ta">Phụ huynh {{ hv.ten_phu_huynh }} · <span class="so">{{ hv.sdt_phu_huynh }}</span></p></div>
+  {% if user.la_tuyen_sinh %}<a href="{% url 'yeu_cau_tao' %}?hoc_vien={{ hv.pk }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Yêu cầu mới cho học viên này</a>{% endif %}
+</div>
+<div class="row g-4">
+  <div class="col-xl-5">
+    <div class="card"><div class="card-header">Thông tin</div><div class="card-body">
+      {% if form %}
+        <form method="post" novalidate>{% csrf_token %}
+          {% include "partials/form_fields.html" %}
+          <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu</button>
+        </form>
+      {% else %}
+        <div class="small">
+          <div class="text-muted">Lớp</div><div class="mb-2">{{ hv.lop|default:"—" }}</div>
+          <div class="text-muted">Đồng ý ghi hình</div><div class="mb-2">{% if hv.dong_y_ghi_hinh %}Có{% else %}Không{% endif %}</div>
+          <div class="text-muted">Ghi chú</div><div>{{ hv.ghi_chu|default:"—" }}</div>
+        </div>
+      {% endif %}
+    </div></div>
+  </div>
+  <div class="col-xl-7">
+    <div class="card"><div class="card-header">Các yêu cầu học tập</div>
+      <div class="table-responsive"><table class="table table-hover">
+        <thead><tr><th>Mã</th><th>Môn</th><th>Trạng thái</th><th>Gia sư</th><th class="cot-thao-tac"></th></tr></thead>
+        <tbody>
+        {% for yc in ds_yeu_cau %}
+          <tr><td class="so fw-semibold">{{ yc.ma }}</td><td>{{ yc.mon_hoc }} · {{ yc.trinh_do }}</td>
+            <td>{% nhan_trang_thai yc "trang_thai" %}</td><td>{{ yc.gia_su.ho_ten|default:"—" }}</td>
+            <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'yeu_cau_chi_tiet' yc.pk %}">Mở</a></td></tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="trang-rong py-3"><i class="bi bi-inbox" aria-hidden="true"></i>Chưa có yêu cầu nào.</div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

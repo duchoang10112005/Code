@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Tiếp nhận yêu cầu · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
+  <li class="breadcrumb-item"><a href="{% url 'yeu_cau_danh_sach' %}">Yêu cầu học tập</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Tiếp nhận</li>
+</ol></nav>
+<div class="dau-trang"><div><h1 class="mb-1">Tiếp nhận yêu cầu học tập</h1>
+  <p class="mo-ta">Ghi thông tin học viên và nhu cầu học. Sau khi lưu, hệ thống đề xuất gia sư phù hợp.</p></div></div>
+
+<form method="post" novalidate>{% csrf_token %}
+<div class="row g-4">
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header">1. Học viên</div>
+      <div class="card-body">
+        {% with form=chon %}{% include "partials/form_fields.html" %}{% endwith %}
+        <fieldset id="khoi-hoc-vien-moi">
+          <legend class="form-label fw-semibold mb-2" style="font-size:var(--gs-fs-base)">Thông tin học viên mới</legend>
+          {% with form=form_hv %}{% include "partials/form_fields.html" %}{% endwith %}
+        </fieldset>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header">2. Nhu cầu học</div>
+      <div class="card-body">
+        {% if form_yc.non_field_errors %}<div class="alert alert-danger"><i class="bi bi-x-octagon-fill" aria-hidden="true"></i><div>{{ form_yc.non_field_errors|join:" " }}</div></div>{% endif %}
+        {% for field in form_yc %}
+          <div class="mb-3">
+            <label class="form-label" {% if field.name != "thu_mong_muon" %}for="{{ field.id_for_label }}"{% endif %}>{{ field.label }} <span class="bat-buoc" aria-hidden="true">*</span></label>
+            {% if field.name == "thu_mong_muon" %}
+              <div class="d-flex flex-wrap gap-3" role="group" aria-label="{{ field.label }}">
+                {% for cb in field %}<div class="form-check">{{ cb.tag }}<label class="form-check-label" for="{{ cb.id_for_label }}">{{ cb.choice_label }}</label></div>{% endfor %}
+              </div>
+            {% else %}{{ field }}{% endif %}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% for e in field.errors %}<div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="d-flex gap-2 mt-4">
+  <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu và tìm gia sư</button>
+  <a href="{% url 'yeu_cau_danh_sach' %}" class="btn btn-outline-secondary">Hủy</a>
+</div>
+</form>
+
+<script>
+  // Chọn học viên có sẵn thì ẩn khối nhập học viên mới.
+  (function () {
+    const chon = document.getElementById("{{ chon.hoc_vien.id_for_label }}");
+    const khoi = document.getElementById("khoi-hoc-vien-moi");
+    function capNhat() { khoi.hidden = !!chon.value; }
+    chon.addEventListener("change", capNhat); capNhat();
+  })();
+</script>
+{% endblock %}

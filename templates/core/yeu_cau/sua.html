@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Sửa {{ yc.ma }} · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
+  <li class="breadcrumb-item"><a href="{% url 'yeu_cau_danh_sach' %}">Yêu cầu học tập</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}">{{ yc.ma }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Sửa</li>
+</ol></nav>
+<div class="dau-trang"><h1 class="mb-0">Sửa {{ yc.ma }} · {{ yc.hoc_vien.ho_ten }}</h1></div>
+<div class="card" style="max-width:640px"><div class="card-body">
+  <form method="post" novalidate>{% csrf_token %}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" {% if field.name != "thu_mong_muon" %}for="{{ field.id_for_label }}"{% endif %}>{{ field.label }}</label>
+        {% if field.name == "thu_mong_muon" %}
+          <div class="d-flex flex-wrap gap-3" role="group" aria-label="{{ field.label }}">
+            {% for cb in field %}<div class="form-check">{{ cb.tag }}<label class="form-check-label" for="{{ cb.id_for_label }}">{{ cb.choice_label }}</label></div>{% endfor %}
+          </div>
+        {% else %}{{ field }}{% endif %}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for e in field.errors %}<div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu</button>
+      <a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

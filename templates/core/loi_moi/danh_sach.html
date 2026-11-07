@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Lời mời nhận lớp · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Lời mời nhận lớp</h1>
+    <p class="mo-ta">Mỗi lời mời có hiệu lực 24 giờ. Lớp thuộc về gia sư nhận hợp lệ đầu tiên.</p></div>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link {% if tab != 'lich-su' %}active{% endif %}" href="?tab=cho" {% if tab != 'lich-su' %}aria-current="page"{% endif %}>Đang chờ phản hồi</a></li>
+  <li class="nav-item"><a class="nav-link {% if tab == 'lich-su' %}active{% endif %}" href="?tab=lich-su" {% if tab == 'lich-su' %}aria-current="page"{% endif %}>Lịch sử</a></li>
+</ul>
+
+{% for lm in trang %}
+  {% with yc=lm.yeu_cau %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+        <div>
+          <div class="fw-semibold" style="font-size:var(--gs-fs-h3)">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
+          <div class="small text-muted">Học viên {{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %} · {{ yc.hoc_vien.lop }}{% endif %} · mã {{ yc.ma }}</div>
+        </div>
+        <div class="text-end">
+          {% nhan_trang_thai lm "trang_thai" %}
+          {% if lm.trang_thai == "CHO" %}<div class="small mt-1" style="color:var(--gs-tone-warning-fg)">Còn {{ lm.het_han_luc|con_lai }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="row small g-2 mb-3">
+        <div class="col-md-6"><span class="text-muted">Mục tiêu:</span> {{ yc.muc_tieu }}</div>
+        <div class="col-md-6"><span class="text-muted">Thời gian mong muốn:</span>
+          {% for t in yc.thu_mong_muon %}<span class="{% if t in thu_ranh %}fw-semibold{% endif %}">{% ten_thu t %}</span>{% if not forloop.last %}, {% endif %}{% endfor %}
+          · {{ yc.lich_mong_muon }}
+          {% if thu_ranh %}<div class="text-muted">Chữ đậm: trùng lịch rảnh của bạn</div>{% endif %}</div>
+      </div>
+      {% if lm.trang_thai == "CHO" %}
+        <div class="d-flex flex-wrap gap-2 align-items-start">
+          <form method="post" action="{% url 'loi_moi_nhan' lm.pk %}">{% csrf_token %}
+            <button class="btn btn-primary"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>Nhận lớp</button>
+          </form>
+          <form method="post" action="{% url 'loi_moi_tu_choi' lm.pk %}" class="d-flex gap-2 flex-grow-1" style="max-width:520px">{% csrf_token %}
+            <label class="visually-hidden" for="ly_do_{{ lm.pk }}">Lý do từ chối</label>
+            <input id="ly_do_{{ lm.pk }}" name="ly_do" class="form-control" placeholder="Lý do từ chối (không bắt buộc)">
+            <button class="btn btn-outline-secondary text-nowrap">Từ chối</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="small text-muted">
+          {% if lm.trang_thai == "ACCEPTED" %}Bạn đã nhận lớp lúc {{ lm.phan_hoi_luc|date:"H:i d/m/Y" }}.
+          {% elif lm.trang_thai == "VOIDED" %}Lớp đã có gia sư khác nhận hoặc yêu cầu đã đóng.
+          {% elif lm.trang_thai == "HET_HAN" %}Lời mời hết hạn lúc {{ lm.het_han_luc|date:"H:i d/m/Y" }}.
+          {% else %}Bạn đã từ chối{% if lm.ly_do_tu_choi %}: {{ lm.ly_do_tu_choi }}{% endif %}.{% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endwith %}
+{% empty %}
+  <div class="card"><div class="trang-rong"><i class="bi bi-envelope-open" aria-hidden="true"></i>
+    {% if tab == 'lich-su' %}Chưa có lời mời nào đã xử lý.{% else %}Hiện không có lời mời nào đang chờ bạn.{% endif %}</div></div>
+{% endfor %}
+{% include "partials/phan_trang.html" %}
+{% endblock %}

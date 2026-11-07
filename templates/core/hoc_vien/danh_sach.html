@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Học viên · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Học viên</h1><p class="mo-ta">Thông tin học viên và phụ huynh (nhận đánh giá qua Zalo)</p></div>
+  {% if user.la_tuyen_sinh %}<a href="{% url 'yeu_cau_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tiếp nhận yêu cầu</a>{% endif %}
+</div>
+<form class="row g-2 mb-3" method="get" role="search">
+  <div class="col-md-6"><label class="visually-hidden" for="q">Tìm kiếm</label>
+    <input id="q" name="q" value="{{ q }}" class="form-control" placeholder="Tên học viên, tên hoặc SĐT phụ huynh"></div>
+  <div class="col-md-2"><button class="btn btn-outline-primary w-100"><i class="bi bi-search" aria-hidden="true"></i>Tìm</button></div>
+</form>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover">
+  <thead><tr><th>Học viên</th><th>Lớp</th><th>Phụ huynh</th><th>SĐT Zalo</th><th>Ghi hình</th><th class="cot-so">Yêu cầu</th><th class="cot-thao-tac"></th></tr></thead>
+  <tbody>
+  {% for hv in trang %}
+    <tr>
+      <td class="fw-semibold">{{ hv.ho_ten }}</td>
+      <td>{{ hv.lop|default:"—" }}</td>
+      <td>{{ hv.ten_phu_huynh }}</td>
+      <td class="so">{{ hv.sdt_phu_huynh }}</td>
+      <td>{% if hv.dong_y_ghi_hinh %}Đồng ý{% else %}<span class="text-muted">Không</span>{% endif %}</td>
+      <td class="cot-so">{{ hv.so_yeu_cau }}</td>
+      <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'hoc_vien_chi_tiet' hv.pk %}">Mở</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7"><div class="trang-rong"><i class="bi bi-person-lines-fill" aria-hidden="true"></i>Chưa có học viên nào.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% include "partials/phan_trang.html" %}
+{% endblock %}

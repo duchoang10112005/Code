@@ -4,9 +4,9 @@
   <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Lớp và buổi học của bạn</p></div>
 </div>
 <div class="row g-3 mb-4">
-  {% include "partials/the_so.html" with nhan="Lời mời đang chờ" so=so_loi_moi_cho|default:0 icon="envelope-open" can_xu_ly=True %}
+  {% url 'loi_moi_cua_toi' as lm %}
+  {% include "partials/the_so.html" with nhan="Lời mời đang chờ bạn" so=so_loi_moi_cho|default:0 icon="envelope-open" can_xu_ly=True link=lm link_chu="Phản hồi" %}
   {% include "partials/the_so.html" with nhan="Khóa đang phụ trách" so=so_khoa_phu_trach icon="journal-bookmark" %}
   {% include "partials/the_so.html" with nhan="Buổi sắp tới" so=so_buoi_sap_toi icon="calendar-week" %}
 </div>
-<div class="alert alert-info"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><div>Hồ sơ, lời mời nhận lớp và buổi học sẽ có ở Phần 2, 3 và 5.</div></div>
 {% endblock %}

@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.password_validation import validate_password
 
-from .models import HoSoGiaSu, LichRanh, MonGiaSu, MonHoc, User
+from .models import HocVien, HoSoGiaSu, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
+from .services.tien_ich import chuan_hoa_sdt
 
 
 class BootstrapMixin:
@@ -18,7 +19,7 @@ class BootstrapMixin:
                 if ds and ds[0][0] == "" and str(ds[0][1]).lower().startswith(("-", "select")):
                     f.choices = [("", "— Chọn —")] + ds[1:]
             w = f.widget
-            if isinstance(w, (forms.CheckboxInput,)):
+            if isinstance(w, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
                 w.attrs.setdefault("class", "form-check-input")
             elif isinstance(w, (forms.Select, forms.SelectMultiple)):
                 w.attrs.setdefault("class", "form-select")
@@ -170,3 +171,65 @@ class LocGiaSuForm(BootstrapMixin, forms.Form):
     thu = forms.ChoiceField(label="Rảnh vào", required=False,
                             choices=[("", "Mọi ngày")] + list(LichRanh.Thu.choices))
     cho_duyet = forms.BooleanField(label="Chỉ hồ sơ có môn chờ duyệt", required=False)
+
+
+# ---------------------------------------------------------------------------
+# Phần 3 – Học viên, yêu cầu học tập (PB-02, PB-03, PB-19)
+# ---------------------------------------------------------------------------
+class HocVienForm(BootstrapMixin, forms.ModelForm):
+    class Meta:
+        model = HocVien
+        fields = ["ho_ten", "lop", "ten_phu_huynh", "sdt_phu_huynh", "dong_y_ghi_hinh", "ghi_chu"]
+        widgets = {"ghi_chu": forms.Textarea(attrs={"rows": 2})}
+        help_texts = {
+            "sdt_phu_huynh": "Số Zalo của phụ huynh để nhận đánh giá buổi học. VD: 0905 123 456",
+            "dong_y_ghi_hinh": "Không đồng ý thì phòng Zoom vẫn được tạo nhưng không ghi hình.",
+        }
+
+    def clean_sdt_phu_huynh(self):
+        sdt = chuan_hoa_sdt(self.cleaned_data["sdt_phu_huynh"])
+        if not sdt:
+            raise forms.ValidationError("Số điện thoại không hợp lệ. Ví dụ đúng: 0905 123 456")
+        return sdt
+
+
+class ChonHocVienForm(BootstrapMixin, forms.Form):
+    hoc_vien = forms.ModelChoiceField(
+        label="Học viên", queryset=HocVien.objects.order_by("ho_ten"), required=False,
+        empty_label="— Học viên mới (nhập bên dưới) —",
+    )
+
+
+class YeuCauForm(BootstrapMixin, forms.ModelForm):
+    thu_mong_muon = forms.TypedMultipleChoiceField(
+        label="Các thứ muốn học", choices=LichRanh.Thu.choices, coerce=int,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={"required": "Chọn ít nhất một thứ trong tuần."},
+    )
+
+    class Meta:
+        model = YeuCauHocTap
+        fields = ["mon_hoc", "trinh_do", "muc_tieu", "thu_mong_muon", "lich_mong_muon"]
+        labels = {"lich_mong_muon": "Khung giờ mong muốn"}
+        widgets = {
+            "muc_tieu": forms.Textarea(attrs={"rows": 3}),
+            "trinh_do": forms.TextInput(attrs={"placeholder": "VD: Lớp 9, mất gốc hình học"}),
+            "lich_mong_muon": forms.TextInput(attrs={"placeholder": "VD: Buổi tối 19h–21h"}),
+        }
+
+    def __init__(self, *args, khoa_mon=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["mon_hoc"].empty_label = "— Chọn môn —"
+        if khoa_mon:
+            # Đã gửi lời mời theo môn này → không cho đổi môn nữa.
+            self.fields["mon_hoc"].disabled = True
+            self.fields["mon_hoc"].help_text = "Không đổi được môn vì đã gửi lời mời cho gia sư."
+
+
+class LocYeuCauForm(BootstrapMixin, forms.Form):
+    q = forms.CharField(label="Tìm kiếm", required=False,
+                        widget=forms.TextInput(attrs={"placeholder": "Mã YC, học viên, phụ huynh"}))
+    trang_thai = forms.ChoiceField(label="Trạng thái", required=False,
+                                   choices=[("", "Mọi trạng thái")] + list(YeuCauHocTap.TrangThai.choices))
+    mon = forms.ModelChoiceField(label="Môn", queryset=MonHoc.objects.all(), required=False, empty_label="Mọi môn")
+    can_moi_them = forms.BooleanField(label="Cần mời thêm gia sư", required=False)

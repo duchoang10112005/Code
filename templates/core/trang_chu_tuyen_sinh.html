@@ -2,11 +2,14 @@
 {% block content %}
 <div class="dau-trang">
   <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Yêu cầu học tập và khóa học</p></div>
+  <a href="{% url 'yeu_cau_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tiếp nhận yêu cầu</a>
 </div>
 <div class="row g-3 mb-4">
-  {% include "partials/the_so.html" with nhan="Yêu cầu mới" so=so_yeu_cau_moi icon="inbox" can_xu_ly=True %}
-  {% include "partials/the_so.html" with nhan="Đang tìm gia sư" so=so_dang_tim icon="search" %}
+  {% url 'yeu_cau_danh_sach' as ds %}
+  {% include "partials/the_so.html" with nhan="Cần mời thêm gia sư" so=so_can_moi_them icon="person-plus" can_xu_ly=True link=ds|add:"?can_moi_them=on" link_chu="Mời thêm" %}
+  {% include "partials/the_so.html" with nhan="Yêu cầu mới, chưa gửi lời mời" so=so_yeu_cau_moi icon="inbox" can_xu_ly=True link=ds|add:"?trang_thai=MOI" link_chu="Chọn gia sư" %}
+  {% include "partials/the_so.html" with nhan="Đang tìm gia sư" so=so_dang_tim icon="search" link=ds|add:"?trang_thai=DANG_TIM" link_chu="Xem" %}
+  {% include "partials/the_so.html" with nhan="Đã có gia sư nhận lớp" so=so_vua_phan_cong icon="person-check" link=ds|add:"?trang_thai=DA_PHAN_CONG" link_chu="Xem" %}
   {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" %}
 </div>
-<div class="alert alert-info"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><div>Tiếp nhận yêu cầu và phân công gia sư sẽ có ở Phần 3.</div></div>
 {% endblock %}

@@ -28,6 +28,7 @@
         <li><a class="nav-link {% if 'tai_khoan' in p %}active{% endif %}" href="{% url 'tai_khoan_danh_sach' %}"><i class="bi bi-people" aria-hidden="true"></i>Tài khoản</a></li>
         <li><a class="nav-link {% if 'gia_su' in p %}active{% endif %}" href="{% url 'gia_su_danh_sach' %}"><i class="bi bi-person-check" aria-hidden="true"></i>Hồ sơ gia sư
           {% if so_mon_cho_duyet %}<span class="dem">{{ so_mon_cho_duyet }}<span class="visually-hidden"> môn chờ duyệt</span></span>{% endif %}</a></li>
+        <li><a class="nav-link {% if 'yeu_cau' in p %}active{% endif %}" href="{% url 'yeu_cau_danh_sach' %}"><i class="bi bi-inbox" aria-hidden="true"></i>Yêu cầu học tập</a></li>
         {% include "partials/muc_sap_co.html" with icon="exclamation-triangle" ten="Buổi đang xem xét" %}
         {% include "partials/muc_sap_co.html" with icon="speedometer2" ten="Dashboard vận hành" %}
         <li><a class="nav-link {% if p == 'nhat_ky' %}active{% endif %}" href="{% url 'nhat_ky' %}"><i class="bi bi-journal-text" aria-hidden="true"></i>Nhật ký thao tác</a></li>
@@ -35,8 +36,8 @@
 
       {% if user.la_tuyen_sinh %}
         <div class="muc">Tuyển sinh</div>
-        {% include "partials/muc_sap_co.html" with icon="inbox" ten="Yêu cầu học tập" %}
-        {% include "partials/muc_sap_co.html" with icon="person-lines-fill" ten="Học viên" %}
+        <li><a class="nav-link {% if 'yeu_cau' in p %}active{% endif %}" href="{% url 'yeu_cau_danh_sach' %}"><i class="bi bi-inbox" aria-hidden="true"></i>Yêu cầu học tập</a></li>
+        <li><a class="nav-link {% if 'hoc_vien' in p %}active{% endif %}" href="{% url 'hoc_vien_danh_sach' %}"><i class="bi bi-person-lines-fill" aria-hidden="true"></i>Học viên</a></li>
         <li><a class="nav-link {% if 'gia_su' in p %}active{% endif %}" href="{% url 'gia_su_danh_sach' %}"><i class="bi bi-person-badge" aria-hidden="true"></i>Gia sư</a></li>
         {% include "partials/muc_sap_co.html" with icon="journal-bookmark" ten="Khóa học" %}
         {% include "partials/muc_sap_co.html" with icon="cash-coin" ten="Đối soát thù lao" %}
@@ -45,7 +46,8 @@
       {% if user.la_gia_su %}
         <div class="muc">Gia sư</div>
         <li><a class="nav-link {% if 'ho_so' in p %}active{% endif %}" href="{% url 'ho_so_cua_toi' %}"><i class="bi bi-person-badge" aria-hidden="true"></i>Hồ sơ của tôi</a></li>
-        {% include "partials/muc_sap_co.html" with icon="envelope-open" ten="Lời mời nhận lớp" %}
+        <li><a class="nav-link {% if 'loi_moi' in p %}active{% endif %}" href="{% url 'loi_moi_cua_toi' %}"><i class="bi bi-envelope-open" aria-hidden="true"></i>Lời mời nhận lớp
+          {% if so_loi_moi_cho %}<span class="dem">{{ so_loi_moi_cho }}<span class="visually-hidden"> lời mời đang chờ</span></span>{% endif %}</a></li>
         {% include "partials/muc_sap_co.html" with icon="calendar-week" ten="Buổi học của tôi" %}
         {% include "partials/muc_sap_co.html" with icon="wallet2" ten="Thu nhập" %}
       {% endif %}

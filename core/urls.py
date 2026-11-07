@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from core.views import chung, gia_su, quy_chuan, tai_khoan
+from core.views import chung, gia_su, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -31,6 +31,19 @@ urlpatterns = [
     path("gia-su/<int:pk>/", gia_su.chi_tiet, name="gia_su_chi_tiet"),
     path("gia-su/mon/<int:pk>/xu-ly/", gia_su.xu_ly_mon, name="gia_su_xu_ly_mon"),
     path("gia-su/<int:pk>/trang-thai/", gia_su.doi_trang_thai, name="gia_su_doi_trang_thai"),
+
+    # Phần 3 – Yêu cầu học tập, học viên, lời mời nhận lớp (PB-02..PB-06)
+    path("yeu-cau/", yeu_cau.danh_sach, name="yeu_cau_danh_sach"),
+    path("yeu-cau/tao/", yeu_cau.tao, name="yeu_cau_tao"),
+    path("yeu-cau/<int:pk>/", yeu_cau.chi_tiet, name="yeu_cau_chi_tiet"),
+    path("yeu-cau/<int:pk>/sua/", yeu_cau.sua, name="yeu_cau_sua"),
+    path("yeu-cau/<int:pk>/gui-loi-moi/", yeu_cau.gui_loi_moi, name="yeu_cau_gui_loi_moi"),
+    path("yeu-cau/<int:pk>/dong/", yeu_cau.dong, name="yeu_cau_dong"),
+    path("hoc-vien/", yeu_cau.hoc_vien_danh_sach, name="hoc_vien_danh_sach"),
+    path("hoc-vien/<int:pk>/", yeu_cau.hoc_vien_chi_tiet, name="hoc_vien_chi_tiet"),
+    path("loi-moi/", yeu_cau.loi_moi_cua_toi, name="loi_moi_cua_toi"),
+    path("loi-moi/<int:pk>/nhan/", yeu_cau.nhan_lop, name="loi_moi_nhan"),
+    path("loi-moi/<int:pk>/tu-choi/", yeu_cau.tu_choi_loi_moi, name="loi_moi_tu_choi"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

@@ -204,6 +204,9 @@ class YeuCauHocTap(models.Model):
     trinh_do = models.CharField("Trình độ / lớp", max_length=100)
     muc_tieu = models.TextField("Mục tiêu học tập")
     lich_mong_muon = models.CharField("Thời gian mong muốn", max_length=200)
+    # Các thứ trong tuần học viên muốn học (0 = Thứ 2 … 6 = CN) — dùng để so khớp lịch rảnh gia sư.
+    thu_mong_muon = models.JSONField("Thứ mong muốn", default=list, blank=True)
+    ly_do_dong = models.CharField("Lý do đóng yêu cầu", max_length=300, blank=True)
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.MOI)
     gia_su = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
@@ -226,6 +229,15 @@ class YeuCauHocTap(models.Model):
     def __str__(self):
         return f"YC-{self.pk:04d} {self.hoc_vien} – {self.mon_hoc}"
 
+    @property
+    def ma(self):
+        return f"YC-{self.pk:04d}"
+
+    @property
+    def ten_thu_mong_muon(self):
+        nhan = dict(LichRanh.Thu.choices)
+        return ", ".join(str(nhan.get(t, t)) for t in sorted(self.thu_mong_muon or [])) or "—"
+
 
 # =============================================================================
 # D5 – Lời mời nhận lớp (PB-05, PB-06, PB-22; BRULE-12)
@@ -244,6 +256,7 @@ class LoiMoi(models.Model):
     gui_luc = models.DateTimeField(auto_now_add=True)
     het_han_luc = models.DateTimeField()
     phan_hoi_luc = models.DateTimeField(null=True, blank=True)
+    ly_do_tu_choi = models.CharField("Lý do từ chối", max_length=300, blank=True)
     gui_boi = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
