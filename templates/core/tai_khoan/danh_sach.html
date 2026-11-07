@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Tài khoản{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Quản lý tài khoản</h1><p class="mo-ta">Tạo, phân quyền, khóa và mở khóa tài khoản người dùng</p></div>
+  <a href="{% url 'tai_khoan_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo tài khoản</a>
+</div>
+
+<form class="row g-2 mb-3" method="get" role="search">
+  <div class="col-md-4"><label class="visually-hidden" for="q">Tìm kiếm</label>
+    <input id="q" name="q" value="{{ loc.q }}" class="form-control" placeholder="Tìm tên, tên đăng nhập, email"></div>
+  <div class="col-md-3"><label class="visually-hidden" for="vai_tro">Vai trò</label>
+    <select id="vai_tro" name="vai_tro" class="form-select">
+      <option value="">Tất cả vai trò</option>
+      {% for value, label in VaiTro.choices %}<option value="{{ value }}" {% if loc.vai_tro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select></div>
+  <div class="col-md-3"><label class="visually-hidden" for="trang_thai">Trạng thái</label>
+    <select id="trang_thai" name="trang_thai" class="form-select">
+      <option value="">Mọi trạng thái</option>
+      <option value="hoat_dong" {% if loc.trang_thai == 'hoat_dong' %}selected{% endif %}>Đang hoạt động</option>
+      <option value="khoa" {% if loc.trang_thai == 'khoa' %}selected{% endif %}>Bị khóa</option>
+    </select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
+</form>
+
+<div class="card"><div class="table-responsive">
+<table class="table table-hover">
+  <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Email</th><th>Trạng thái</th><th class="cot-thao-tac">Thao tác</th></tr></thead>
+  <tbody>
+  {% for u in trang %}
+    <tr>
+      <td class="fw-semibold">{{ u.username }}</td>
+      <td>{{ u.ho_ten }}</td>
+      <td>{{ u.get_vai_tro_display }}</td>
+      <td class="text-muted">{{ u.email|default:"—" }}</td>
+      <td>{% nhan_tai_khoan u %}</td>
+      <td class="cot-thao-tac">
+        <a href="{% url 'tai_khoan_sua' u.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</a>
+        {% if u != user %}
+        <form method="post" action="{% url 'tai_khoan_doi_trang_thai' u.pk %}" class="d-inline"
+              onsubmit="return confirm('{% if u.is_active %}Khóa{% else %}Mở khóa{% endif %} tài khoản {{ u.username }}?')">
+          {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+          {% if u.is_active %}
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-lock" aria-hidden="true"></i>Khóa</button>
+          {% else %}
+            <button class="btn btn-sm btn-outline-success"><i class="bi bi-unlock" aria-hidden="true"></i>Mở khóa</button>
+          {% endif %}
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6"><div class="trang-rong"><i class="bi bi-person-x" aria-hidden="true"></i>Không có tài khoản phù hợp với bộ lọc.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% include "partials/phan_trang.html" %}
+{% endblock %}

@@ -7,6 +7,10 @@ import sys
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    # Terminal Windows mặc định không phải UTF-8 → ép UTF-8 để in được tiếng Việt.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

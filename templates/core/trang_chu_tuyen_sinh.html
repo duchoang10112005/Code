@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Yêu cầu học tập và khóa học</p></div>
+</div>
+<div class="row g-3 mb-4">
+  {% include "partials/the_so.html" with nhan="Yêu cầu mới" so=so_yeu_cau_moi icon="inbox" can_xu_ly=True %}
+  {% include "partials/the_so.html" with nhan="Đang tìm gia sư" so=so_dang_tim icon="search" %}
+  {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" %}
+</div>
+<div class="alert alert-info"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><div>Tiếp nhận yêu cầu và phân công gia sư sẽ có ở Phần 3.</div></div>
+{% endblock %}

@@ -1,0 +1,16 @@
+import re
+
+
+def chuan_hoa_sdt(sdt):
+    """Đưa số điện thoại Việt Nam về dạng 84xxxxxxxxx (định dạng Zalo ZNS yêu cầu).
+
+    Trả về None nếu không hợp lệ.  VD: "0905 123 456" → "84905123456".
+    """
+    so = re.sub(r"[^\d+]", "", sdt or "")
+    if so.startswith("+"):
+        so = so[1:]
+    if so.startswith("0"):
+        so = "84" + so[1:]
+    if re.fullmatch(r"84[35789]\d{8}", so):
+        return so
+    return None

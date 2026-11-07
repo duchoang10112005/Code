@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Gia sư · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Hồ sơ gia sư</h1>
+    <p class="mo-ta">{% if user.la_admin %}Duyệt môn dạy và quản lý trạng thái hồ sơ gia sư{% else %}Tra cứu gia sư theo môn và lịch rảnh{% endif %}</p></div>
+</div>
+
+<form class="row g-2 mb-3 align-items-end" method="get" role="search">
+  <div class="col-lg-3"><label class="form-label" for="{{ form.q.id_for_label }}">Tìm kiếm</label>{{ form.q }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.mon.id_for_label }}">Môn đã duyệt</label>{{ form.mon }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.thu.id_for_label }}">Rảnh vào</label>{{ form.thu }}</div>
+  <div class="col-lg-2 pb-2"><div class="form-check">{{ form.cho_duyet }}<label class="form-check-label small" for="{{ form.cho_duyet.id_for_label }}">Có môn chờ duyệt</label></div></div>
+  <div class="col-lg-1"><button class="btn btn-outline-primary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
+</form>
+
+<div class="card"><div class="table-responsive">
+<table class="table table-hover">
+  <thead><tr><th>Gia sư</th><th>Môn dạy</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
+  <tbody>
+  {% for hs in trang %}
+    <tr>
+      <td><div class="fw-semibold">{{ hs.user.ho_ten }}</div><div class="small text-muted">{{ hs.user.email }}</div></td>
+      <td>
+        <div class="d-flex flex-wrap gap-1">
+        {% for mg in hs.mon_day.all %}{% nhan_tuy_chinh mg.trang_thai mg.mon_hoc.ten %}{% empty %}<span class="text-muted small">Chưa đăng ký môn</span>{% endfor %}
+        </div>
+      </td>
+      <td>{% nhan_trang_thai hs "trang_thai" %}
+        {% if hs.so_cho_duyet %}<div class="small mt-1" style="color:var(--gs-tone-warning-fg)">{{ hs.so_cho_duyet }} môn chờ duyệt</div>{% endif %}</td>
+      <td class="cot-thao-tac">
+        <a class="btn btn-sm {% if user.la_admin and hs.so_cho_duyet %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'gia_su_chi_tiet' hs.pk %}">
+          {% if user.la_admin and hs.so_cho_duyet %}<i class="bi bi-patch-check" aria-hidden="true"></i>Duyệt{% else %}Xem hồ sơ{% endif %}</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4"><div class="trang-rong"><i class="bi bi-person-x" aria-hidden="true"></i>Không có gia sư phù hợp với bộ lọc.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% include "partials/phan_trang.html" %}
+{% endblock %}

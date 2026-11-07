@@ -1,0 +1,9 @@
+{% for m in messages %}
+  {% with loai=m.tags|default:"info" %}
+  <div class="alert alert-{% if loai == 'error' %}danger{% else %}{{ loai }}{% endif %} alert-dismissible fade show" role="alert">
+    <i class="bi bi-{% if loai == 'success' %}check-circle-fill{% elif loai == 'error' %}x-octagon-fill{% elif loai == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}" aria-hidden="true"></i>
+    <div>{{ m }}</div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+  </div>
+  {% endwith %}
+{% endfor %}

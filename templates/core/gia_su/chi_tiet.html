@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}{{ ho_so.user.ho_ten }} · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
+  <li class="breadcrumb-item"><a href="{% url 'gia_su_danh_sach' %}">Hồ sơ gia sư</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ ho_so.user.ho_ten }}</li>
+</ol></nav>
+
+<div class="dau-trang">
+  <div>
+    <h1 class="mb-1">{{ ho_so.user.ho_ten }}</h1>
+    <p class="mo-ta">{{ ho_so.user.email }}{% if ho_so.user.so_dien_thoai %} · {{ ho_so.user.so_dien_thoai }}{% endif %}</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    {% nhan_trang_thai ho_so "trang_thai" %}
+    {% if user.la_admin %}
+      <form method="post" action="{% url 'gia_su_doi_trang_thai' ho_so.pk %}" class="d-inline">{% csrf_token %}
+        {% if ho_so.trang_thai == "HOAT_DONG" %}
+          <input type="hidden" name="trang_thai" value="TAM_NGUNG">
+          <button class="btn btn-outline-danger" onclick="return confirm('Tạm ngừng hồ sơ {{ ho_so.user.ho_ten }}? Gia sư sẽ không nhận được lời mời mới.')"><i class="bi bi-pause-circle" aria-hidden="true"></i>Tạm ngừng</button>
+        {% else %}
+          <input type="hidden" name="trang_thai" value="HOAT_DONG">
+          <button class="btn btn-primary"><i class="bi bi-check-circle" aria-hidden="true"></i>Cho hoạt động</button>
+        {% endif %}
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header">Thông tin chuyên môn</div>
+      <div class="card-body small">
+        <div class="text-muted">Trình độ / bằng cấp</div><div class="mb-3">{{ ho_so.trinh_do|default:"—" }}</div>
+        <div class="text-muted">Kinh nghiệm</div><div class="mb-3">{{ ho_so.kinh_nghiem|default:"—"|linebreaksbr }}</div>
+        <div class="text-muted">Email Zoom</div><div>{{ ho_so.email_zoom|default:"Chưa có (dùng tài khoản Zoom chung của trung tâm)" }}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Lịch rảnh</div>
+      <div class="card-body">
+        {% for l in ds_lich %}<div class="small so mb-1"><i class="bi bi-clock me-1 text-muted" aria-hidden="true"></i>{{ l }}</div>
+        {% empty %}<div class="small text-muted">Gia sư chưa khai báo lịch rảnh.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-header">Môn dạy</div>
+      <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>Môn</th><th>Cấp độ</th><th>Trạng thái</th>{% if user.la_admin %}<th>Xử lý</th>{% endif %}</tr></thead>
+        <tbody>
+        {% for mg in ds_mon %}
+          <tr>
+            <td class="fw-semibold">{{ mg.mon_hoc }}</td>
+            <td>{{ mg.cap_do|default:"—" }}</td>
+            <td>{% nhan_trang_thai mg "trang_thai" %}
+              {% if mg.duyet_boi %}<div class="small text-muted mt-1">{{ mg.duyet_boi.ho_ten }} · {{ mg.duyet_luc|date:"d/m/Y" }}</div>{% endif %}
+              {% if mg.ghi_chu_duyet %}<div class="small text-muted">“{{ mg.ghi_chu_duyet }}”</div>{% endif %}</td>
+            {% if user.la_admin %}
+            <td style="min-width:300px">
+              <form method="post" action="{% url 'gia_su_xu_ly_mon' mg.pk %}" class="d-flex gap-2 align-items-start">{% csrf_token %}
+                <label class="visually-hidden" for="ly_do_{{ mg.pk }}">Ghi chú / lý do</label>
+                <input id="ly_do_{{ mg.pk }}" name="ly_do" class="form-control form-control-sm" placeholder="{% if mg.trang_thai == 'DA_DUYET' %}Lý do thu hồi{% else %}Ghi chú / lý do từ chối{% endif %}">
+                {% if mg.trang_thai == "CHO_DUYET" %}
+                  <button name="hanh_dong" value="duyet" class="btn btn-sm btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Duyệt</button>
+                  <button name="hanh_dong" value="tu_choi" class="btn btn-sm btn-outline-danger">Từ chối</button>
+                {% elif mg.trang_thai == "DA_DUYET" %}
+                  <button name="hanh_dong" value="thu_hoi" class="btn btn-sm btn-outline-danger" onclick="return confirm('Thu hồi môn {{ mg.mon_hoc }} đã duyệt?')">Thu hồi</button>
+                {% else %}
+                  <button name="hanh_dong" value="duyet" class="btn btn-sm btn-outline-primary">Duyệt lại</button>
+                {% endif %}
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+        {% empty %}
+          <tr><td colspan="4"><div class="trang-rong"><i class="bi bi-book" aria-hidden="true"></i>Gia sư chưa đăng ký môn nào.</div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

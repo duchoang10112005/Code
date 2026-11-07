@@ -1,0 +1,11 @@
+{# Dùng: {% include "partials/the_so.html" with nhan="..." so=... icon="..." can_xu_ly=True link=url link_chu="Xử lý ngay" %} #}
+<div class="col-sm-6 col-xl-4">
+  <div class="card the-so {% if can_xu_ly and so %}can-xu-ly{% endif %}">
+    <div class="bieu-tuong"><i class="bi bi-{{ icon }}" aria-hidden="true"></i></div>
+    <div>
+      <div class="gia-tri">{{ so }}</div>
+      <div class="nhan">{{ nhan }}</div>
+      {% if link and so %}<a href="{{ link }}" class="small">{{ link_chu|default:"Xem" }} →</a>{% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Tổng quan hệ thống hôm nay</p></div>
+  <a href="{% url 'tai_khoan_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo tài khoản</a>
+</div>
+<div class="row g-3 mb-4">
+  {% url 'tai_khoan_danh_sach' as ds_tk %}
+  {% include "partials/the_so.html" with nhan="Tài khoản" so=so_tai_khoan icon="people" %}
+  {% include "partials/the_so.html" with nhan="Tài khoản bị khóa" so=so_bi_khoa icon="lock" link=ds_tk|add:"?trang_thai=khoa" link_chu="Xem danh sách" %}
+  {% include "partials/the_so.html" with nhan="Gia sư đang hoạt động" so=so_gia_su icon="person-badge" %}
+  {% include "partials/the_so.html" with nhan="Học viên" so=so_hoc_vien icon="person-lines-fill" %}
+  {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" %}
+  {% include "partials/the_so.html" with nhan="Buổi đang xem xét" so=so_buoi_xem_xet icon="eye" can_xu_ly=True %}
+</div>
+<div class="alert alert-info"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><div>Dashboard vận hành đầy đủ (vấn đề cần xử lý, thống kê) sẽ có ở Phần 6.</div></div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Nhật ký thao tác{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Nhật ký thao tác</h1><p class="mo-ta">Ai đã làm gì, lúc nào — phục vụ truy vết (PB-23)</p></div>
+</div>
+<form class="row g-2 mb-3" method="get" role="search">
+  <div class="col-md-6"><label class="visually-hidden" for="q">Tìm kiếm</label>
+    <input id="q" name="q" value="{{ q }}" class="form-control" placeholder="Tìm hành động, đối tượng, chi tiết"></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-search" aria-hidden="true"></i>Tìm</button></div>
+</form>
+<div class="card"><div class="table-responsive">
+<table class="table">
+  <thead><tr><th>Thời điểm</th><th>Người thực hiện</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th></tr></thead>
+  <tbody>
+  {% for nk in trang %}
+    <tr>
+      <td class="text-nowrap so text-muted">{{ nk.thoi_diem|date:"d/m/Y H:i:s" }}</td>
+      <td>{{ nk.nguoi_thuc_hien.ho_ten|default:"Hệ thống" }}</td>
+      <td class="fw-semibold">{{ nk.hanh_dong }}</td>
+      <td>{{ nk.doi_tuong }}</td>
+      <td class="text-muted">{{ nk.chi_tiet }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5"><div class="trang-rong"><i class="bi bi-journal" aria-hidden="true"></i>Chưa có nhật ký nào.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% include "partials/phan_trang.html" %}
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Hồ sơ của tôi · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div>
+    <h1 class="mb-1">Hồ sơ của tôi</h1>
+    <p class="mo-ta">Trung tâm dùng hồ sơ này để chọn gia sư phù hợp và gửi lời mời nhận lớp.</p>
+  </div>
+  <div>{% nhan_trang_thai ho_so "trang_thai" %}</div>
+</div>
+
+{% if ho_so.trang_thai == "CHO_DUYET" %}
+  <div class="alert alert-warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i>
+    <div>Hồ sơ đang chờ trung tâm duyệt. Hãy đăng ký môn dạy và điền lịch rảnh để được duyệt nhanh hơn.</div></div>
+{% elif ho_so.trang_thai == "TAM_NGUNG" %}
+  <div class="alert alert-warning"><i class="bi bi-pause-circle-fill" aria-hidden="true"></i>
+    <div>Hồ sơ đang tạm ngừng — bạn sẽ không nhận được lời mời nhận lớp mới. Liên hệ trung tâm nếu cần mở lại.</div></div>
+{% endif %}
+
+<div class="row g-4">
+  {# ---------------- Cột trái: thông tin chung ---------------- #}
+  <div class="col-xl-5">
+    <div class="card">
+      <div class="card-header">Thông tin chung</div>
+      <div class="card-body">
+        <dl class="row small mb-3">
+          <dt class="col-4 text-muted fw-normal">Họ tên</dt><dd class="col-8">{{ user.ho_ten }}</dd>
+          <dt class="col-4 text-muted fw-normal">Email</dt><dd class="col-8">{{ user.email|default:"—" }}</dd>
+        </dl>
+        <form method="post" action="{% url 'ho_so_cap_nhat' %}" novalidate>{% csrf_token %}
+          {% with form=form_ho_so %}{% include "partials/form_fields.html" %}{% endwith %}
+          <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu thông tin</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Cột phải: môn dạy + lịch rảnh ---------------- #}
+  <div class="col-xl-7">
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Môn dạy</span>
+        <span class="small text-muted fw-normal">Môn đã duyệt chỉ Admin thay đổi được</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead><tr><th>Môn</th><th>Cấp độ</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
+          <tbody>
+          {% for mg in ds_mon %}
+            <tr>
+              <td class="fw-semibold">{{ mg.mon_hoc }}</td>
+              <td>{{ mg.cap_do|default:"—" }}</td>
+              <td>{% nhan_trang_thai mg "trang_thai" %}
+                {% if mg.trang_thai == "TU_CHOI" and mg.ghi_chu_duyet %}<div class="small text-muted mt-1">Lý do: {{ mg.ghi_chu_duyet }}</div>{% endif %}</td>
+              <td class="cot-thao-tac">
+                {% if mg.trang_thai != "DA_DUYET" %}
+                <form method="post" action="{% url 'ho_so_rut_mon' mg.pk %}" class="d-inline"
+                      onsubmit="return confirm('Rút đăng ký môn {{ mg.mon_hoc }}?')">{% csrf_token %}
+                  <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Rút</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4"><div class="trang-rong"><i class="bi bi-book" aria-hidden="true"></i>Bạn chưa đăng ký môn nào.</div></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-body border-top">
+        <form method="post" action="{% url 'ho_so_dang_ky_mon' %}" class="row g-2 align-items-end" novalidate>{% csrf_token %}
+          {% if form_mon.non_field_errors %}<div class="col-12"><div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ form_mon.non_field_errors|join:" " }}</div></div>{% endif %}
+          <div class="col-md-5">
+            <label class="form-label" for="{{ form_mon.mon_hoc.id_for_label }}">Môn học</label>{{ form_mon.mon_hoc }}
+            {% for e in form_mon.mon_hoc.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form_mon.cap_do.id_for_label }}">Cấp độ dạy</label>{{ form_mon.cap_do }}
+            {% for e in form_mon.cap_do.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-3"><button class="btn btn-outline-primary w-100"><i class="bi bi-plus-lg" aria-hidden="true"></i>Đăng ký môn</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Lịch rảnh trong tuần</div>
+      <div class="card-body">
+        {% if ds_lich %}
+          <ul class="list-unstyled d-flex flex-wrap gap-2 mb-0">
+          {% for l in ds_lich %}
+            <li class="d-inline-flex align-items-center gap-1 border rounded-pill ps-3 pe-1 py-1 small">
+              <i class="bi bi-clock" aria-hidden="true"></i><span class="so">{{ l }}</span>
+              <form method="post" action="{% url 'ho_so_xoa_lich' l.pk %}" class="d-inline">{% csrf_token %}
+                <button class="btn btn-sm border-0 text-muted" style="min-height:1.75rem" aria-label="Xóa khung {{ l }}"><i class="bi bi-x-lg"></i></button>
+              </form>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <div class="trang-rong py-3"><i class="bi bi-calendar-x" aria-hidden="true"></i>Chưa có khung giờ rảnh nào.</div>
+        {% endif %}
+      </div>
+      <div class="card-body border-top">
+        <form method="post" action="{% url 'ho_so_them_lich' %}" class="row g-2 align-items-end" novalidate>{% csrf_token %}
+          {% if form_lich.non_field_errors %}<div class="col-12"><div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ form_lich.non_field_errors|join:" " }}</div></div>{% endif %}
+          <div class="col-md-4"><label class="form-label" for="{{ form_lich.thu.id_for_label }}">Thứ</label>{{ form_lich.thu }}</div>
+          <div class="col-md-3"><label class="form-label" for="{{ form_lich.tu_gio.id_for_label }}">Từ</label>{{ form_lich.tu_gio }}
+            {% for e in form_lich.tu_gio.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}</div>
+          <div class="col-md-3"><label class="form-label" for="{{ form_lich.den_gio.id_for_label }}">Đến</label>{{ form_lich.den_gio }}
+            {% for e in form_lich.den_gio.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}</div>
+          <div class="col-md-2"><button class="btn btn-outline-primary w-100"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
