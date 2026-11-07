@@ -228,3 +228,51 @@ class PB06PhanHoiTest(DuLieu):
         self.assertContains(r, "Thi vào 10")
         self.assertNotContains(r, "84905123456")
         self.assertNotContains(r, "Phụ Huynh")
+
+
+class SuaLoiCodeReviewYeuCauTest(DuLieu):
+    """Hồi quy cho các lỗi code-review tìm ra (07/11/2026)."""
+
+    def setUp(self):
+        super().setUp()
+        self.lm_a = self.moi(self.gs_a)[0]
+
+    def assert_loi_moi_bi_huy(self):
+        self.lm_a.refresh_from_db()
+        self.assertEqual(self.lm_a.trang_thai, LM.VOIDED)
+
+    def test_PB22_khoa_tai_khoan_gia_su_huy_loi_moi_dang_cho(self):
+        self.dang_nhap(self.admin)
+        self.client.post(reverse("tai_khoan_doi_trang_thai", args=[self.gs_a.pk]))
+        self.assert_loi_moi_bi_huy()
+
+    def test_PB22_doi_vai_tro_gia_su_huy_loi_moi_dang_cho(self):
+        self.dang_nhap(self.admin)
+        self.client.post(reverse("tai_khoan_sua", args=[self.gs_a.pk]), {
+            "ho_ten": "An", "email": "gsa@test.local", "so_dien_thoai": "", "vai_tro": User.VaiTro.TUYEN_SINH})
+        self.assert_loi_moi_bi_huy()
+
+    def test_PB22_tam_ngung_ho_so_huy_loi_moi_dang_cho(self):
+        from core.services.gia_su import doi_trang_thai_ho_so
+        doi_trang_thai_ho_so(self.admin, self.gs_a.ho_so_gia_su, HoSoGiaSu.TrangThai.TAM_NGUNG)
+        self.assert_loi_moi_bi_huy()
+
+    def test_PB22_thu_hoi_mon_huy_loi_moi_cua_mon_do(self):
+        from core.services.gia_su import tu_choi_mon
+        tu_choi_mon(self.admin, MonGiaSu.objects.get(ho_so__user=self.gs_a), "Phản hồi xấu")
+        self.assert_loi_moi_bi_huy()
+
+    def test_PB03_id_trung_khong_bao_bo_qua_sai(self):
+        moi, bo_qua = dv.gui_loi_moi(self.nvts, self.yc, [self.gs_b.pk, self.gs_b.pk])
+        self.assertEqual((len(moi), bo_qua), (1, 0))
+
+    def test_PB03_doi_tuong_cu_khong_gui_duoc_loi_moi_cho_yeu_cau_da_phan_cong(self):
+        cu = YeuCauHocTap.objects.get(pk=self.yc.pk)  # đọc trước khi có người nhận
+        dv.chap_nhan(self.gs_a, self.lm_a)
+        with self.assertRaises(ValidationError):
+            dv.gui_loi_moi(self.nvts, cu, [self.gs_b.pk])
+        self.assertFalse(LoiMoi.objects.filter(gia_su=self.gs_b).exists())
+
+    def test_PB03_email_loi_moi_co_link_day_du(self):
+        self.assertIn("http://", mail.outbox[0].body)
+        self.assertIn("/loi-moi/", mail.outbox[0].body)

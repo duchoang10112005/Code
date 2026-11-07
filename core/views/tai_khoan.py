@@ -5,12 +5,14 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from core.forms import SuaTaiKhoanForm, TaoTaiKhoanForm
 from core.models import HoSoGiaSu, NhatKy, User
 from core.permissions import ADMIN, vai_tro_required
 from core.services.nhat_ky import ghi_nhat_ky
+from core.services.yeu_cau import huy_loi_moi_cua_gia_su
 
 
 def _dam_bao_ho_so_gia_su(user):
@@ -71,6 +73,8 @@ def sua(request, pk):
                 chi_tiet = []
                 if vai_tro_cu != user.vai_tro:
                     chi_tiet.append(f"Đổi vai trò: {User.VaiTro(vai_tro_cu).label} → {user.get_vai_tro_display()}")
+                    if vai_tro_cu == User.VaiTro.GIA_SU:
+                        huy_loi_moi_cua_gia_su(user, "Tài khoản không còn là gia sư")
                 if mk:
                     chi_tiet.append("Đặt lại mật khẩu")
                 ghi_nhat_ky(request.user, "Sửa tài khoản", user.username, "; ".join(chi_tiet) or "Cập nhật thông tin")
@@ -93,8 +97,15 @@ def doi_trang_thai(request, pk):
     user.save(update_fields=["is_active"])
     hanh_dong = "Mở khóa tài khoản" if user.is_active else "Khóa tài khoản"
     ghi_nhat_ky(request.user, hanh_dong, user.username)
+    if not user.is_active:
+        huy_loi_moi_cua_gia_su(user, "Tài khoản bị khóa")
     messages.success(request, f"{hanh_dong}: {user.username}.")
-    return redirect(request.POST.get("next") or "tai_khoan_danh_sach")
+    # Chỉ quay lại địa chỉ nội bộ (chặn chuyển hướng ra trang ngoài qua tham số next).
+    tiep = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(tiep, allowed_hosts={request.get_host()},
+                                           require_https=request.is_secure()):
+        tiep = "tai_khoan_danh_sach"
+    return redirect(tiep)
 
 
 @vai_tro_required(ADMIN)

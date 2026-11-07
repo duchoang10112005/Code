@@ -171,3 +171,24 @@ class PB19LocGiaSuTest(DuLieu):
         self.dang_nhap(self.gs)
         self.assertEqual(self.client.get(reverse("gia_su_danh_sach")).status_code, 403)
         self.assertEqual(self.client.get(reverse("gia_su_chi_tiet", args=[self.ho_so2.pk])).status_code, 403)
+
+
+class SuaLoiCodeReviewGiaSuTest(PB19LocGiaSuTest):
+    """Hồi quy cho các lỗi code-review tìm ra (07/11/2026)."""
+
+    def test_PB19_loc_ngay_ranh_khong_nhan_doi_so_mon_cho_duyet(self):
+        # gs2 có 2 khung rảnh cùng Thứ 4 và 1 môn chờ duyệt → vẫn phải đếm là 1.
+        LichRanh.objects.create(ho_so=self.ho_so2, thu=2, tu_gio=time(20), den_gio=time(21))
+        self.dang_nhap(self.admin)
+        r = self.client.get(reverse("gia_su_danh_sach"), {"thu": 2})
+        ds = list(r.context["trang"])
+        self.assertEqual([(hs.user.username, hs.so_cho_duyet) for hs in ds], [("gs2", 1)])
+
+    def test_PB04_duyet_mon_hai_lan_chi_ghi_mot_lan(self):
+        mg = MonGiaSu.objects.get(ho_so=self.ho_so2, mon_hoc=self.toan)
+        self.dang_nhap(self.admin)
+        url = reverse("gia_su_xu_ly_mon", args=[mg.pk])
+        self.client.post(url, {"hanh_dong": "duyet"})
+        self.client.post(url, {"hanh_dong": "duyet"})
+        self.assertEqual(NhatKy.objects.filter(hanh_dong="Duyệt môn dạy").count(), 1)
+        self.assertEqual(len(mail.outbox), 1)

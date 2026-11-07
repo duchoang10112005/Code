@@ -9,6 +9,7 @@ nên một trạng thái luôn hiển thị giống nhau ở mọi màn hình.
 
 from django import template
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -85,7 +86,8 @@ def nhan_tuy_chinh(gia_tri, chu):
 def nhan_tai_khoan(user):
     if user.is_active:
         return _nhan("HOAT_DONG", "Hoạt động")
-    return format_html('<span class="nhan-tt tone-danger"><i class="bi bi-lock-fill" aria-hidden="true"></i>Bị khóa</span>')
+    # Chuỗi cố định, không có dữ liệu người dùng → mark_safe (Django 6 không cho format_html không tham số).
+    return mark_safe('<span class="nhan-tt tone-danger"><i class="bi bi-lock-fill" aria-hidden="true"></i>Bị khóa</span>')
 
 
 @register.simple_tag

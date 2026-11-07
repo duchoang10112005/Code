@@ -14,3 +14,8 @@ def chuan_hoa_sdt(sdt):
     if re.fullmatch(r"84[35789]\d{8}", so):
         return so
     return None
+
+
+def thong_diep_loi(err):
+    """Gộp các thông điệp của một ValidationError thành một câu để hiện cho người dùng."""
+    return " ".join(err.messages) if hasattr(err, "messages") else str(err)

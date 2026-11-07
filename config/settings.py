@@ -124,6 +124,8 @@ if os.getenv("EMAIL_MODE", "console") == "smtp":
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Địa chỉ gốc của hệ thống, dùng để tạo link đầy đủ trong email gửi gia sư / NVTS.
+SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Trung tâm gia sư <no-reply@giasu.local>")
 
 

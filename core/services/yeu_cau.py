@@ -10,8 +10,9 @@ database chỉ cho đúng một câu UPDATE khớp điều kiện, nên hai gia 
 cũng chỉ một người được phân công — kể cả trên SQLite (không có khóa dòng).
 """
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils import timezone
@@ -43,6 +44,18 @@ def gia_su_du_dieu_kien(mon_hoc):
 
 def la_du_dieu_kien(user, mon_hoc):
     return gia_su_du_dieu_kien(mon_hoc).filter(user=user).exists()
+
+
+def huy_loi_moi_cua_gia_su(user, ly_do, mon_hoc=None):
+    """Gia sư không còn đủ điều kiện (bị khóa, đổi vai trò, hồ sơ tạm ngừng, bị thu hồi môn)
+    → hủy ngay các lời mời đang chờ, để NVTS thấy yêu cầu "Cần mời thêm" thay vì chờ 24h."""
+    qs = LoiMoi.objects.filter(gia_su=user, trang_thai=LM.CHO)
+    if mon_hoc is not None:
+        qs = qs.filter(yeu_cau__mon_hoc=mon_hoc)
+    n = qs.update(trang_thai=LM.VOIDED, phan_hoi_luc=timezone.now(), ly_do_tu_choi=ly_do[:300])
+    if n:
+        ghi_nhat_ky(None, "Hủy lời mời đang chờ", user.username, f"{n} lời mời – {ly_do}")
+    return n
 
 
 # =============================================================================
@@ -92,20 +105,27 @@ def de_xuat_gia_su(yeu_cau):
 # 3.3 Gửi lời mời nhận lớp
 # =============================================================================
 def gui_loi_moi(nvts, yeu_cau, ds_user_id):
-    if yeu_cau.trang_thai not in (YC.MOI, YC.DANG_TIM):
-        raise ValidationError("Chỉ gửi lời mời cho yêu cầu đang Mới hoặc Đang tìm gia sư.")
+    ds_user_id = set(ds_user_id)  # bỏ id trùng trong POST
     if not ds_user_id:
         raise ValidationError("Hãy chọn ít nhất một gia sư.")
     quet_loi_moi_het_han()
 
     hop_le = gia_su_du_dieu_kien(yeu_cau.mon_hoc).filter(user_id__in=ds_user_id)
-    da_moi = set(yeu_cau.loi_moi.filter(trang_thai=LM.CHO).values_list("gia_su_id", flat=True))
     moi = []
     with transaction.atomic():
+        # Kiểm tra lại trạng thái NGAY trong transaction (đối tượng truyền vào có thể đã cũ:
+        # yêu cầu vừa được Accept hoặc bị đóng ở một request khác).
+        if not YeuCauHocTap.objects.filter(pk=yeu_cau.pk, trang_thai__in=[YC.MOI, YC.DANG_TIM]).exists():
+            raise ValidationError("Chỉ gửi lời mời cho yêu cầu đang Mới hoặc Đang tìm gia sư.")
+        da_moi = set(yeu_cau.loi_moi.filter(trang_thai=LM.CHO).values_list("gia_su_id", flat=True))
         for hs in hop_le:
             if hs.user_id in da_moi:
                 continue
-            moi.append(LoiMoi.objects.create(yeu_cau=yeu_cau, gia_su=hs.user, gui_boi=nvts))
+            try:
+                with transaction.atomic():  # savepoint: hai NVTS gửi cùng lúc → ràng buộc DB chặn bản thứ hai
+                    moi.append(LoiMoi.objects.create(yeu_cau=yeu_cau, gia_su=hs.user, gui_boi=nvts))
+            except IntegrityError:
+                continue
         if moi:
             YeuCauHocTap.objects.filter(pk=yeu_cau.pk, trang_thai=YC.MOI).update(
                 trang_thai=YC.DANG_TIM, cap_nhat_luc=timezone.now())
@@ -116,7 +136,7 @@ def gui_loi_moi(nvts, yeu_cau, ds_user_id):
                   f"Chào {lm.gia_su.ho_ten},\n\nTrung tâm mời bạn nhận lớp {yeu_cau.mon_hoc} ({yeu_cau.trinh_do}).\n"
                   f"Mục tiêu: {yeu_cau.muc_tieu}\nThời gian mong muốn: {yeu_cau.ten_thu_mong_muon} – {yeu_cau.lich_mong_muon}\n\n"
                   f"Lời mời có hiệu lực đến {timezone.localtime(lm.het_han_luc):%H:%M %d/%m/%Y}. "
-                  f"Vào mục Lời mời nhận lớp để phản hồi ({reverse('loi_moi_cua_toi')}).\n\nTrung tâm Gia sư Trực tuyến")
+                  f"Phản hồi tại: {settings.SITE_URL}{reverse('loi_moi_cua_toi')}\n\nTrung tâm Gia sư Trực tuyến")
     yeu_cau.refresh_from_db()
     bo_qua = len(ds_user_id) - len(moi)
     return moi, bo_qua

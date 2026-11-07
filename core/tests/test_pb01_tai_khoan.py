@@ -134,3 +134,15 @@ class PB01QuanLyTaiKhoanTest(TestCase):
         self.assertTrue(HoSoGiaSu.objects.filter(user=ts).exists())
         nk = NhatKy.objects.get(hanh_dong="Sửa tài khoản")
         self.assertIn("Nhân viên tuyển sinh → Gia sư", nk.chi_tiet)
+
+
+class SuaLoiCodeReviewTaiKhoanTest(TestCase):
+    def test_PB24_khoa_tai_khoan_khong_chuyen_huong_ra_trang_ngoai(self):
+        admin = tao_user("ad", User.VaiTro.ADMIN)
+        gs = tao_user("gs", User.VaiTro.GIA_SU)
+        self.client.login(username="ad", password=MK)
+        r = self.client.post(reverse("tai_khoan_doi_trang_thai", args=[gs.pk]),
+                             {"next": "https://trang-gia-mao.example/dang-nhap"})
+        self.assertRedirects(r, reverse("tai_khoan_danh_sach"))
+        r = self.client.post(reverse("tai_khoan_doi_trang_thai", args=[gs.pk]), {"next": "/tai-khoan/?q=gs"})
+        self.assertRedirects(r, "/tai-khoan/?q=gs")

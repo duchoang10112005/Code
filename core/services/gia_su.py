@@ -15,6 +15,7 @@ from django.utils import timezone
 from core.models import HoSoGiaSu, LichRanh, MonGiaSu
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
+from core.services.yeu_cau import huy_loi_moi_cua_gia_su
 
 
 # ---------- Phía gia sư ----------------------------------------------------
@@ -58,6 +59,8 @@ def _bao_gia_su(ho_so, tieu_de, noi_dung):
 
 @transaction.atomic
 def duyet_mon(admin, mon_gia_su, ghi_chu=""):
+    if mon_gia_su.trang_thai == MonGiaSu.TrangThai.DA_DUYET:
+        raise ValidationError(f"Môn {mon_gia_su.mon_hoc} đã được duyệt rồi.")  # chống bấm 2 lần / F5
     mon_gia_su.trang_thai = MonGiaSu.TrangThai.DA_DUYET
     mon_gia_su.duyet_boi, mon_gia_su.duyet_luc = admin, timezone.now()
     mon_gia_su.ghi_chu_duyet = ghi_chu
@@ -72,6 +75,8 @@ def duyet_mon(admin, mon_gia_su, ghi_chu=""):
 def tu_choi_mon(admin, mon_gia_su, ly_do):
     if not ly_do.strip():
         raise ValidationError("Cần ghi lý do từ chối để gia sư biết cách bổ sung.")
+    if mon_gia_su.trang_thai == MonGiaSu.TrangThai.TU_CHOI:
+        raise ValidationError(f"Môn {mon_gia_su.mon_hoc} đã ở trạng thái từ chối.")
     da_duyet_truoc = mon_gia_su.trang_thai == MonGiaSu.TrangThai.DA_DUYET
     mon_gia_su.trang_thai = MonGiaSu.TrangThai.TU_CHOI
     mon_gia_su.duyet_boi, mon_gia_su.duyet_luc = admin, timezone.now()
@@ -82,6 +87,8 @@ def tu_choi_mon(admin, mon_gia_su, ly_do):
     _bao_gia_su(mon_gia_su.ho_so, f"Môn {mon_gia_su.mon_hoc} chưa được duyệt",
                 f"Môn {mon_gia_su.mon_hoc} của bạn {'đã bị thu hồi' if da_duyet_truoc else 'chưa được duyệt'}.\n"
                 f"Lý do: {ly_do}\nBạn có thể bổ sung thông tin và đăng ký lại trong mục Hồ sơ của tôi.")
+    if da_duyet_truoc:
+        huy_loi_moi_cua_gia_su(mon_gia_su.ho_so.user, "Bị thu hồi môn", mon_hoc=mon_gia_su.mon_hoc)
     # Hồ sơ đang hoạt động mà không còn môn nào được duyệt → tạm ngừng.
     ho_so = mon_gia_su.ho_so
     if ho_so.trang_thai == HoSoGiaSu.TrangThai.HOAT_DONG and not ho_so.mon_day.filter(
@@ -101,6 +108,8 @@ def doi_trang_thai_ho_so(admin, ho_so, trang_thai_moi):
     cu = ho_so.get_trang_thai_display()
     ho_so.trang_thai = trang_thai_moi
     ho_so.save(update_fields=["trang_thai"])
+    if trang_thai_moi != HoSoGiaSu.TrangThai.HOAT_DONG:
+        huy_loi_moi_cua_gia_su(ho_so.user, f"Hồ sơ chuyển sang {ho_so.get_trang_thai_display()}")
     ghi_nhat_ky(admin, "Đổi trạng thái hồ sơ gia sư", ho_so.user.username, f"{cu} → {ho_so.get_trang_thai_display()}")
     _bao_gia_su(ho_so, "Cập nhật trạng thái hồ sơ",
                 f"Hồ sơ gia sư của bạn chuyển sang trạng thái: {ho_so.get_trang_thai_display()}.")

@@ -3,7 +3,8 @@
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -11,10 +12,7 @@ from core.forms import DangKyMonForm, HoSoGiaSuForm, LichRanhForm, LocGiaSuForm
 from core.models import HoSoGiaSu, LichRanh, MonGiaSu, User
 from core.permissions import ADMIN, GIA_SU, TUYEN_SINH, vai_tro_required
 from core.services import gia_su as dv
-
-
-def _loi(err):
-    return " ".join(err.messages) if hasattr(err, "messages") else str(err)
+from core.services.tien_ich import thong_diep_loi as _loi
 
 
 # =============================================================================
@@ -111,9 +109,13 @@ def xoa_lich(request, pk):
 @vai_tro_required(ADMIN, TUYEN_SINH)
 def danh_sach(request):
     form = LocGiaSuForm(request.GET or None)
+    # Đếm môn chờ duyệt bằng subquery riêng, và lọc theo môn / ngày rảnh bằng pk__in, để các
+    # bộ lọc trên quan hệ nhiều-nhiều không làm nhân bản dòng và đếm sai.
+    dem_cho_duyet = (MonGiaSu.objects.filter(ho_so=OuterRef("pk"), trang_thai=MonGiaSu.TrangThai.CHO_DUYET)
+                     .order_by().values("ho_so").annotate(c=Count("pk")).values("c"))
     # Chỉ tài khoản hiện đang là Gia sư (hồ sơ của người đã đổi vai trò được giữ lại nhưng ẩn đi).
     qs = (HoSoGiaSu.objects.select_related("user").filter(user__vai_tro=User.VaiTro.GIA_SU)
-          .annotate(so_cho_duyet=Count("mon_day", filter=Q(mon_day__trang_thai=MonGiaSu.TrangThai.CHO_DUYET)))
+          .annotate(so_cho_duyet=Coalesce(Subquery(dem_cho_duyet), 0))
           .prefetch_related("mon_day__mon_hoc")
           .order_by("-so_cho_duyet", "user__ho_ten"))
     if form.is_valid():
@@ -121,14 +123,14 @@ def danh_sach(request):
         if d["q"]:
             qs = qs.filter(Q(user__ho_ten__icontains=d["q"]) | Q(user__email__icontains=d["q"]))
         if d["mon"]:
-            qs = qs.filter(mon_day__mon_hoc=d["mon"], mon_day__trang_thai=MonGiaSu.TrangThai.DA_DUYET)
+            qs = qs.filter(pk__in=MonGiaSu.objects.filter(
+                mon_hoc=d["mon"], trang_thai=MonGiaSu.TrangThai.DA_DUYET).values("ho_so"))
         if d["trang_thai"]:
             qs = qs.filter(trang_thai=d["trang_thai"])
         if d["thu"] != "" and d["thu"] is not None:
-            qs = qs.filter(lich_ranh__thu=int(d["thu"]))
+            qs = qs.filter(pk__in=LichRanh.objects.filter(thu=int(d["thu"])).values("ho_so"))
         if d["cho_duyet"]:
             qs = qs.filter(so_cho_duyet__gt=0)
-    qs = qs.distinct()
     trang = Paginator(qs, 20).get_page(request.GET.get("page"))
     return render(request, "core/gia_su/danh_sach.html", {"trang": trang, "form": form})
 

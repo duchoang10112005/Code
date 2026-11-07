@@ -16,13 +16,10 @@ from core.models import HocVien, LoiMoi, YeuCauHocTap
 from core.permissions import ADMIN, GIA_SU, TUYEN_SINH, vai_tro_required
 from core.services import yeu_cau as dv
 from core.services.nhat_ky import ghi_nhat_ky
+from core.services.tien_ich import thong_diep_loi as _loi
 
 YC = YeuCauHocTap.TrangThai
 LM = LoiMoi.TrangThai
-
-
-def _loi(err):
-    return " ".join(err.messages) if hasattr(err, "messages") else str(err)
 
 
 def _co_the_sua(yc):
