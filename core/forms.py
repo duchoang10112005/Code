@@ -2,9 +2,9 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.password_validation import validate_password
 
-from .models import (GoiKhoaHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, NhomGia, User,
+from .models import (CapDo, GoiKhoaHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoaiMon, MonGiaSu, MonHoc, User,
                      YeuCauHocTap)
-from .services.tien_ich import chuan_hoa_sdt, dinh_dang_phan_tram
+from .services.tien_ich import chuan_hoa_sdt, dinh_dang_phan_tram, dinh_dang_tien
 
 
 class BootstrapMixin:
@@ -210,8 +210,9 @@ class YeuCauForm(BootstrapMixin, forms.ModelForm):
 
     class Meta:
         model = YeuCauHocTap
-        fields = ["mon_hoc", "trinh_do", "muc_tieu", "thu_mong_muon", "lich_mong_muon"]
+        fields = ["mon_hoc", "cap_do", "trinh_do", "muc_tieu", "thu_mong_muon", "lich_mong_muon"]
         labels = {"lich_mong_muon": "Khung giờ mong muốn"}
+        help_texts = {"cap_do": "Quyết định học phí mỗi giờ. Khi tạo khóa vẫn đổi được nếu phụ huynh muốn."}
         widgets = {
             "muc_tieu": forms.Textarea(attrs={"rows": 3}),
             "trinh_do": forms.TextInput(attrs={"placeholder": "VD: Lớp 9, mất gốc hình học"}),
@@ -221,10 +222,28 @@ class YeuCauForm(BootstrapMixin, forms.ModelForm):
     def __init__(self, *args, khoa_mon=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["mon_hoc"].empty_label = "— Chọn môn —"
+        self.fields["cap_do"].required = True
+        self.fields["cap_do"].empty_label = "— Chọn cấp độ —"
+        self.fields["cap_do"].queryset = CapDo.objects.select_related("loai_mon")
+        self.fields["cap_do"].label_from_instance = lambda c: f"{c.ten} – {dinh_dang_tien(c.don_gia_gio)}/giờ"
+        # data-loai cho JS lọc cấp độ theo môn đã chọn
+        self.fields["mon_hoc"].widget.attrs["data-loai-mon"] = "1"
         if khoa_mon:
             # Đã gửi lời mời theo môn này → không cho đổi môn nữa.
             self.fields["mon_hoc"].disabled = True
             self.fields["mon_hoc"].help_text = "Không đổi được môn vì đã gửi lời mời cho gia sư."
+
+    def clean(self):
+        d = super().clean()
+        _kiem_tra_cap_do(self, d.get("mon_hoc"), d.get("cap_do"))
+        return d
+
+
+def _kiem_tra_cap_do(form, mon, cap_do, ten_truong="cap_do"):
+    if mon and cap_do and mon.loai_mon_id != cap_do.loai_mon_id:
+        form.add_error(ten_truong, f"Cấp độ \"{cap_do.ten}\" không thuộc loại môn của {mon} "
+                                   f"({mon.loai_mon or 'chưa gán loại môn'}).")
+
 
 
 class LocYeuCauForm(BootstrapMixin, forms.Form):
@@ -255,13 +274,17 @@ class KetQuaHocThuForm(BootstrapMixin, forms.Form):
 
 
 class TaoKhoaHocForm(BootstrapMixin, forms.Form):
-    """NVTS chỉ chọn gói và khung giờ; học phí / thù lao do hệ thống tính theo Bảng giá."""
+    """NVTS chỉ chọn cấp độ, gói và khung giờ; học phí / thù lao do hệ thống tính theo Bảng giá."""
+    cap_do = forms.ModelChoiceField(label="Cấp độ học", queryset=CapDo.objects.none(), widget=forms.RadioSelect,
+                                    empty_label=None)
     so_buoi = forms.TypedChoiceField(label="Gói khóa học", coerce=int, widget=forms.RadioSelect)
     thoi_luong_phut = forms.TypedChoiceField(label="Thời lượng mỗi buổi", coerce=int, widget=forms.RadioSelect,
                                              choices=KhoaHoc.ThoiLuong.choices, initial=KhoaHoc.ThoiLuong.GIO_1_5)
 
-    def __init__(self, *args, goi=None, **kwargs):
+    def __init__(self, *args, goi=None, loai_mon=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["cap_do"].queryset = CapDo.objects.filter(loai_mon=loai_mon) if loai_mon else CapDo.objects.none()
+        self.fields["cap_do"].label_from_instance = lambda c: f"{c.ten} · {dinh_dang_tien(c.don_gia_gio)}/giờ"
         goi = goi or {}
         self.fields["so_buoi"].choices = [
             (so, f"{so} buổi" + (f" – giảm {dinh_dang_phan_tram(g.ty_le_giam)}" if g.ty_le_giam else "")) for so, g in sorted(goi.items())
@@ -270,11 +293,17 @@ class TaoKhoaHocForm(BootstrapMixin, forms.Form):
             self.fields["so_buoi"].initial = min(goi)
 
 
-class NhomGiaForm(BootstrapMixin, forms.ModelForm):
+class CapDoForm(BootstrapMixin, forms.ModelForm):
     class Meta:
-        model = NhomGia
-        fields = ["don_gia_gio", "ty_le_trung_tam"]
+        model = CapDo
+        fields = ["loai_mon", "ten", "mo_ta", "don_gia_gio", "ty_le_trung_tam", "thu_tu"]
         labels = {"don_gia_gio": "Đơn giá / giờ (đ)", "ty_le_trung_tam": "Trung tâm giữ lại (%)"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["loai_mon"].empty_label = "— Chọn loại môn —"
+        if self.instance.pk:  # sửa cấp độ có sẵn: không đổi loại môn
+            self.fields["loai_mon"].disabled = True
 
     def clean_ty_le_trung_tam(self):
         from .services.bang_gia import goi_dang_ap_dung
@@ -282,10 +311,17 @@ class NhomGiaForm(BootstrapMixin, forms.ModelForm):
         giam_max = max((g.ty_le_giam for g in goi_dang_ap_dung().values()), default=0)
         if tl < giam_max:
             raise forms.ValidationError(
-                f"Phải ≥ mức giảm giá lớn nhất đang áp dụng ({dinh_dang_phan_tram(giam_max)}), nếu không trung tâm sẽ lỗ mỗi buổi.")
+                f"Phải ≥ mức khuyến mãi lớn nhất đang chạy ({dinh_dang_phan_tram(giam_max)}), nếu không trung tâm sẽ lỗ mỗi buổi.")
         if not 0 <= tl < 100:
             raise forms.ValidationError("Tỉ lệ phải từ 0 đến dưới 100%.")
         return tl
+
+
+class LoaiMonForm(BootstrapMixin, forms.ModelForm):
+    class Meta:
+        model = LoaiMon
+        fields = ["ten"]
+        labels = {"ten": "Tên loại môn mới"}
 
 
 class GoiKhoaHocForm(BootstrapMixin, forms.ModelForm):

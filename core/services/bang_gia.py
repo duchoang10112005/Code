@@ -1,13 +1,16 @@
 """Bảng giá và tính học phí / thù lao tự động (thay cho việc NV tuyển sinh tự nhập số tiền).
 
-Công thức (mọi môn đều tính theo giờ):
-    giá gốc / buổi   = đơn giá giờ của nhóm môn × thời lượng (1h | 1,5h | 2h)
+Giá gắn với CẤP ĐỘ HỌC (không gắn với tên môn): mỗi môn thuộc một loại môn (Phổ thông, IELTS…),
+mỗi loại môn có các cấp độ (Cơ bản / Nâng cao; Nền tảng / Chuyên sâu…) với đơn giá giờ và % trung tâm riêng.
+
+Công thức:
+    giá gốc / buổi   = đơn giá giờ của cấp độ × thời lượng (1h | 1,5h | 2h)
     học phí / buổi   = giá gốc × (1 − % giảm của gói)            → làm tròn tới 1.000đ
     thù lao / buổi   = giá gốc × (1 − % trung tâm giữ lại)       → làm tròn tới 100đ
     tổng học phí     = học phí / buổi × số buổi của gói (10 | 20 | 30)
 
 Thù lao luôn tính trên GIÁ GỐC: phần giảm giá do trung tâm chịu, gia sư không bị thiệt.
-Vì vậy % giảm của gói không được vượt % trung tâm giữ lại của bất kỳ nhóm giá nào
+Vì vậy % khuyến mãi của gói không được vượt % trung tâm giữ lại của bất kỳ cấp độ nào
 (nếu không, trung tâm sẽ trả gia sư nhiều hơn số tiền thu của phụ huynh).
 """
 
@@ -18,7 +21,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Min, Q
 from django.utils import timezone
 
-from core.models import GoiKhoaHoc, KhoaHoc, NhomGia
+from core.models import CapDo, GoiKhoaHoc, KhoaHoc
 
 THOI_LUONG_HOP_LE = [c.value for c in KhoaHoc.ThoiLuong]
 
@@ -40,13 +43,13 @@ def goi_dang_ap_dung(ngay=None):
 
 
 def gioi_han_giam():
-    """% giảm tối đa cho phép = % trung tâm giữ lại nhỏ nhất trong các nhóm giá."""
-    return NhomGia.objects.aggregate(m=Min("ty_le_trung_tam"))["m"]
+    """% giảm tối đa cho phép = % trung tâm giữ lại nhỏ nhất trong các cấp độ."""
+    return CapDo.objects.aggregate(m=Min("ty_le_trung_tam"))["m"]
 
 
 @dataclass
 class BaoGia:
-    nhom_gia: NhomGia
+    cap_do: CapDo
     so_buoi: int
     thoi_luong_phut: int
     don_gia_gio: int
@@ -70,38 +73,41 @@ class BaoGia:
         return self.hoc_phi - self.thu_lao
 
 
-def tinh_gia(mon_hoc, so_buoi, thoi_luong_phut, ngay=None):
-    if not mon_hoc.nhom_gia_id:
-        raise ValidationError(f"Môn {mon_hoc} chưa được gán nhóm giá. Admin cần cập nhật Bảng giá.")
+def gia_mot_buoi(cap_do, thoi_luong_phut):
+    """(giá gốc, thù lao) của một buổi theo cấp độ và khung giờ."""
+    goc = Decimal(cap_do.don_gia_gio) * thoi_luong_phut / 60
+    return int(goc), lam_tron(goc * (100 - cap_do.ty_le_trung_tam) / 100, 100)
+
+
+def tinh_gia(mon_hoc, cap_do, so_buoi, thoi_luong_phut, ngay=None):
+    if cap_do is None:
+        raise ValidationError("Chưa chọn cấp độ học.")
+    if mon_hoc.loai_mon_id != cap_do.loai_mon_id:
+        raise ValidationError(f"Cấp độ \"{cap_do.ten}\" không thuộc loại môn của {mon_hoc}.")
     if thoi_luong_phut not in THOI_LUONG_HOP_LE:
         raise ValidationError("Thời lượng buổi chỉ được chọn 1 giờ, 1,5 giờ hoặc 2 giờ.")
     goi = goi_dang_ap_dung(ngay).get(so_buoi)
     if not goi:
         raise ValidationError(f"Gói {so_buoi} buổi hiện không được áp dụng.")
-    nhom = mon_hoc.nhom_gia
-    goc = Decimal(nhom.don_gia_gio) * thoi_luong_phut / 60
-    hoc_phi = lam_tron(goc * (100 - goi.ty_le_giam) / 100, 1000)
-    thu_lao = lam_tron(goc * (100 - nhom.ty_le_trung_tam) / 100, 100)
+    goc, thu_lao = gia_mot_buoi(cap_do, thoi_luong_phut)
+    hoc_phi = lam_tron(Decimal(goc) * (100 - goi.ty_le_giam) / 100, 1000)
     if thu_lao > hoc_phi:
-        raise ValidationError("Bảng giá đang sai: thù lao gia sư lớn hơn học phí sau giảm. Admin cần giảm % giảm giá của gói.")
-    return BaoGia(nhom, so_buoi, thoi_luong_phut, nhom.don_gia_gio, goi.ty_le_giam, nhom.ty_le_trung_tam,
-                  int(goc), hoc_phi, thu_lao, goi.quyen_loi)
+        raise ValidationError("Bảng giá đang sai: thù lao gia sư lớn hơn học phí sau khuyến mãi. Admin cần giảm % khuyến mãi.")
+    return BaoGia(cap_do, so_buoi, thoi_luong_phut, cap_do.don_gia_gio, goi.ty_le_giam, cap_do.ty_le_trung_tam,
+                  goc, hoc_phi, thu_lao, goi.quyen_loi)
 
 
-def bang_bao_gia(ngay=None):
-    """Dữ liệu cho trang Bảng giá / JS form tạo khóa: mọi tổ hợp nhóm giá × gói × thời lượng."""
+def bang_bao_gia(loai_mon, ngay=None):
+    """Dữ liệu cho JS form tạo khóa: mọi tổ hợp cấp độ (của loại môn) × gói × khung giờ."""
     goi = goi_dang_ap_dung(ngay)
     ds = []
-    for nhom in NhomGia.objects.all():
+    for cap_do in CapDo.objects.filter(loai_mon=loai_mon):
         for so_buoi, g in sorted(goi.items()):
             for phut in THOI_LUONG_HOP_LE:
-                goc = Decimal(nhom.don_gia_gio) * phut / 60
+                goc, thu_lao = gia_mot_buoi(cap_do, phut)
                 ds.append({
-                    "nhom_id": nhom.pk, "so_buoi": so_buoi, "phut": phut,
-                    "hoc_phi_goc": int(goc),
-                    "hoc_phi": lam_tron(goc * (100 - g.ty_le_giam) / 100, 1000),
-                    "thu_lao": lam_tron(goc * (100 - nhom.ty_le_trung_tam) / 100, 100),
-                    "giam": float(g.ty_le_giam),
-                    "quyen_loi": g.ds_quyen_loi,
+                    "cap_do": cap_do.pk, "so_buoi": so_buoi, "phut": phut, "hoc_phi_goc": goc,
+                    "hoc_phi": lam_tron(Decimal(goc) * (100 - g.ty_le_giam) / 100, 1000),
+                    "thu_lao": thu_lao, "giam": float(g.ty_le_giam), "quyen_loi": g.ds_quyen_loi,
                 })
     return ds

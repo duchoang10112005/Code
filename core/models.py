@@ -65,32 +65,56 @@ class User(AbstractUser):
 # =============================================================================
 # D2 – Hồ sơ gia sư (PB-04; BRULE-09, BRULE-10)
 # =============================================================================
-class NhomGia(models.Model):
-    """Nhóm giá môn học do Admin cấu hình (VD: Môn thường 70.000đ/giờ – trung tâm 8%; IELTS 130.000đ/giờ – 10%)."""
+class LoaiMon(models.Model):
+    """Loại môn học (VD: Môn phổ thông, IELTS). Mỗi loại có các cấp độ học với giá riêng."""
 
-    ten = models.CharField("Tên nhóm giá", max_length=100, unique=True)
-    don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ (đ)")
-    ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2,
-                                          help_text="Phần trăm trên giá gốc mỗi buổi; gia sư nhận phần còn lại.")
+    ten = models.CharField("Tên loại môn", max_length=100, unique=True)
 
     class Meta:
-        verbose_name = "Nhóm giá"
-        verbose_name_plural = "D6 · Nhóm giá"
-        ordering = ["don_gia_gio"]
-        constraints = [
-            models.CheckConstraint(condition=Q(ty_le_trung_tam__gte=0, ty_le_trung_tam__lt=100),
-                                   name="nhom_gia_ty_le_hop_le"),
-        ]
+        verbose_name = "Loại môn"
+        verbose_name_plural = "D6 · Loại môn"
+        ordering = ["ten"]
 
     def __str__(self):
         return self.ten
 
 
+class CapDo(models.Model):
+    """Cấp độ học trong một loại môn – nơi đặt GIÁ (VD: Phổ thông – Nâng cao 130.000đ/giờ, giữ 10%)."""
+
+    loai_mon = models.ForeignKey(LoaiMon, on_delete=models.CASCADE, related_name="cap_do", verbose_name="Loại môn")
+    ten = models.CharField("Tên cấp độ", max_length=100)
+    mo_ta = models.CharField("Dành cho", max_length=200, blank=True,
+                             help_text="VD: Ôn thi chuyên, học sinh giỏi; Tăng band 6.5 → 7.5")
+    thu_tu = models.PositiveSmallIntegerField("Thứ tự", default=1)
+    don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ (đ)")
+    ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2,
+                                          help_text="Phần trăm trên giá gốc mỗi buổi; gia sư nhận phần còn lại.")
+
+    class Meta:
+        verbose_name = "Cấp độ học"
+        verbose_name_plural = "D6 · Cấp độ học (bảng giá)"
+        ordering = ["loai_mon__ten", "thu_tu", "don_gia_gio"]
+        constraints = [
+            models.UniqueConstraint(fields=["loai_mon", "ten"], name="cap_do_khong_trung_trong_loai"),
+            models.CheckConstraint(condition=Q(ty_le_trung_tam__gte=0, ty_le_trung_tam__lt=100),
+                                   name="cap_do_ty_le_hop_le"),
+        ]
+
+    def __str__(self):
+        return f"{self.loai_mon} – {self.ten}"
+
+    @property
+    def thu_lao_gio(self):
+        from decimal import Decimal
+        return int(Decimal(self.don_gia_gio) * (100 - self.ty_le_trung_tam) / 100)
+
+
 class MonHoc(models.Model):
     ma = models.CharField("Mã môn", max_length=20, unique=True)
     ten = models.CharField("Tên môn", max_length=100)
-    nhom_gia = models.ForeignKey(NhomGia, null=True, blank=True, on_delete=models.PROTECT,
-                                 related_name="mon_hoc", verbose_name="Nhóm giá")
+    loai_mon = models.ForeignKey(LoaiMon, null=True, blank=True, on_delete=models.PROTECT,
+                                 related_name="mon_hoc", verbose_name="Loại môn")
 
     class Meta:
         verbose_name = "Môn học"
@@ -230,6 +254,8 @@ class YeuCauHocTap(models.Model):
 
     hoc_vien = models.ForeignKey(HocVien, on_delete=models.PROTECT, related_name="yeu_cau")
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.PROTECT)
+    cap_do = models.ForeignKey(CapDo, null=True, blank=True, on_delete=models.PROTECT, related_name="+",
+                               verbose_name="Cấp độ học")
     trinh_do = models.CharField("Trình độ / lớp", max_length=100)
     muc_tieu = models.TextField("Mục tiêu học tập")
     lich_mong_muon = models.CharField("Thời gian mong muốn", max_length=200)
@@ -340,7 +366,10 @@ class KhoaHoc(models.Model):
 
     thoi_luong_phut = models.PositiveIntegerField("Thời lượng mỗi buổi", choices=ThoiLuong.choices,
                                                   default=ThoiLuong.GIO_1_5)
+    cap_do = models.ForeignKey(CapDo, null=True, blank=True, on_delete=models.SET_NULL, related_name="+",
+                               verbose_name="Cấp độ học")
     # Giá được CHỤP LẠI lúc tạo khóa → Admin đổi bảng giá sau này không ảnh hưởng khóa cũ.
+    ten_cap_do = models.CharField("Cấp độ lúc đăng ký", max_length=200, blank=True)
     don_gia_gio = models.PositiveIntegerField("Đơn giá mỗi giờ lúc tạo (đ)", default=0)
     hoc_phi_goc_moi_buoi = models.PositiveIntegerField("Học phí gốc mỗi buổi (đ)", default=0)
     ty_le_giam = models.DecimalField("Giảm giá theo gói (%)", max_digits=5, decimal_places=2, default=0)

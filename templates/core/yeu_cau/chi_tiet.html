@@ -90,6 +90,7 @@
       <div class="card-header">Nhu cầu học</div>
       <div class="card-body small">
         <div class="text-muted">Môn · trình độ</div><div class="mb-2">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
+        <div class="text-muted">Cấp độ học</div><div class="mb-2">{% if yc.cap_do %}{{ yc.cap_do.ten }} · {{ yc.cap_do.don_gia_gio|tien }}/giờ{% else %}—{% endif %}</div>
         <div class="text-muted">Mục tiêu</div><div class="mb-2">{{ yc.muc_tieu|linebreaksbr }}</div>
         <div class="text-muted">Thời gian mong muốn</div><div>{{ yc.ten_thu_mong_muon }} · {{ yc.lich_mong_muon }}</div>
       </div>

@@ -4,86 +4,103 @@
 {% block content %}
 <div class="dau-trang">
   <div><h1 class="mb-1">Bảng giá</h1>
-    <p class="mo-ta">Điều chỉnh đơn giá theo giờ và tỉ lệ trung tâm giữ lại. Học phí mỗi buổi = đơn giá × khung buổi (1h / 1,5h / 2h); thù lao gia sư = học phí × (100% − tỉ lệ trung tâm). Khóa đã tạo giữ nguyên giá cũ.</p></div>
+    <p class="mo-ta">Giá đặt theo <b>cấp độ học</b> trong từng loại môn. Học phí mỗi buổi = đơn giá giờ × khung buổi (1h / 1,5h / 2h);
+      thù lao gia sư = học phí × (100% − tỉ lệ trung tâm). Khóa đã tạo giữ nguyên giá lúc đăng ký.</p></div>
 </div>
 
-{# ---------------- Giá mỗi buổi theo nhóm môn × khung giờ ---------------- #}
+{# ---------------- Mỗi loại môn: các cấp độ + giá mỗi buổi + sửa giá ---------------- #}
+{% for loai, hang in ds_loai %}
 <div class="card mb-4">
-  <div class="card-header">Giá mỗi buổi <span class="small text-muted fw-normal">· như nhau với gói 10 / 20 / 30 buổi{% if co_khuyen_mai %}, chưa tính khuyến mãi đang chạy{% endif %}</span></div>
-  <div class="table-responsive"><table class="table">
-    <thead><tr><th>Nhóm môn</th>{% for v, nhan in khung_gio %}<th class="cot-so">Buổi {{ nhan }}</th>{% endfor %}</tr></thead>
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>{{ loai.ten }}</span>
+    <span class="small text-muted fw-normal">Môn: {% for m in loai.mon_hoc.all %}{{ m.ten }}{% if not forloop.last %}, {% endif %}{% empty %}chưa có{% endfor %}</span>
+  </div>
+  <div class="table-responsive"><table class="table align-top">
+    <thead><tr><th style="width:30%">Cấp độ</th>{% for v, nhan in khung_gio %}<th class="cot-so">Buổi {{ nhan }}</th>{% endfor %}</tr></thead>
     <tbody>
-    {% for nhom, o in luoi %}
+    {% for cd, o, f in hang %}
       <tr>
-        <td class="fw-semibold">{{ nhom.ten }}<div class="small text-muted fw-normal">{{ nhom.don_gia_gio|tien }}/giờ · trung tâm giữ {{ nhom.ty_le_trung_tam|phan_tram }}</div></td>
+        <td><div class="fw-semibold">{{ cd.ten }}</div>
+          <div class="small text-muted">{{ cd.mo_ta }}</div>
+          <div class="small">{{ cd.don_gia_gio|tien }}/giờ · trung tâm giữ {{ cd.ty_le_trung_tam|phan_tram }}</div></td>
         {% for x in o %}
           <td class="cot-so"><div class="fw-semibold">{{ x.hoc_phi|tien }}</div>
-            <div class="small text-muted">Gia sư {{ x.thu_lao|tien }} · TT {{ x.trung_tam|tien }}</div></td>
+            <div class="small text-muted">Gia sư {{ x.thu_lao|tien }}</div>
+            <div class="small text-muted">Trung tâm {{ x.trung_tam|tien }}</div></td>
         {% endfor %}
       </tr>
+      <tr><td colspan="4" class="pt-0 border-top-0">
+        <details{% if f.errors %} open{% endif %}><summary class="small">Sửa cấp độ {{ cd.ten }}</summary>
+          <form method="post" action="{% url 'bang_gia_sua_cap_do' cd.pk %}" class="row g-2 mt-1 align-items-end" novalidate>{% csrf_token %}
+            <input type="hidden" name="{{ f.loai_mon.html_name }}" value="{{ cd.loai_mon_id }}">
+            <input type="hidden" name="{{ f.thu_tu.html_name }}" value="{{ cd.thu_tu }}">
+            <div class="col-md-2"><label class="form-label" for="{{ f.ten.id_for_label }}">Tên</label>{{ f.ten }}</div>
+            <div class="col-md-4"><label class="form-label" for="{{ f.mo_ta.id_for_label }}">Dành cho</label>{{ f.mo_ta }}</div>
+            <div class="col-md-2"><label class="form-label" for="{{ f.don_gia_gio.id_for_label }}">Đơn giá / giờ</label>{{ f.don_gia_gio }}</div>
+            <div class="col-md-2"><label class="form-label" for="{{ f.ty_le_trung_tam.id_for_label }}">% trung tâm</label>{{ f.ty_le_trung_tam }}</div>
+            <div class="col-md-2"><button class="btn btn-outline-primary w-100">Lưu</button></div>
+            {% for e in f.non_field_errors %}<div class="col-12 loi-truong">{{ e }}</div>{% endfor %}
+            {% for field in f %}{% for e in field.errors %}<div class="col-12 loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ field.label }}: {{ e }}</div>{% endfor %}{% endfor %}
+          </form>
+        </details>
+      </td></tr>
     {% empty %}
-      <tr><td colspan="4"><div class="trang-rong py-3">Chưa có nhóm giá.</div></td></tr>
+      <tr><td colspan="4"><div class="trang-rong py-3">Loại môn này chưa có cấp độ (giá). Thêm ở khung "Thêm cấp độ" bên dưới.</div></td></tr>
     {% endfor %}
     </tbody>
   </table></div>
 </div>
+{% endfor %}
 
 <div class="row g-4">
-  {# ---------------- Nhóm giá ---------------- #}
   <div class="col-xl-6">
     <div class="card mb-4">
-      <div class="card-header">Nhóm giá</div>
-      <div class="table-responsive"><table class="table">
-        <thead><tr><th>Nhóm</th><th>Đơn giá / giờ (đ)</th><th>Trung tâm giữ lại (%)</th></tr></thead>
-        <tbody>
-        {% for nhom in ds_nhom %}
-          {% with f=forms_nhom|lay:nhom.pk %}
-          <tr>
-            <td class="fw-semibold">{{ nhom.ten }}</td>
-            {% if user.la_admin %}
-              <td colspan="2">
-                <form method="post" action="{% url 'bang_gia_sua_nhom' nhom.pk %}" class="row g-2 align-items-start" novalidate>{% csrf_token %}
-                  <div class="col-5"><label class="visually-hidden" for="{{ f.don_gia_gio.id_for_label }}">Đơn giá</label>{{ f.don_gia_gio }}
-                    {% for e in f.don_gia_gio.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}</div>
-                  <div class="col-4"><label class="visually-hidden" for="{{ f.ty_le_trung_tam.id_for_label }}">% trung tâm</label>{{ f.ty_le_trung_tam }}
-                    {% for e in f.ty_le_trung_tam.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}</div>
-                  <div class="col-3"><button class="btn btn-outline-primary w-100">Lưu</button></div>
-                </form>
-              </td>
-            {% else %}
-              <td class="so">{{ nhom.don_gia_gio|tien }}</td><td class="so">{{ nhom.ty_le_trung_tam|phan_tram }}</td>
-            {% endif %}
-          </tr>
-          {% endwith %}
-        {% endfor %}
-        </tbody>
-      </table></div>
+      <div class="card-header">Thêm cấp độ học</div>
+      <div class="card-body">
+        <form method="post" action="{% url 'bang_gia_them_cap_do' %}" novalidate>{% csrf_token %}
+          {% with form=form_them_cap_do %}{% include "partials/form_fields.html" %}{% endwith %}
+          <button class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm cấp độ</button>
+        </form>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">Môn học thuộc nhóm giá nào</div>
+    <div class="card mb-4">
+      <div class="card-header">Môn học thuộc loại môn nào</div>
       <form method="post" action="{% url 'bang_gia_gan_mon' %}">{% csrf_token %}
       <div class="table-responsive"><table class="table">
-        <thead><tr><th>Môn</th><th>Nhóm giá</th></tr></thead>
+        <thead><tr><th>Môn</th><th>Loại môn</th></tr></thead>
         <tbody>
         {% for mon in ds_mon %}
           <tr><td>{{ mon.ten }}</td>
-            <td>{% if user.la_admin %}
-              <label class="visually-hidden" for="mon_{{ mon.pk }}">Nhóm giá của {{ mon.ten }}</label>
+            <td><label class="visually-hidden" for="mon_{{ mon.pk }}">Loại môn của {{ mon.ten }}</label>
               <select id="mon_{{ mon.pk }}" name="mon_{{ mon.pk }}" class="form-select form-select-sm">
-                {% if not mon.nhom_gia %}<option value="">— Chưa gán —</option>{% endif %}
-                {% for nhom in ds_nhom %}<option value="{{ nhom.pk }}" {% if mon.nhom_gia_id == nhom.pk %}selected{% endif %}>{{ nhom.ten }}</option>{% endfor %}
-              </select>
-            {% else %}{{ mon.nhom_gia.ten|default:"Chưa gán" }}{% endif %}</td></tr>
+                {% if not mon.loai_mon %}<option value="">— Chưa gán —</option>{% endif %}
+                {% for loai in ds_loai_mon %}<option value="{{ loai.pk }}" {% if mon.loai_mon_id == loai.pk %}selected{% endif %}>{{ loai.ten }}</option>{% endfor %}
+              </select></td></tr>
         {% endfor %}
         </tbody>
       </table></div>
-      {% if user.la_admin %}<div class="card-body border-top"><button class="btn btn-outline-primary">Lưu nhóm giá cho môn</button></div>{% endif %}
+      <div class="card-body border-top d-flex justify-content-between align-items-center gap-2">
+        <span class="small text-muted">Môn thuộc loại nào thì chỉ chọn được cấp độ của loại đó.</span>
+        <button class="btn btn-outline-primary">Lưu</button>
+      </div>
       </form>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Thêm loại môn</div>
+      <div class="card-body">
+        <form method="post" action="{% url 'bang_gia_them_loai_mon' %}" class="row g-2 align-items-end" novalidate>{% csrf_token %}
+          <div class="col-8"><label class="form-label" for="{{ form_loai.ten.id_for_label }}">{{ form_loai.ten.label }}</label>{{ form_loai.ten }}
+            {% for e in form_loai.ten.errors %}<div class="loi-truong">{{ e }}</div>{% endfor %}</div>
+          <div class="col-4"><button class="btn btn-outline-primary w-100">Thêm</button></div>
+        </form>
+        <div class="form-text">VD: "Tin học", "Luyện thi SAT". Sau đó thêm cấp độ và gán môn.</div>
+      </div>
     </div>
   </div>
 
-  {# ---------------- Gói & giảm giá theo giai đoạn ---------------- #}
+  {# ---------------- Gói & khuyến mãi ---------------- #}
   <div class="col-xl-6">
     <div class="card mb-4">
       <div class="card-header">Gói khóa học đang áp dụng</div>
@@ -95,36 +112,32 @@
               <div class="small mb-2">{% if g.ty_le_giam %}<span style="color:var(--gs-tone-success-fg)">Khuyến mãi −{{ g.ty_le_giam|phan_tram }}</span>{% else %}<span class="text-muted">Giá như nhau mọi gói</span>{% endif %}
                 {% if g.hieu_luc_den %}<span class="text-muted"> · đến {{ g.hieu_luc_den|date:"d/m/Y" }}</span>{% endif %}</div>
               <ul class="small ps-3 mb-2">{% for q in g.ds_quyen_loi %}<li>{{ q }}</li>{% empty %}<li class="text-muted">Chưa có quyền lợi</li>{% endfor %}</ul>
-              {% if user.la_admin %}
               <details><summary class="small">Sửa quyền lợi</summary>
                 <form method="post" action="{% url 'bang_gia_sua_quyen_loi' g.pk %}" class="mt-2">{% csrf_token %}
                   <label class="visually-hidden" for="ql{{ g.pk }}">Quyền lợi {{ g.get_so_buoi_display }}</label>
                   <textarea id="ql{{ g.pk }}" name="quyen_loi" rows="4" class="form-control form-control-sm mb-2">{{ g.quyen_loi }}</textarea>
                   <button class="btn btn-sm btn-outline-primary">Lưu</button>
                 </form></details>
-              {% endif %}
             </div></div>
           {% endfor %}
         </div>
-        {% if gioi_han_giam is not None %}<div class="form-text mt-2">Mức giảm tối đa cho phép: {{ gioi_han_giam|phan_tram }} (bằng % trung tâm giữ lại nhỏ nhất).</div>{% endif %}
       </div>
     </div>
 
-    {% if user.la_admin %}
     <div class="card mb-4">
       <div class="card-header">Khuyến mãi theo giai đoạn (không bắt buộc)</div>
       <div class="card-body">
         <form method="post" action="{% url 'bang_gia_them_goi' %}" novalidate>{% csrf_token %}
           {% with form=form_goi %}{% include "partials/form_fields.html" %}{% endwith %}
-          <div class="form-text mb-3">Mức có ngày bắt đầu gần nhất (và còn hiệu lực) sẽ được áp dụng. Khóa học đã tạo giữ nguyên giá cũ.</div>
+          <div class="form-text mb-3">Mức có ngày bắt đầu gần nhất (và còn hiệu lực) sẽ được áp dụng.
+            {% if gioi_han_giam is not None %}Tối đa {{ gioi_han_giam|phan_tram }} (bằng tỉ lệ trung tâm giữ lại thấp nhất) để trung tâm không lỗ.{% endif %}</div>
           <button class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm mức khuyến mãi</button>
         </form>
       </div>
     </div>
-    {% endif %}
 
     <div class="card">
-      <div class="card-header">Lịch sử mức giảm</div>
+      <div class="card-header">Lịch sử gói / khuyến mãi</div>
       <div class="table-responsive"><table class="table">
         <thead><tr><th>Gói</th><th class="cot-so">Giảm</th><th>Từ</th><th>Đến</th><th>Người đặt</th></tr></thead>
         <tbody>

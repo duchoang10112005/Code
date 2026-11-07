@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import (HocVien, HoSoGiaSu, LichRanh, LoiMoi, MonGiaSu, MonHoc, NhatKy, User,
+from core.models import (CapDo, HocVien, LoaiMon, HoSoGiaSu, LichRanh, LoiMoi, MonGiaSu, MonHoc, NhatKy, User,
                          YeuCauHocTap)
 from core.services import yeu_cau as dv
 
@@ -21,8 +21,10 @@ class DuLieu(TestCase):
         self.nvts = User.objects.create_user("ts", password=MK, vai_tro=User.VaiTro.TUYEN_SINH, ho_ten="NVTS",
                                              email="ts@test.local")
         self.admin = User.objects.create_user("ad", password=MK, vai_tro=User.VaiTro.ADMIN, ho_ten="Admin")
-        self.toan = MonHoc.objects.create(ma="TOAN", ten="Toán")
-        self.van = MonHoc.objects.create(ma="VAN", ten="Ngữ văn")
+        pho_thong = LoaiMon.objects.get(ten="Môn phổ thông")
+        self.toan = MonHoc.objects.create(ma="TOAN", ten="Toán", loai_mon=pho_thong)
+        self.van = MonHoc.objects.create(ma="VAN", ten="Ngữ văn", loai_mon=pho_thong)
+        self.co_ban = CapDo.objects.get(loai_mon=pho_thong, ten="Cơ bản")
         self.gs_a = self.tao_gia_su("gsa", "An", thu_ranh=[0])
         self.gs_b = self.tao_gia_su("gsb", "Bình", thu_ranh=[0, 2])
         self.hv = HocVien.objects.create(ho_ten="Học Viên", lop="Lớp 9", ten_phu_huynh="Phụ Huynh",
@@ -53,7 +55,7 @@ class DuLieu(TestCase):
 class PB02TiepNhanTest(DuLieu):
     def du_lieu_tao(self, **kw):
         d = {"hv-ho_ten": "Bé Mới", "hv-lop": "Lớp 5", "hv-ten_phu_huynh": "Mẹ Bé",
-             "hv-sdt_phu_huynh": "0935 111 222", "mon_hoc": self.toan.pk, "trinh_do": "Lớp 5",
+             "hv-sdt_phu_huynh": "0935 111 222", "mon_hoc": self.toan.pk, "cap_do": self.co_ban.pk, "trinh_do": "Lớp 5",
              "muc_tieu": "Củng cố", "thu_mong_muon": ["1", "3"], "lich_mong_muon": "Chiều"}
         d.update(kw)
         return d

@@ -12,9 +12,9 @@
   <p class="mo-ta">{% if nhanh_a %}Đăng ký thẳng, không qua học thử (nhánh A){% else %}Sau học thử — phụ huynh đã xác nhận tiếp tục{% endif %}</p>
 </div></div>
 
-{% if not nhom %}
+{% if not loai_mon %}
   <div class="alert alert-danger"><i class="bi bi-x-octagon-fill" aria-hidden="true"></i>
-    <div>Môn {{ yc.mon_hoc }} chưa được gán nhóm giá. Admin cần cập nhật ở trang <b>Bảng giá</b> trước khi tạo khóa.</div></div>
+    <div>Môn {{ yc.mon_hoc }} chưa thuộc loại môn nào nên chưa có giá. Admin cần cập nhật ở trang <b>Bảng giá</b> trước khi tạo khóa.</div></div>
 {% endif %}
 
 <form method="post" novalidate>{% csrf_token %}
@@ -48,9 +48,9 @@
           <div class="col-6 text-muted">Thù lao gia sư mỗi buổi</div><div class="col-6 text-end so" id="bg-tl">—</div>
         </div>
       </div>
-      <div class="form-text mb-3">Giá lấy từ Bảng giá hiện hành ({{ nhom.ten|default:"—" }}: {{ nhom.don_gia_gio|tien }}/giờ, trung tâm giữ {{ nhom.ty_le_trung_tam|phan_tram }}). Giá được chụp lại vào khóa khi tạo.</div>
+      <div class="form-text mb-3">Giá lấy từ Bảng giá hiện hành ({{ loai_mon|default:"—" }}). Cấp độ mặc định theo yêu cầu, đổi được nếu phụ huynh muốn. Giá được chụp lại vào khóa khi tạo.</div>
       <div class="d-flex gap-2">
-        <button class="btn btn-primary" {% if not nhom %}disabled{% endif %}><i class="bi bi-journal-plus" aria-hidden="true"></i>Tạo khóa học</button>
+        <button class="btn btn-primary" {% if not loai_mon %}disabled{% endif %}><i class="bi bi-journal-plus" aria-hidden="true"></i>Tạo khóa học</button>
         <a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-outline-secondary">Hủy</a>
       </div>
     </div></div>
@@ -73,8 +73,8 @@
     const tien = (x) => x.toLocaleString("vi-VN") + "đ";
     const chon = (ten) => (document.querySelector(`input[name="${ten}"]:checked`) || {}).value;
     function capNhat() {
-      const so = parseInt(chon("so_buoi")), phut = parseInt(chon("thoi_luong_phut"));
-      const b = bang.find((x) => x.so_buoi === so && x.phut === phut);
+      const so = parseInt(chon("so_buoi")), phut = parseInt(chon("thoi_luong_phut")), cd = parseInt(chon("cap_do"));
+      const b = bang.find((x) => x.so_buoi === so && x.phut === phut && x.cap_do === cd);
       const dat = (id, v) => (document.getElementById(id).textContent = v);
       if (!b) { ["bg-goc","bg-giam","bg-hp","bg-tong","bg-tk","bg-tl"].forEach((id) => dat(id, "—")); return; }
       dat("bg-goc", tien(b.hoc_phi_goc));

@@ -56,7 +56,7 @@
       {% if not la_gia_su %}
         <div class="text-muted">Phụ huynh</div><div class="mb-2">{{ khoa.hoc_vien.ten_phu_huynh }} · <span class="so">{{ khoa.hoc_vien.sdt_phu_huynh }}</span></div>
         <div class="text-muted">Gia sư phụ trách</div><div class="mb-2">{{ khoa.gia_su.ho_ten }}</div>
-        <div class="text-muted">Gói</div><div class="mb-2">{{ khoa.so_buoi_dang_ky }} buổi × {{ khoa.get_thoi_luong_phut_display }}</div>
+        <div class="text-muted">Cấp độ · gói</div><div class="mb-2">{{ khoa.ten_cap_do|default:"—" }} · {{ khoa.so_buoi_dang_ky }} buổi × {{ khoa.get_thoi_luong_phut_display }}</div>
         <div class="text-muted">Học phí</div>
         <div class="mb-2 so">{% if khoa.hoc_phi_goc_moi_buoi %}{{ khoa.hoc_phi_goc_moi_buoi|tien }}{% if khoa.ty_le_giam %} − {{ khoa.ty_le_giam|phan_tram }}{% endif %} → {% endif %}<b>{{ khoa.hoc_phi_moi_buoi|tien }}</b>/buổi
           <div>Tổng khóa: <b>{{ khoa.tong_hoc_phi|tien }}</b></div></div>

@@ -56,7 +56,9 @@ urlpatterns = [
 
     # Bảng giá (Admin cấu hình, NVTS xem để báo giá)
     path("bang-gia/", bang_gia.xem, name="bang_gia"),
-    path("bang-gia/nhom/<int:pk>/", bang_gia.sua_nhom, name="bang_gia_sua_nhom"),
+    path("bang-gia/cap-do/<int:pk>/", bang_gia.sua_cap_do, name="bang_gia_sua_cap_do"),
+    path("bang-gia/cap-do/them/", bang_gia.them_cap_do, name="bang_gia_them_cap_do"),
+    path("bang-gia/loai-mon/them/", bang_gia.them_loai_mon, name="bang_gia_them_loai_mon"),
     path("bang-gia/gan-mon/", bang_gia.gan_mon, name="bang_gia_gan_mon"),
     path("bang-gia/goi/", bang_gia.them_goi, name="bang_gia_them_goi"),
     path("bang-gia/goi/<int:pk>/quyen-loi/", bang_gia.sua_quyen_loi, name="bang_gia_sua_quyen_loi"),

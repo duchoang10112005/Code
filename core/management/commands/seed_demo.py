@@ -10,13 +10,13 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from core.models import (BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoiMoi, MonGiaSu, MonHoc, NhomGia,
+from core.models import (BuoiHoc, CapDo, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoaiMon, LoiMoi, MonGiaSu, MonHoc,
                          ThuLao, User, YeuCauHocTap)
 from core.services.bang_gia import tinh_gia
 
 MAT_KHAU_DEMO = "Demo@2026"
 
-MON_HOC = [
+MON_HOC = [  # (mã, tên)
     ("TOAN", "Toán"), ("ANH", "Tiếng Anh"), ("LY", "Vật lý"),
     ("HOA", "Hóa học"), ("VAN", "Ngữ văn"), ("IELTS", "IELTS"),
 ]
@@ -41,20 +41,26 @@ GIA_SU = {
 }
 
 
+def _cap_do(mon, nang_cao=False):
+    """Cấp độ thấp nhất (hoặc cao nhất nếu nang_cao) của loại môn mà môn thuộc về."""
+    qs = CapDo.objects.filter(loai_mon=mon.loai_mon).order_by("thu_tu")
+    return qs.last() if nang_cao else qs.first()
+
+
 class Command(BaseCommand):
     help = "Tạo tài khoản và dữ liệu mẫu để demo."
 
     @transaction.atomic
     def handle(self, *args, **options):
-        # Bảng giá mặc định đã được migration 0006 tạo; gán môn còn thiếu nhóm giá.
-        thuong = NhomGia.objects.filter(ten="Môn thường").first()
-        ielts = NhomGia.objects.filter(ten="IELTS").first()
+        # Loại môn / cấp độ (bảng giá) đã được migration 0010 tạo; gán môn còn thiếu loại môn.
+        pho_thong = LoaiMon.objects.filter(ten="Môn phổ thông").first()
+        ielts = LoaiMon.objects.filter(ten="IELTS").first()
         mon = {}
         for ma, ten in MON_HOC:
             mon[ma], _ = MonHoc.objects.get_or_create(ma=ma, defaults={"ten": ten})
-            if not mon[ma].nhom_gia_id:
-                mon[ma].nhom_gia = ielts if ma == "IELTS" else thuong
-                mon[ma].save(update_fields=["nhom_gia"])
+            if not mon[ma].loai_mon_id:
+                mon[ma].loai_mon = ielts if ma == "IELTS" else pho_thong
+                mon[ma].save(update_fields=["loai_mon"])
 
         admin_user = None
         for username, ho_ten, vai_tro, email in TAI_KHOAN:
@@ -119,7 +125,8 @@ class Command(BaseCommand):
             if not tao_moi:
                 continue
             yc = YeuCauHocTap.objects.create(
-                hoc_vien=hv, mon_hoc=mon[ma_mon], trinh_do=td, muc_tieu=mt, thu_mong_muon=thu,
+                hoc_vien=hv, mon_hoc=mon[ma_mon], cap_do=_cap_do(mon[ma_mon], nang_cao=(ma_mon == "TOAN" and td == "Lớp 9")),
+                trinh_do=td, muc_tieu=mt, thu_mong_muon=thu,
                 lich_mong_muon=gio, trang_thai=tt, tao_boi=nvts,
                 gia_su=gs1 if tt == YC.DA_PHAN_CONG else None,
                 phan_cong_luc=now if tt == YC.DA_PHAN_CONG else None,
@@ -160,18 +167,18 @@ class Command(BaseCommand):
         if not tao_moi:
             return
         yc2 = YeuCauHocTap.objects.create(
-            hoc_vien=hv, mon_hoc=mon["TOAN"], trinh_do="Lớp 4", muc_tieu="Rèn tính nhanh, chuẩn bị thi học kỳ",
+            hoc_vien=hv, mon_hoc=mon["TOAN"], cap_do=_cap_do(mon["TOAN"]), trinh_do="Lớp 4", muc_tieu="Rèn tính nhanh, chuẩn bị thi học kỳ",
             thu_mong_muon=[4, 6], lich_mong_muon="Chiều thứ 6, sáng CN", trang_thai=YeuCauHocTap.TrangThai.CHINH_THUC,
             gia_su=gs3, phan_cong_luc=now - timedelta(days=40), tao_boi=nvts)
         LoiMoi.objects.create(yeu_cau=yc2, gia_su=gs3, gui_boi=nvts, trang_thai=LoiMoi.TrangThai.ACCEPTED,
                               phan_hoi_luc=now - timedelta(days=40))
-        bg = tinh_gia(mon["TOAN"], 10, 90)  # giá theo Bảng giá: gói 10 buổi × 1,5 giờ
+        bg = tinh_gia(mon["TOAN"], yc2.cap_do, 10, 90)  # giá theo Bảng giá: Cơ bản, gói 10 buổi × 1,5 giờ
         khoa = KhoaHoc.objects.create(
             yeu_cau=yc2, hoc_vien=hv, gia_su=gs3, so_buoi_dang_ky=10, so_buoi_da_dung=8, thoi_luong_phut=90,
             don_gia_gio=bg.don_gia_gio, hoc_phi_goc_moi_buoi=bg.hoc_phi_goc, ty_le_giam=bg.ty_le_giam,
             ty_le_trung_tam=bg.ty_le_trung_tam, hoc_phi_moi_buoi=bg.hoc_phi, thu_lao_moi_buoi=bg.thu_lao,
             quyen_loi_goi=bg.quyen_loi,
-            tao_boi=nvts)
+            cap_do=yc2.cap_do, ten_cap_do=str(yc2.cap_do), tao_boi=nvts)
         # 8 buổi đã hoàn tất (mỗi buổi có đúng 1 bản ghi thù lao) để số liệu khớp nhau.
         for i in range(8):
             bat_dau = now - timedelta(days=35 - i * 4, hours=3)

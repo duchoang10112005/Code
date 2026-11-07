@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from core.forms import ChonHocVienForm, HocVienForm, KetQuaHocThuForm, LocYeuCauForm, YeuCauForm
-from core.models import HocVien, LoiMoi, YeuCauHocTap
+from core.models import CapDo, HocVien, LoiMoi, MonHoc, YeuCauHocTap
 from core.permissions import ADMIN, GIA_SU, TUYEN_SINH, vai_tro_required
 from core.services import khoa_hoc as dv_kh
 from core.services import yeu_cau as dv
@@ -21,6 +21,11 @@ from core.services.tien_ich import thong_diep_loi as _loi
 
 YC = YeuCauHocTap.TrangThai
 LM = LoiMoi.TrangThai
+
+
+def _ban_do_cap_do():
+    return {"mon": {str(m.pk): m.loai_mon_id for m in MonHoc.objects.all()},
+            "cap_do": {str(c.pk): c.loai_mon_id for c in CapDo.objects.all()}}
 
 
 def _co_the_sua(yc):
@@ -34,7 +39,7 @@ def _co_the_sua(yc):
 def danh_sach(request):
     dv.quet_loi_moi_het_han()
     form = LocYeuCauForm(request.GET or None)
-    qs = (YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su")
+    qs = (YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su", "cap_do")
           .annotate(so_cho=Count("loi_moi", filter=Q(loi_moi__trang_thai=LM.CHO)),
                     so_tu_choi=Count("loi_moi", filter=Q(loi_moi__trang_thai=LM.REJECTED)),
                     so_het_han=Count("loi_moi", filter=Q(loi_moi__trang_thai=LM.HET_HAN))))
@@ -80,7 +85,8 @@ def tao(request):
                 yc = dv.tao_yeu_cau(request.user, hoc_vien, form_yc.cleaned_data)
             messages.success(request, f"Đã tiếp nhận {yc.ma}. Chọn gia sư bên dưới để gửi lời mời.")
             return redirect("yeu_cau_chi_tiet", pk=yc.pk)
-    return render(request, "core/yeu_cau/tao.html", {"chon": chon, "form_hv": form_hv, "form_yc": form_yc})
+    return render(request, "core/yeu_cau/tao.html", {"chon": chon, "form_hv": form_hv, "form_yc": form_yc,
+                                                     "ban_do_cap_do": _ban_do_cap_do()})
 
 
 @vai_tro_required(ADMIN, TUYEN_SINH)
@@ -120,7 +126,7 @@ def sua(request, pk):
         ghi_nhat_ky(request.user, "Sửa yêu cầu học tập", yc.ma, ", ".join(form.changed_data))
         messages.success(request, f"Đã cập nhật {yc.ma}.")
         return redirect("yeu_cau_chi_tiet", pk=pk)
-    return render(request, "core/yeu_cau/sua.html", {"yc": yc, "form": form})
+    return render(request, "core/yeu_cau/sua.html", {"yc": yc, "form": form, "ban_do_cap_do": _ban_do_cap_do()})
 
 
 @vai_tro_required(TUYEN_SINH)
@@ -188,7 +194,8 @@ def hoc_vien_chi_tiet(request, pk):
 def loi_moi_cua_toi(request):
     dv.quet_loi_moi_het_han()
     tab = request.GET.get("tab", "cho")
-    qs = LoiMoi.objects.filter(gia_su=request.user).select_related("yeu_cau__hoc_vien", "yeu_cau__mon_hoc")
+    qs = LoiMoi.objects.filter(gia_su=request.user).select_related("yeu_cau__hoc_vien", "yeu_cau__mon_hoc",
+                                                                    "yeu_cau__cap_do")
     if tab == "lich-su":
         qs = qs.exclude(trang_thai=LM.CHO).order_by("-phan_hoi_luc", "-gui_luc")
     else:

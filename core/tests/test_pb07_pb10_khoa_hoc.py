@@ -8,26 +8,26 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, MonGiaSu, MonHoc, NhatKy, NhomGia, User, YeuCauHocTap
+from core.models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, MonGiaSu, MonHoc, NhatKy, User, YeuCauHocTap, CapDo, LoaiMon
 from core.services import khoa_hoc as dv
 from core.services import yeu_cau as dv_yc
 
 MK = "MatKhau@Manh123"
 YC, KQ, KH = YeuCauHocTap.TrangThai, YeuCauHocTap.KetQuaHocThu, KhoaHoc.TrangThai
-KHOA = {"so_buoi": 10, "thoi_luong_phut": 90}  # gói 10 buổi × 1,5h – Môn thường 70.000đ/giờ
+KHOA = {"so_buoi": 10, "thoi_luong_phut": 90}  # gói 10 buổi × 1,5h – Phổ thông Cơ bản 70.000đ/giờ
 
 
 class DuLieu(TestCase):
     def setUp(self):
         self.nvts = User.objects.create_user("ts", password=MK, vai_tro=User.VaiTro.TUYEN_SINH, ho_ten="NVTS")
         self.admin = User.objects.create_user("ad", password=MK, vai_tro=User.VaiTro.ADMIN, ho_ten="Admin")
-        self.toan = MonHoc.objects.create(ma="TOAN", ten="Toán", nhom_gia=NhomGia.objects.get(ten="Môn thường"))
+        self.toan = MonHoc.objects.create(ma="TOAN", ten="Toán", loai_mon=LoaiMon.objects.get(ten="Môn phổ thông"))
         self.gs = self.tao_gia_su("gs", "Gia Sư A")
         self.gs2 = self.tao_gia_su("gs2", "Gia Sư B")
         self.hv = HocVien.objects.create(ho_ten="Học Viên", lop="Lớp 9", ten_phu_huynh="Phụ Huynh",
                                          sdt_phu_huynh="84905123456")
         self.yc = YeuCauHocTap.objects.create(
-            hoc_vien=self.hv, mon_hoc=self.toan, trinh_do="Lớp 9", muc_tieu="Thi 10", thu_mong_muon=[0],
+            hoc_vien=self.hv, mon_hoc=self.toan, cap_do=CapDo.objects.get(ten="Cơ bản"), trinh_do="Lớp 9", muc_tieu="Thi 10", thu_mong_muon=[0],
             lich_mong_muon="Tối", trang_thai=YC.DA_PHAN_CONG, gia_su=self.gs,
             phan_cong_luc=timezone.now(), tao_boi=self.nvts)
 
@@ -60,7 +60,7 @@ class NhanhATest(DuLieu):
 
     def test_PB09_tao_khoa_qua_giao_dien(self):
         self.dang_nhap(self.nvts)
-        r = self.client.post(reverse("khoa_hoc_tao", args=[self.yc.pk]), KHOA)
+        r = self.client.post(reverse("khoa_hoc_tao", args=[self.yc.pk]), {**KHOA, "cap_do": self.yc.cap_do_id})
         khoa = KhoaHoc.objects.get(yeu_cau=self.yc)
         self.assertRedirects(r, reverse("khoa_hoc_chi_tiet", args=[khoa.pk]))
 

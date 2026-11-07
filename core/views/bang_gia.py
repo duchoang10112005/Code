@@ -1,57 +1,89 @@
-"""Bảng giá – chỉ Admin: cấu hình đơn giá / % trung tâm theo nhóm môn, gán môn vào nhóm, quyền lợi gói,
-khuyến mãi theo giai đoạn. NV tuyển sinh không cần trang này: form tạo khóa tự báo giá."""
+"""Bảng giá – chỉ Admin.
 
-from decimal import Decimal
+Giá gắn với CẤP ĐỘ HỌC trong từng LOẠI MÔN (VD: Phổ thông – Cơ bản / Nâng cao; IELTS – Nền tảng / Chuyên sâu).
+Admin: sửa / thêm cấp độ (đơn giá giờ, % trung tâm), thêm loại môn, gán môn vào loại môn,
+quyền lợi gói và khuyến mãi theo giai đoạn. NV tuyển sinh không cần trang này: form tạo khóa tự báo giá.
+"""
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.forms import GoiKhoaHocForm, NhomGiaForm
-from core.models import GoiKhoaHoc, KhoaHoc, MonHoc, NhomGia
+from core.forms import CapDoForm, GoiKhoaHocForm, LoaiMonForm
+from core.models import CapDo, GoiKhoaHoc, KhoaHoc, LoaiMon, MonHoc
 from core.permissions import ADMIN, vai_tro_required
 from core.services import bang_gia
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.tien_ich import dinh_dang_phan_tram, dinh_dang_tien
 
 
+def _mo_ta_gia(cd):
+    return f"{dinh_dang_tien(cd.don_gia_gio)}/giờ, trung tâm {dinh_dang_phan_tram(cd.ty_le_trung_tam)}"
+
+
 @vai_tro_required(ADMIN)
-def xem(request, form_goi=None, form_nhom=None):
-    ds_nhom = list(NhomGia.objects.all())
+def xem(request, form_goi=None, form_cap_do=None, form_them_cap_do=None, form_loai=None):
     goi = bang_gia.goi_dang_ap_dung()
-    # Lưới: nhóm môn × khung giờ → học phí gốc / gia sư nhận / trung tâm giữ mỗi buổi
-    luoi = []
-    for nhom in ds_nhom:
-        o = []
-        for phut, _ in KhoaHoc.ThoiLuong.choices:
-            goc = nhom.don_gia_gio * phut // 60
-            thu_lao = bang_gia.lam_tron(Decimal(goc) * (100 - nhom.ty_le_trung_tam) / 100, 100)
-            o.append({"hoc_phi": goc, "thu_lao": thu_lao, "trung_tam": goc - thu_lao})
-        luoi.append((nhom, o))
+    khung = KhoaHoc.ThoiLuong.choices
+    ds_loai = []
+    for loai in LoaiMon.objects.prefetch_related("cap_do", "mon_hoc"):
+        hang = []
+        for cd in loai.cap_do.all():
+            o = []
+            for phut, _ in khung:
+                goc, thu_lao = bang_gia.gia_mot_buoi(cd, phut)
+                o.append({"hoc_phi": goc, "thu_lao": thu_lao, "trung_tam": goc - thu_lao})
+            f = form_cap_do if form_cap_do is not None and form_cap_do.instance.pk == cd.pk \
+                else CapDoForm(instance=cd, prefix=f"cd{cd.pk}")
+            hang.append((cd, o, f))
+        ds_loai.append((loai, hang))
     return render(request, "core/bang_gia.html", {
-        "ds_nhom": ds_nhom,
-        "forms_nhom": {n.pk: (form_nhom if form_nhom and form_nhom.instance.pk == n.pk else NhomGiaForm(instance=n, prefix=f"n{n.pk}")) for n in ds_nhom},
-        "ds_mon": MonHoc.objects.select_related("nhom_gia"),
+        "ds_loai": ds_loai, "khung_gio": khung,
+        "ds_mon": MonHoc.objects.select_related("loai_mon"), "ds_loai_mon": LoaiMon.objects.all(),
         "goi": goi, "lich_su_goi": GoiKhoaHoc.objects.select_related("tao_boi")[:30],
-        "form_goi": form_goi or GoiKhoaHocForm(),
-        "luoi": luoi, "khung_gio": KhoaHoc.ThoiLuong.choices,
         "co_khuyen_mai": any(g.ty_le_giam for g in goi.values()),
+        "form_goi": form_goi or GoiKhoaHocForm(),
+        "form_them_cap_do": form_them_cap_do or CapDoForm(prefix="moi"),
+        "form_loai": form_loai or LoaiMonForm(prefix="loai"),
         "gioi_han_giam": bang_gia.gioi_han_giam(),
     })
 
 
 @vai_tro_required(ADMIN)
 @require_POST
-def sua_nhom(request, pk):
-    nhom = get_object_or_404(NhomGia, pk=pk)
-    cu = f"{dinh_dang_tien(nhom.don_gia_gio)}/giờ, trung tâm {dinh_dang_phan_tram(nhom.ty_le_trung_tam)}"
-    form = NhomGiaForm(request.POST, instance=nhom, prefix=f"n{pk}")
+def sua_cap_do(request, pk):
+    cd = get_object_or_404(CapDo, pk=pk)
+    cu = _mo_ta_gia(cd)
+    form = CapDoForm(request.POST, instance=cd, prefix=f"cd{pk}")
     if not form.is_valid():
-        return xem(request, form_nhom=form)
+        return xem(request, form_cap_do=form)
     form.save()
-    ghi_nhat_ky(request.user, "Sửa nhóm giá", nhom.ten,
-                f"{cu} → {dinh_dang_tien(nhom.don_gia_gio)}/giờ, trung tâm {dinh_dang_phan_tram(nhom.ty_le_trung_tam)}")
-    messages.success(request, f"Đã cập nhật nhóm giá {nhom.ten}. Khóa học đã tạo trước đó giữ nguyên giá cũ.")
+    ghi_nhat_ky(request.user, "Sửa giá cấp độ", str(cd), f"{cu} → {_mo_ta_gia(cd)}")
+    messages.success(request, f"Đã cập nhật {cd}. Khóa học đã tạo trước đó giữ nguyên giá cũ.")
+    return redirect("bang_gia")
+
+
+@vai_tro_required(ADMIN)
+@require_POST
+def them_cap_do(request):
+    form = CapDoForm(request.POST, prefix="moi")
+    if not form.is_valid():
+        return xem(request, form_them_cap_do=form)
+    cd = form.save()
+    ghi_nhat_ky(request.user, "Thêm cấp độ học", str(cd), _mo_ta_gia(cd))
+    messages.success(request, f"Đã thêm cấp độ {cd}.")
+    return redirect("bang_gia")
+
+
+@vai_tro_required(ADMIN)
+@require_POST
+def them_loai_mon(request):
+    form = LoaiMonForm(request.POST, prefix="loai")
+    if not form.is_valid():
+        return xem(request, form_loai=form)
+    loai = form.save()
+    ghi_nhat_ky(request.user, "Thêm loại môn", loai.ten)
+    messages.success(request, f"Đã thêm loại môn {loai}. Hãy thêm cấp độ (giá) cho loại môn này.")
     return redirect("bang_gia")
 
 
@@ -59,16 +91,16 @@ def sua_nhom(request, pk):
 @require_POST
 def gan_mon(request):
     doi = []
-    nhom_theo_id = {str(n.pk): n for n in NhomGia.objects.all()}
+    loai_theo_id = {str(x.pk): x for x in LoaiMon.objects.all()}
     for mon in MonHoc.objects.all():
-        nhom = nhom_theo_id.get(request.POST.get(f"mon_{mon.pk}", ""))
-        if nhom and mon.nhom_gia_id != nhom.pk:
-            mon.nhom_gia = nhom
-            mon.save(update_fields=["nhom_gia"])
-            doi.append(f"{mon} → {nhom}")
+        loai = loai_theo_id.get(request.POST.get(f"mon_{mon.pk}", ""))
+        if loai and mon.loai_mon_id != loai.pk:
+            mon.loai_mon = loai
+            mon.save(update_fields=["loai_mon"])
+            doi.append(f"{mon} → {loai}")
     if doi:
-        ghi_nhat_ky(request.user, "Gán môn vào nhóm giá", "", "; ".join(doi))
-        messages.success(request, "Đã cập nhật nhóm giá cho " + ", ".join(doi) + ".")
+        ghi_nhat_ky(request.user, "Gán môn vào loại môn", "", "; ".join(doi))
+        messages.success(request, "Đã cập nhật: " + ", ".join(doi) + ".")
     else:
         messages.info(request, "Không có thay đổi.")
     return redirect("bang_gia")
@@ -98,7 +130,7 @@ def them_goi(request):
         goi.quyen_loi = dang_ap_dung.quyen_loi if dang_ap_dung else ""
     goi.save()
     den = goi.hieu_luc_den.strftime("%d/%m/%Y") if goi.hieu_luc_den else "không thời hạn"
-    ghi_nhat_ky(request.user, "Đặt giảm giá gói", goi.get_so_buoi_display(),
+    ghi_nhat_ky(request.user, "Đặt khuyến mãi gói", goi.get_so_buoi_display(),
                 f"Giảm {dinh_dang_phan_tram(goi.ty_le_giam)} từ {goi.hieu_luc_tu:%d/%m/%Y} đến {den}")
     messages.success(request, f"Đã đặt {goi} từ {goi.hieu_luc_tu:%d/%m/%Y}.")
     return redirect("bang_gia")

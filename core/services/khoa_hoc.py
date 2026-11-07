@@ -106,8 +106,8 @@ def ghi_ket_qua_hoc_thu(nvts, yc, ket_qua, ghi_chu=""):
 # =============================================================================
 # 4.2 Tạo khóa học chính thức
 # =============================================================================
-def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut):
-    """NVTS chỉ chọn gói (10/20/30 buổi) và khung giờ (1h/1,5h/2h); giá do hệ thống tính từ Bảng giá
+def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut, cap_do=None):
+    """NVTS chọn cấp độ (mặc định theo yêu cầu), gói (10/20/30 buổi) và khung giờ (1h/1,5h/2h); giá do hệ thống tính từ Bảng giá
     rồi CHỤP LẠI vào khóa (Admin đổi bảng giá sau này không ảnh hưởng khóa đã tạo)."""
     yc.refresh_from_db()
     if yc.trang_thai == YC.DA_PHAN_CONG and co_buoi_hoc_thu(yc):
@@ -118,7 +118,8 @@ def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut):
     if not co_the_tao_khoa(yc):
         raise ValidationError("Chỉ tạo khóa cho yêu cầu đã phân công (đăng ký thẳng) "
                               "hoặc đã học thử với kết quả Tiếp tục.")
-    bao_gia = tinh_gia(yc.mon_hoc, so_buoi, thoi_luong_phut)
+    cap_do = cap_do or yc.cap_do
+    bao_gia = tinh_gia(yc.mon_hoc, cap_do, so_buoi, thoi_luong_phut)
     trang_thai_cu = yc.trang_thai
     try:
         with transaction.atomic():
@@ -128,6 +129,7 @@ def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut):
                 raise ValidationError("Yêu cầu vừa được người khác cập nhật, vui lòng tải lại trang.")
             khoa = KhoaHoc.objects.create(
                 yeu_cau=yc, hoc_vien=yc.hoc_vien, gia_su=yc.gia_su, tao_boi=nvts,
+                cap_do=cap_do, ten_cap_do=str(cap_do),
                 so_buoi_dang_ky=bao_gia.so_buoi, thoi_luong_phut=bao_gia.thoi_luong_phut,
                 don_gia_gio=bao_gia.don_gia_gio, hoc_phi_goc_moi_buoi=bao_gia.hoc_phi_goc,
                 ty_le_giam=bao_gia.ty_le_giam, ty_le_trung_tam=bao_gia.ty_le_trung_tam,
@@ -135,7 +137,7 @@ def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut):
                 quyen_loi_goi=bao_gia.quyen_loi)
             nhanh = "nhánh A – đăng ký thẳng" if trang_thai_cu == YC.DA_PHAN_CONG else "sau học thử"
             ghi_nhat_ky(nvts, "Tạo khóa học chính thức", str(khoa),
-                        f"{nhanh}; gói {khoa.so_buoi_dang_ky} buổi × {khoa.get_thoi_luong_phut_display()}, "
+                        f"{nhanh}; {cap_do.ten}; gói {khoa.so_buoi_dang_ky} buổi × {khoa.get_thoi_luong_phut_display()}, "
                         f"giảm {dinh_dang_phan_tram(khoa.ty_le_giam)} → {dinh_dang_tien(khoa.hoc_phi_moi_buoi)}/buổi; "
                         f"thù lao {dinh_dang_tien(khoa.thu_lao_moi_buoi)}/buổi")
     except IntegrityError:
