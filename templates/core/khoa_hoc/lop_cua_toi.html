@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Lớp của tôi · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Lớp của tôi</h1><p class="mo-ta">Các lớp bạn đã nhận và khóa học bạn đang phụ trách</p></div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">Lớp đã nhận, chờ chốt hình thức học</div>
+  <div class="table-responsive"><table class="table">
+    <thead><tr><th>Lớp</th><th>Học viên</th><th>Thời gian mong muốn</th><th>Tình trạng</th></tr></thead>
+    <tbody>
+    {% for yc, buoi_thu in cho_chot %}
+      <tr>
+        <td class="fw-semibold">{{ yc.mon_hoc }} · {{ yc.trinh_do }}<div class="small text-muted so">{{ yc.ma }}</div></td>
+        <td>{{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %}<div class="small text-muted">{{ yc.hoc_vien.lop }}</div>{% endif %}</td>
+        <td class="small">{{ yc.ten_thu_mong_muon }} · {{ yc.lich_mong_muon }}</td>
+        <td class="small">
+          {% if yc.trang_thai == "HOC_THU_XONG" %}{% nhan_trang_thai yc "trang_thai" %}<div class="text-muted mt-1">Phụ huynh đồng ý học tiếp — trung tâm đang mở khóa.</div>
+          {% elif buoi_thu %}{% nhan_trang_thai buoi_thu "trang_thai" %}<div class="text-muted mt-1">Buổi học thử {{ buoi_thu.bat_dau|date:"H:i d/m" }} — chờ trung tâm chốt với phụ huynh.</div>
+          {% else %}<span class="text-muted">Chờ trung tâm chốt: đăng ký thẳng hoặc học thử. Nếu học thử, bạn sẽ tạo buổi học thử ở mục Buổi học.</span>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4"><div class="trang-rong py-3"><i class="bi bi-inbox" aria-hidden="true"></i>Không có lớp nào đang chờ chốt.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="card-header">Khóa học đang phụ trách</div>
+  <div class="table-responsive"><table class="table table-hover">
+    <thead><tr><th>Mã</th><th>Môn · học viên</th><th>Tiến độ</th><th class="cot-so">Còn lại</th><th class="cot-so">Thù lao/buổi</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
+    <tbody>
+    {% for k in ds_khoa %}
+      <tr>
+        <td class="so fw-semibold">{{ k.ma }}</td>
+        <td>{{ k.yeu_cau.mon_hoc }}<div class="small text-muted">{{ k.hoc_vien.ho_ten }}</div></td>
+        <td>{% include "partials/tien_do_khoa.html" with khoa=k %}</td>
+        <td class="cot-so">{{ k.so_buoi_con_lai }}</td>
+        <td class="cot-so">{{ k.thu_lao_moi_buoi|tien }}</td>
+        <td>{% nhan_trang_thai k "trang_thai" %}</td>
+        <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}">Mở</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7"><div class="trang-rong py-3"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Bạn chưa phụ trách khóa học nào.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

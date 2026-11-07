@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from core.views import chung, gia_su, quy_chuan, tai_khoan, yeu_cau
+from core.views import chung, gia_su, khoa_hoc, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -44,6 +44,15 @@ urlpatterns = [
     path("loi-moi/", yeu_cau.loi_moi_cua_toi, name="loi_moi_cua_toi"),
     path("loi-moi/<int:pk>/nhan/", yeu_cau.nhan_lop, name="loi_moi_nhan"),
     path("loi-moi/<int:pk>/tu-choi/", yeu_cau.tu_choi_loi_moi, name="loi_moi_tu_choi"),
+
+    # Phần 4 – Khóa học (PB-07..PB-10)
+    path("yeu-cau/<int:pk>/ket-qua-hoc-thu/", khoa_hoc.ghi_ket_qua_hoc_thu, name="yeu_cau_ket_qua_hoc_thu"),
+    path("yeu-cau/<int:pk>/tao-khoa/", khoa_hoc.tao, name="khoa_hoc_tao"),
+    path("khoa-hoc/", khoa_hoc.danh_sach, name="khoa_hoc_danh_sach"),
+    path("khoa-hoc/<int:pk>/", khoa_hoc.chi_tiet, name="khoa_hoc_chi_tiet"),
+    path("khoa-hoc/<int:pk>/trang-thai/", khoa_hoc.doi_trang_thai, name="khoa_hoc_doi_trang_thai"),
+    path("lop-cua-toi/", khoa_hoc.lop_cua_toi, name="lop_cua_toi"),
+    path("lop-cua-toi/khoa/<int:pk>/", khoa_hoc.khoa_cua_toi, name="khoa_cua_toi"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

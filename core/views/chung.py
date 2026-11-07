@@ -3,6 +3,7 @@
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import F
 from django.shortcuts import render
 from django.urls import reverse_lazy
 
@@ -46,7 +47,10 @@ def trang_chu(request):
             # Đang tìm nhưng không còn lời mời nào đang chờ → cần NVTS mời thêm gia sư.
             "so_can_moi_them": YeuCauHocTap.objects.filter(trang_thai=YC.DANG_TIM)
                                 .exclude(loi_moi__trang_thai="CHO").count(),
-            "so_vua_phan_cong": YeuCauHocTap.objects.filter(trang_thai=YC.DA_PHAN_CONG).count(),
+            "so_cho_chot": YeuCauHocTap.objects.filter(trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG]).count(),
+            "so_sap_het": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC)
+                           .annotate(con_lai=F("so_buoi_dang_ky") - F("so_buoi_da_dung"))
+                           .filter(con_lai__lte=2).count(),
             "so_khoa_dang_hoc": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).count(),
         }
         return render(request, "core/trang_chu_tuyen_sinh.html", ctx)

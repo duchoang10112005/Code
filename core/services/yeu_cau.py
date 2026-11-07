@@ -17,7 +17,7 @@ from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import HoSoGiaSu, KhoaHoc, LoiMoi, MonGiaSu, User, YeuCauHocTap
+from core.models import BuoiHoc, HoSoGiaSu, KhoaHoc, LoiMoi, MonGiaSu, User, YeuCauHocTap
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
 
@@ -55,6 +55,20 @@ def huy_loi_moi_cua_gia_su(user, ly_do, mon_hoc=None):
     n = qs.update(trang_thai=LM.VOIDED, phan_hoi_luc=timezone.now(), ly_do_tu_choi=ly_do[:300])
     if n:
         ghi_nhat_ky(None, "Hủy lời mời đang chờ", user.username, f"{n} lời mời – {ly_do}")
+
+    # Lớp đã nhận nhưng chưa mở khóa → gỡ phân công, đưa về Đang tìm gia sư để NVTS mời người khác.
+    lop = YeuCauHocTap.objects.filter(gia_su=user, trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG])
+    if mon_hoc is not None:
+        lop = lop.filter(mon_hoc=mon_hoc)
+    ds = list(lop)
+    ds_ma = [yc.ma for yc in ds]
+    if ds_ma:
+        BuoiHoc.objects.filter(yeu_cau__in=ds, gia_su=user, loai=BuoiHoc.Loai.HOC_THU,
+                               trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO).update(
+            trang_thai=BuoiHoc.TrangThai.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.ADMIN_HUY)
+        YeuCauHocTap.objects.filter(pk__in=[yc.pk for yc in ds]).update(trang_thai=YC.DANG_TIM, gia_su=None, phan_cong_luc=None, ket_qua_hoc_thu="",
+                   cap_nhat_luc=timezone.now())
+        ghi_nhat_ky(None, "Gỡ phân công gia sư", user.username, f"{', '.join(ds_ma)} – {ly_do}")
     return n
 
 

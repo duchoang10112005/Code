@@ -11,9 +11,10 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.forms import ChonHocVienForm, HocVienForm, LocYeuCauForm, YeuCauForm
+from core.forms import ChonHocVienForm, HocVienForm, KetQuaHocThuForm, LocYeuCauForm, YeuCauForm
 from core.models import HocVien, LoiMoi, YeuCauHocTap
 from core.permissions import ADMIN, GIA_SU, TUYEN_SINH, vai_tro_required
+from core.services import khoa_hoc as dv_kh
 from core.services import yeu_cau as dv
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.tien_ich import thong_diep_loi as _loi
@@ -51,6 +52,8 @@ def danh_sach(request):
             qs = qs.filter(trang_thai=d["trang_thai"])
         if d["mon"]:
             qs = qs.filter(mon_hoc=d["mon"])
+        if d["cho_chot"]:
+            qs = qs.filter(trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG])
         if d["can_moi_them"]:
             qs = qs.filter(trang_thai=YC.DANG_TIM, so_cho=0)
     qs = qs.order_by("-tao_luc")
@@ -85,13 +88,24 @@ def chi_tiet(request, pk):
     dv.quet_loi_moi_het_han()
     yc = get_object_or_404(YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su", "tao_boi"), pk=pk)
     de_xuat = dv.de_xuat_gia_su(yc) if _co_the_sua(yc) else []
-    return render(request, "core/yeu_cau/chi_tiet.html", {
+    ctx = {
         "yc": yc,
         "ds_loi_moi": yc.loi_moi.select_related("gia_su").order_by("-gui_luc"),
         "de_xuat": de_xuat,
         "co_the_sua": _co_the_sua(yc),
         "thu_can": set(yc.thu_mong_muon or []),
-    })
+    }
+    # Phần 4 – "Bước tiếp theo" sau khi đã có gia sư nhận lớp
+    if yc.trang_thai in (YC.DA_PHAN_CONG, YC.HOC_THU_XONG):
+        ctx.update(
+            buoi_thu=dv_kh.buoi_hoc_thu_gan_nhat(yc),
+            buoi_thu_hoan_tat=dv_kh.buoi_hoc_thu_hoan_tat(yc),
+            co_the_tao_khoa=dv_kh.co_the_tao_khoa(yc),
+            form_kq=KetQuaHocThuForm(),
+        )
+    if yc.trang_thai == YC.CHINH_THUC:
+        ctx["khoa"] = getattr(yc, "khoa_hoc", None)
+    return render(request, "core/yeu_cau/chi_tiet.html", ctx)
 
 
 @vai_tro_required(TUYEN_SINH)

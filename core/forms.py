@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.password_validation import validate_password
 
-from .models import HocVien, HoSoGiaSu, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
+from .models import HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
 from .services.tien_ich import chuan_hoa_sdt
 
 
@@ -19,7 +19,7 @@ class BootstrapMixin:
                 if ds and ds[0][0] == "" and str(ds[0][1]).lower().startswith(("-", "select")):
                     f.choices = [("", "— Chọn —")] + ds[1:]
             w = f.widget
-            if isinstance(w, (forms.CheckboxInput, forms.CheckboxSelectMultiple)):
+            if isinstance(w, (forms.CheckboxInput, forms.CheckboxSelectMultiple, forms.RadioSelect)):
                 w.attrs.setdefault("class", "form-check-input")
             elif isinstance(w, (forms.Select, forms.SelectMultiple)):
                 w.attrs.setdefault("class", "form-select")
@@ -233,3 +233,65 @@ class LocYeuCauForm(BootstrapMixin, forms.Form):
                                    choices=[("", "Mọi trạng thái")] + list(YeuCauHocTap.TrangThai.choices))
     mon = forms.ModelChoiceField(label="Môn", queryset=MonHoc.objects.all(), required=False, empty_label="Mọi môn")
     can_moi_them = forms.BooleanField(label="Cần mời thêm gia sư", required=False)
+    cho_chot = forms.BooleanField(label="Chờ chốt hình thức học", required=False)
+
+
+# ---------------------------------------------------------------------------
+# Phần 4 – Khóa học (PB-07..PB-10)
+# ---------------------------------------------------------------------------
+class KetQuaHocThuForm(BootstrapMixin, forms.Form):
+    ket_qua = forms.ChoiceField(label="Phụ huynh quyết định", choices=YeuCauHocTap.KetQuaHocThu.choices,
+                                widget=forms.RadioSelect)
+    ghi_chu = forms.CharField(label="Ghi chú", required=False, max_length=300,
+                              widget=forms.Textarea(attrs={"rows": 2}),
+                              help_text="Bắt buộc khi phụ huynh không tiếp tục.")
+
+    def clean(self):
+        d = super().clean()
+        if d.get("ket_qua") == YeuCauHocTap.KetQuaHocThu.DUNG and not d.get("ghi_chu", "").strip():
+            self.add_error("ghi_chu", "Cần ghi lý do phụ huynh không tiếp tục.")
+        return d
+
+
+class KhoaHocForm(BootstrapMixin, forms.ModelForm):
+    class Meta:
+        model = KhoaHoc
+        fields = ["so_buoi_dang_ky", "thoi_luong_phut", "hoc_phi_moi_buoi", "thu_lao_moi_buoi"]
+        help_texts = {
+            "hoc_phi_moi_buoi": "Số tiền phụ huynh đóng cho mỗi buổi (đồng).",
+            "thu_lao_moi_buoi": "Số tiền trả gia sư cho mỗi buổi hợp lệ, không vượt học phí.",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["so_buoi_dang_ky"].min_value = 1
+        self.fields["so_buoi_dang_ky"].widget.attrs["min"] = 1
+        self.fields["thoi_luong_phut"].widget.attrs.update(min=30, step=15)
+
+    def clean_so_buoi_dang_ky(self):
+        so = self.cleaned_data["so_buoi_dang_ky"]
+        if so < 1:
+            raise forms.ValidationError("Số buổi đăng ký phải lớn hơn 0.")
+        return so
+
+    def clean(self):
+        d = super().clean()
+        hp, tl = d.get("hoc_phi_moi_buoi"), d.get("thu_lao_moi_buoi")
+        if hp is not None and tl is not None and tl > hp:
+            self.add_error("thu_lao_moi_buoi", "Thù lao gia sư mỗi buổi không được lớn hơn học phí mỗi buổi.")
+        return d
+
+
+class LocKhoaHocForm(BootstrapMixin, forms.Form):
+    q = forms.CharField(label="Tìm kiếm", required=False,
+                        widget=forms.TextInput(attrs={"placeholder": "Học viên, mã KH"}))
+    trang_thai = forms.ChoiceField(label="Trạng thái", required=False,
+                                   choices=[("", "Mọi trạng thái")])
+    gia_su = forms.ModelChoiceField(label="Gia sư", required=False, empty_label="Mọi gia sư",
+                                    queryset=User.objects.filter(vai_tro=User.VaiTro.GIA_SU).order_by("ho_ten"))
+    mon = forms.ModelChoiceField(label="Môn", queryset=MonHoc.objects.all(), required=False, empty_label="Mọi môn")
+    sap_het = forms.BooleanField(label="Sắp hết buổi (còn ≤ 2)", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["trang_thai"].choices = [("", "Mọi trạng thái")] + list(KhoaHoc.TrangThai.choices)

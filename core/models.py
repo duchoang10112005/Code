@@ -308,6 +308,7 @@ class KhoaHoc(models.Model):
     hoc_phi_moi_buoi = models.PositiveIntegerField("Học phí mỗi buổi (đ)")
     thu_lao_moi_buoi = models.PositiveIntegerField("Thù lao gia sư mỗi buổi (đ)")
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DANG_HOC)
+    ghi_chu = models.CharField("Ghi chú / lý do đổi trạng thái", max_length=300, blank=True)
     tao_boi = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
@@ -324,10 +325,27 @@ class KhoaHoc(models.Model):
                 name="khoa_hoc_khong_vuot_so_buoi",
             ),
             models.CheckConstraint(condition=Q(so_buoi_dang_ky__gt=0), name="khoa_hoc_so_buoi_duong"),
+            # Thù lao gia sư mỗi buổi không vượt học phí mỗi buổi (chặn nhập nhầm).
+            models.CheckConstraint(
+                condition=Q(thu_lao_moi_buoi__lte=F("hoc_phi_moi_buoi")), name="khoa_hoc_thu_lao_khong_vuot_hoc_phi",
+                violation_error_message="Thù lao gia sư mỗi buổi không được lớn hơn học phí mỗi buổi.",
+            ),
         ]
 
     def __str__(self):
         return f"KH-{self.pk:04d} {self.hoc_vien} – {self.yeu_cau.mon_hoc}"
+
+    @property
+    def ma(self):
+        return f"KH-{self.pk:04d}"
+
+    @property
+    def phan_tram(self):
+        return round(self.so_buoi_da_dung * 100 / self.so_buoi_dang_ky) if self.so_buoi_dang_ky else 0
+
+    @property
+    def tong_hoc_phi(self):
+        return self.so_buoi_dang_ky * self.hoc_phi_moi_buoi
 
     @property
     def so_buoi_con_lai(self):

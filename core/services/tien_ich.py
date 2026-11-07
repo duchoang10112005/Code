@@ -19,3 +19,10 @@ def chuan_hoa_sdt(sdt):
 def thong_diep_loi(err):
     """Gộp các thông điệp của một ValidationError thành một câu để hiện cho người dùng."""
     return " ".join(err.messages) if hasattr(err, "messages") else str(err)
+
+
+def dinh_dang_tien(so):
+    """120000 → "120.000đ" (dấu chấm ngăn cách hàng nghìn theo cách viết Việt Nam)."""
+    if so is None or so == "":
+        return "—"
+    return f"{int(so):,}".replace(",", ".") + "đ"

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Khóa học · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1 class="mb-1">Khóa học</h1><p class="mo-ta">Theo dõi số buổi đã học và còn lại của từng khóa</p></div>
+</div>
+
+<form class="row g-2 mb-3 align-items-end" method="get" role="search">
+  <div class="col-lg-3"><label class="form-label" for="{{ form.q.id_for_label }}">Tìm kiếm</label>{{ form.q }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.gia_su.id_for_label }}">Gia sư</label>{{ form.gia_su }}</div>
+  <div class="col-lg-2"><label class="form-label" for="{{ form.mon.id_for_label }}">Môn</label>{{ form.mon }}</div>
+  <div class="col-lg-2 pb-2"><div class="form-check">{{ form.sap_het }}<label class="form-check-label" for="{{ form.sap_het.id_for_label }}">Sắp hết buổi</label></div></div>
+  <div class="col-lg-1"><button class="btn btn-outline-primary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
+</form>
+
+<div class="card"><div class="table-responsive">
+<table class="table table-hover">
+  <thead><tr><th>Mã</th><th>Học viên</th><th>Môn</th><th>Gia sư</th><th>Tiến độ</th><th class="cot-so">Còn lại</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
+  <tbody>
+  {% for k in trang %}
+    <tr>
+      <td class="so fw-semibold">{{ k.ma }}</td>
+      <td class="fw-semibold">{{ k.hoc_vien.ho_ten }}</td>
+      <td>{{ k.yeu_cau.mon_hoc }}</td>
+      <td>{{ k.gia_su.ho_ten }}</td>
+      <td>{% include "partials/tien_do_khoa.html" with khoa=k %}</td>
+      <td class="cot-so">{{ k.con_lai }}
+        {% if k.trang_thai == "DANG_HOC" and k.con_lai <= sap_het %}<div>{% nhan_tuy_chinh "CHO_DUYET" "Sắp hết" %}</div>{% endif %}</td>
+      <td>{% nhan_trang_thai k "trang_thai" %}</td>
+      <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}">Mở</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8"><div class="trang-rong"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Chưa có khóa học nào phù hợp.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% include "partials/phan_trang.html" %}
+{% endblock %}

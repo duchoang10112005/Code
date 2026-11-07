@@ -6,7 +6,8 @@
 <div class="row g-3 mb-4">
   {% url 'loi_moi_cua_toi' as lm %}
   {% include "partials/the_so.html" with nhan="Lời mời đang chờ bạn" so=so_loi_moi_cho|default:0 icon="envelope-open" can_xu_ly=True link=lm link_chu="Phản hồi" %}
-  {% include "partials/the_so.html" with nhan="Khóa đang phụ trách" so=so_khoa_phu_trach icon="journal-bookmark" %}
+  {% url 'lop_cua_toi' as lop %}
+  {% include "partials/the_so.html" with nhan="Khóa đang phụ trách" so=so_khoa_phu_trach icon="journal-bookmark" link=lop link_chu="Lớp của tôi" %}
   {% include "partials/the_so.html" with nhan="Buổi sắp tới" so=so_buoi_sap_toi icon="calendar-week" %}
 </div>
 {% endblock %}

@@ -108,3 +108,10 @@ def con_lai(thoi_diem):
     if gio and phut:
         return f"{gio} giờ {phut} phút"
     return f"{gio} giờ" if gio else f"{max(phut, 1)} phút"
+
+
+@register.filter
+def tien(so):
+    """{{ khoa.hoc_phi_moi_buoi|tien }} → 200.000đ"""
+    from core.services.tien_ich import dinh_dang_tien
+    return dinh_dang_tien(so)

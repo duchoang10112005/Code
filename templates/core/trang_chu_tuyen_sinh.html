@@ -9,7 +9,9 @@
   {% include "partials/the_so.html" with nhan="Cần mời thêm gia sư" so=so_can_moi_them icon="person-plus" can_xu_ly=True link=ds|add:"?can_moi_them=on" link_chu="Mời thêm" %}
   {% include "partials/the_so.html" with nhan="Yêu cầu mới, chưa gửi lời mời" so=so_yeu_cau_moi icon="inbox" can_xu_ly=True link=ds|add:"?trang_thai=MOI" link_chu="Chọn gia sư" %}
   {% include "partials/the_so.html" with nhan="Đang tìm gia sư" so=so_dang_tim icon="search" link=ds|add:"?trang_thai=DANG_TIM" link_chu="Xem" %}
-  {% include "partials/the_so.html" with nhan="Đã có gia sư nhận lớp" so=so_vua_phan_cong icon="person-check" link=ds|add:"?trang_thai=DA_PHAN_CONG" link_chu="Xem" %}
-  {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" %}
+  {% include "partials/the_so.html" with nhan="Đã có gia sư, chờ chốt hình thức học" so=so_cho_chot icon="signpost-split" can_xu_ly=True link=ds|add:"?cho_chot=on" link_chu="Chốt với phụ huynh" %}
+  {% url 'khoa_hoc_danh_sach' as dskh %}
+  {% include "partials/the_so.html" with nhan="Khóa sắp hết buổi (còn ≤ 2)" so=so_sap_het icon="hourglass-split" can_xu_ly=True link=dskh|add:"?sap_het=on" link_chu="Liên hệ gia hạn" %}
+  {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" link=dskh|add:"?trang_thai=DANG_HOC" link_chu="Xem" %}
 </div>
 {% endblock %}

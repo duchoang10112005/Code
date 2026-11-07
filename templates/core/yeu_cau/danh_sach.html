@@ -14,7 +14,10 @@
   <div class="col-lg-4"><label class="form-label" for="{{ form.q.id_for_label }}">Tìm kiếm</label>{{ form.q }}</div>
   <div class="col-lg-2"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
   <div class="col-lg-2"><label class="form-label" for="{{ form.mon.id_for_label }}">Môn</label>{{ form.mon }}</div>
-  <div class="col-lg-3 pb-2"><div class="form-check">{{ form.can_moi_them }}<label class="form-check-label" for="{{ form.can_moi_them.id_for_label }}">Cần mời thêm gia sư</label></div></div>
+  <div class="col-lg-3 pb-1">
+    <div class="form-check">{{ form.can_moi_them }}<label class="form-check-label" for="{{ form.can_moi_them.id_for_label }}">Cần mời thêm gia sư</label></div>
+    <div class="form-check">{{ form.cho_chot }}<label class="form-check-label" for="{{ form.cho_chot.id_for_label }}">Chờ chốt hình thức học</label></div>
+  </div>
   <div class="col-lg-1"><button class="btn btn-outline-primary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
 </form>
 

@@ -32,9 +32,54 @@
 </div></div>
 {% endif %}
 
-{% if yc.trang_thai == "DA_PHAN_CONG" %}
-  <div class="alert alert-success"><i class="bi bi-person-check-fill" aria-hidden="true"></i>
-    <div><b>{{ yc.gia_su.ho_ten }}</b> đã nhận lớp lúc {{ yc.phan_cong_luc|date:"H:i d/m/Y" }}. Bước tiếp theo: liên hệ phụ huynh để chốt học thử hoặc đăng ký chính thức.</div></div>
+{% if yc.trang_thai == "DA_PHAN_CONG" or yc.trang_thai == "HOC_THU_XONG" %}
+  <div class="card mb-4" style="border-color:var(--gs-primary)">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-signpost-split me-1" aria-hidden="true"></i>Bước tiếp theo</span>
+      <span class="small text-muted fw-normal">{{ yc.gia_su.ho_ten }} nhận lớp lúc {{ yc.phan_cong_luc|date:"H:i d/m/Y" }}</span>
+    </div>
+    <div class="card-body">
+      {% if yc.trang_thai == "HOC_THU_XONG" %}
+        <p class="mb-3">Phụ huynh đã đồng ý <b>tiếp tục</b> sau học thử{% if yc.ghi_chu_hoc_thu %} ({{ yc.ghi_chu_hoc_thu }}){% endif %}. Mở khóa chính thức để gia sư bắt đầu xếp lịch.</p>
+        {% if user.la_tuyen_sinh %}<a href="{% url 'khoa_hoc_tao' yc.pk %}" class="btn btn-primary"><i class="bi bi-journal-plus" aria-hidden="true"></i>Tạo khóa chính thức</a>{% endif %}
+      {% elif buoi_thu_hoan_tat %}
+        <div class="mb-3">
+          <div class="fw-semibold mb-1">Buổi học thử đã hoàn tất · {{ buoi_thu_hoan_tat.bat_dau|date:"H:i d/m/Y" }}</div>
+          {% if buoi_thu_hoan_tat.noi_dung %}<div class="small"><span class="text-muted">Nội dung:</span> {{ buoi_thu_hoan_tat.noi_dung }}</div>{% endif %}
+          {% if buoi_thu_hoan_tat.danh_gia %}<div class="small"><span class="text-muted">Gia sư nhận xét:</span> {{ buoi_thu_hoan_tat.danh_gia }}</div>{% endif %}
+        </div>
+        {% if user.la_tuyen_sinh %}
+        <form method="post" action="{% url 'yeu_cau_ket_qua_hoc_thu' yc.pk %}" novalidate>{% csrf_token %}
+          <fieldset class="mb-3"><legend class="form-label">Phụ huynh quyết định <span class="bat-buoc">*</span></legend>
+            <div class="d-flex flex-wrap gap-4">
+              {% for r in form_kq.ket_qua %}<div class="form-check">{{ r.tag }}<label class="form-check-label" for="{{ r.id_for_label }}">{{ r.choice_label }}</label></div>{% endfor %}
+            </div></fieldset>
+          <div class="mb-3"><label class="form-label" for="{{ form_kq.ghi_chu.id_for_label }}">Ghi chú</label>{{ form_kq.ghi_chu }}
+            <div class="form-text">{{ form_kq.ghi_chu.help_text }}</div></div>
+          <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Ghi kết quả học thử</button>
+        </form>
+        {% endif %}
+      {% elif buoi_thu %}
+        <p class="mb-0">Đang học thử: buổi {{ buoi_thu.bat_dau|date:"H:i d/m/Y" }} {% nhan_trang_thai buoi_thu "trang_thai" %}. Khi gia sư xác nhận hoàn tất, bạn sẽ ghi kết quả học thử tại đây.</p>
+      {% else %}
+        <p class="mb-3">Liên hệ phụ huynh để chốt hình thức học:</p>
+        <div class="row g-3">
+          <div class="col-md-6"><div class="border rounded p-3 h-100">
+            <div class="fw-semibold mb-1">A. Đăng ký chính thức ngay</div>
+            <div class="small text-muted mb-2">Phụ huynh không cần học thử. Mở khóa với số buổi, học phí, thù lao.</div>
+            {% if user.la_tuyen_sinh and co_the_tao_khoa %}<a href="{% url 'khoa_hoc_tao' yc.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-journal-plus" aria-hidden="true"></i>Tạo khóa chính thức</a>{% endif %}
+          </div></div>
+          <div class="col-md-6"><div class="border rounded p-3 h-100">
+            <div class="fw-semibold mb-1">B. Học thử trước</div>
+            <div class="small text-muted">Báo gia sư {{ yc.gia_su.ho_ten }} tạo buổi học thử (kèm phòng Zoom). Buổi học thử không tính vào số buổi và thù lao. Sau buổi học, bạn ghi kết quả tại đây.</div>
+          </div></div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% elif yc.trang_thai == "CHINH_THUC" %}
+  <div class="alert alert-success"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+    <div>Đã mở khóa chính thức{% if khoa %}: <a href="{% url 'khoa_hoc_chi_tiet' khoa.pk %}">{{ khoa.ma }}</a> ({{ khoa.so_buoi_da_dung }}/{{ khoa.so_buoi_dang_ky }} buổi){% endif %}.</div></div>
 {% elif yc.trang_thai == "DONG" %}
   <div class="alert alert-info"><i class="bi bi-archive-fill" aria-hidden="true"></i><div>Yêu cầu đã đóng. Lý do: {{ yc.ly_do_dong|default:"—" }}</div></div>
 {% endif %}
