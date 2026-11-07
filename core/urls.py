@@ -59,6 +59,7 @@ urlpatterns = [
     path("bang-gia/nhom/<int:pk>/", bang_gia.sua_nhom, name="bang_gia_sua_nhom"),
     path("bang-gia/gan-mon/", bang_gia.gan_mon, name="bang_gia_gan_mon"),
     path("bang-gia/goi/", bang_gia.them_goi, name="bang_gia_them_goi"),
+    path("bang-gia/goi/<int:pk>/quyen-loi/", bang_gia.sua_quyen_loi, name="bang_gia_sua_quyen_loi"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

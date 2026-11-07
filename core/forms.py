@@ -291,8 +291,10 @@ class NhomGiaForm(BootstrapMixin, forms.ModelForm):
 class GoiKhoaHocForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = GoiKhoaHoc
-        fields = ["so_buoi", "ty_le_giam", "hieu_luc_tu", "hieu_luc_den"]
-        widgets = {"hieu_luc_tu": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        fields = ["so_buoi", "ty_le_giam", "hieu_luc_tu", "hieu_luc_den", "quyen_loi"]
+        help_texts = {"quyen_loi": "Mỗi dòng một quyền lợi. Để trống = giữ quyền lợi của mức đang áp dụng."}
+        widgets = {"quyen_loi": forms.Textarea(attrs={"rows": 3}),
+                   "hieu_luc_tu": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
                    "hieu_luc_den": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
 
     def clean(self):

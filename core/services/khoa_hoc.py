@@ -131,7 +131,8 @@ def tao_khoa_hoc(nvts, yc, so_buoi, thoi_luong_phut):
                 so_buoi_dang_ky=bao_gia.so_buoi, thoi_luong_phut=bao_gia.thoi_luong_phut,
                 don_gia_gio=bao_gia.don_gia_gio, hoc_phi_goc_moi_buoi=bao_gia.hoc_phi_goc,
                 ty_le_giam=bao_gia.ty_le_giam, ty_le_trung_tam=bao_gia.ty_le_trung_tam,
-                hoc_phi_moi_buoi=bao_gia.hoc_phi, thu_lao_moi_buoi=bao_gia.thu_lao)
+                hoc_phi_moi_buoi=bao_gia.hoc_phi, thu_lao_moi_buoi=bao_gia.thu_lao,
+                quyen_loi_goi=bao_gia.quyen_loi)
             nhanh = "nhánh A – đăng ký thẳng" if trang_thai_cu == YC.DA_PHAN_CONG else "sau học thử"
             ghi_nhat_ky(nvts, "Tạo khóa học chính thức", str(khoa),
                         f"{nhanh}; gói {khoa.so_buoi_dang_ky} buổi × {khoa.get_thoi_luong_phut_display()}, "

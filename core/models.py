@@ -14,6 +14,12 @@ from django.db.models import F, Q
 from django.utils import timezone
 
 
+def tach_dong(chu):
+    """Văn bản nhiều dòng → danh sách dòng (bỏ dòng trống, gạch đầu dòng)."""
+    ky_tu_bo = " -•\t"
+    return [d.strip(ky_tu_bo) for d in (chu or "").splitlines() if d.strip(ky_tu_bo)]
+
+
 # =============================================================================
 # D1 – Tài khoản người dùng (PB-01, PB-24)
 # =============================================================================
@@ -339,6 +345,7 @@ class KhoaHoc(models.Model):
     hoc_phi_goc_moi_buoi = models.PositiveIntegerField("Học phí gốc mỗi buổi (đ)", default=0)
     ty_le_giam = models.DecimalField("Giảm giá theo gói (%)", max_digits=5, decimal_places=2, default=0)
     ty_le_trung_tam = models.DecimalField("Trung tâm giữ lại (%)", max_digits=5, decimal_places=2, default=0)
+    quyen_loi_goi = models.TextField("Quyền lợi gói lúc đăng ký", blank=True)
     hoc_phi_moi_buoi = models.PositiveIntegerField("Học phí mỗi buổi (đ)")
     thu_lao_moi_buoi = models.PositiveIntegerField("Thù lao gia sư mỗi buổi (đ)")
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DANG_HOC)
@@ -378,6 +385,10 @@ class KhoaHoc(models.Model):
         return round(self.so_buoi_da_dung * 100 / self.so_buoi_dang_ky) if self.so_buoi_dang_ky else 0
 
     @property
+    def ds_quyen_loi(self):
+        return tach_dong(self.quyen_loi_goi)
+
+    @property
     def tong_hoc_phi(self):
         return self.so_buoi_dang_ky * self.hoc_phi_moi_buoi
 
@@ -407,8 +418,14 @@ class GoiKhoaHoc(models.Model):
     ty_le_giam = models.DecimalField("Giảm giá (%)", max_digits=5, decimal_places=2, default=0)
     hieu_luc_tu = models.DateField("Áp dụng từ ngày")
     hieu_luc_den = models.DateField("Đến ngày", null=True, blank=True, help_text="Để trống = không thời hạn")
+    quyen_loi = models.TextField("Quyền lợi của gói", blank=True,
+                                 help_text="Mỗi dòng một quyền lợi, hiện cho NV tuyển sinh khi báo giá.")
     tao_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     tao_luc = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def ds_quyen_loi(self):
+        return tach_dong(self.quyen_loi)
 
     class Meta:
         verbose_name = "Gói khóa học"

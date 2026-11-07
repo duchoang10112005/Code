@@ -62,7 +62,9 @@
           <div>Tổng khóa: <b>{{ khoa.tong_hoc_phi|tien }}</b></div></div>
       {% endif %}
       <div class="text-muted">Thù lao gia sư</div><div class="mb-2 so">{{ khoa.thu_lao_moi_buoi|tien }}/buổi</div>
-      <div class="text-muted">Thời lượng</div><div>{{ khoa.get_thoi_luong_phut_display }}/buổi</div>
+      <div class="text-muted">Thời lượng</div><div class="mb-2">{{ khoa.get_thoi_luong_phut_display }}/buổi</div>
+      {% if khoa.ds_quyen_loi %}<div class="text-muted">Quyền lợi gói (lúc đăng ký)</div>
+        <ul class="ps-3 mb-0">{% for q in khoa.ds_quyen_loi %}<li>{{ q }}</li>{% endfor %}</ul>{% endif %}
     </div></div>
   </div>
   <div class="col-xl-8">

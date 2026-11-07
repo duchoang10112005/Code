@@ -55,6 +55,7 @@ class BaoGia:
     hoc_phi_goc: int
     hoc_phi: int
     thu_lao: int
+    quyen_loi: str = ""
 
     @property
     def tong_hoc_phi(self):
@@ -84,7 +85,7 @@ def tinh_gia(mon_hoc, so_buoi, thoi_luong_phut, ngay=None):
     if thu_lao > hoc_phi:
         raise ValidationError("Bảng giá đang sai: thù lao gia sư lớn hơn học phí sau giảm. Admin cần giảm % giảm giá của gói.")
     return BaoGia(nhom, so_buoi, thoi_luong_phut, nhom.don_gia_gio, goi.ty_le_giam, nhom.ty_le_trung_tam,
-                  int(goc), hoc_phi, thu_lao)
+                  int(goc), hoc_phi, thu_lao, goi.quyen_loi)
 
 
 def bang_bao_gia(ngay=None):
@@ -101,5 +102,6 @@ def bang_bao_gia(ngay=None):
                     "hoc_phi": lam_tron(goc * (100 - g.ty_le_giam) / 100, 1000),
                     "thu_lao": lam_tron(goc * (100 - nhom.ty_le_trung_tam) / 100, 100),
                     "giam": float(g.ty_le_giam),
+                    "quyen_loi": g.ds_quyen_loi,
                 })
     return ds

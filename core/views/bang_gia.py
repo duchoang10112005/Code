@@ -73,12 +73,26 @@ def gan_mon(request):
 
 @vai_tro_required(ADMIN)
 @require_POST
+def sua_quyen_loi(request, pk):
+    goi = get_object_or_404(GoiKhoaHoc, pk=pk)
+    goi.quyen_loi = request.POST.get("quyen_loi", "").strip()[:2000]
+    goi.save(update_fields=["quyen_loi"])
+    ghi_nhat_ky(request.user, "Sửa quyền lợi gói", goi.get_so_buoi_display(), "; ".join(goi.ds_quyen_loi))
+    messages.success(request, f"Đã cập nhật quyền lợi {goi.get_so_buoi_display()}. Khóa đã tạo giữ quyền lợi lúc đăng ký.")
+    return redirect("bang_gia")
+
+
+@vai_tro_required(ADMIN)
+@require_POST
 def them_goi(request):
     form = GoiKhoaHocForm(request.POST)
     if not form.is_valid():
         return xem(request, form_goi=form)
     goi = form.save(commit=False)
     goi.tao_boi = request.user
+    if not goi.quyen_loi.strip():
+        dang_ap_dung = bang_gia.goi_dang_ap_dung().get(goi.so_buoi)
+        goi.quyen_loi = dang_ap_dung.quyen_loi if dang_ap_dung else ""
     goi.save()
     den = goi.hieu_luc_den.strftime("%d/%m/%Y") if goi.hieu_luc_den else "không thời hạn"
     ghi_nhat_ky(request.user, "Đặt giảm giá gói", goi.get_so_buoi_display(),

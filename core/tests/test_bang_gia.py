@@ -1,7 +1,8 @@
 """Kiểm thử bảng giá: học phí / thù lao tự tính theo nhóm môn × khung giờ × gói (PB-09, BRULE-15/16).
 
 Quy định của trung tâm (07/11/2026): môn thường 70.000đ/giờ – trung tâm giữ 8%; IELTS 130.000đ/giờ – 10%;
-khung buổi 1h / 1,5h / 2h; gói 10 / 20 / 30 buổi giảm theo giai đoạn; thù lao tính trên giá GỐC.
+khung buổi 1h / 1,5h / 2h; gói 10 / 20 / 30 buổi KHÔNG giảm giá mà có quyền lợi; khuyến mãi theo mùa
+(nếu Admin đặt) do trung tâm chịu – thù lao luôn tính trên giá GỐC.
 """
 
 from datetime import timedelta
@@ -20,7 +21,7 @@ MK = "MatKhau@Manh123"
 
 
 class DuLieu(TestCase):
-    """Migration 0006 đã tạo: Môn thường 70k/8%, IELTS 130k/10%, gói 10/20/30 giảm 0/3/5% từ hôm nay."""
+    """Migration 0006–0007 đã tạo: Môn thường 70k/8%, IELTS 130k/10%, gói 10/20/30 giảm 0% kèm quyền lợi."""
 
     def setUp(self):
         self.thuong = NhomGia.objects.get(ten="Môn thường")
@@ -40,7 +41,14 @@ class TinhGiaTest(DuLieu):
         bg = tinh_gia(self.ielts, 10, 90)
         self.assertEqual((bg.hoc_phi_goc, bg.thu_lao), (195_000, 175_500))
 
-    def test_PB09_goi_30_buoi_giam_5_phan_tram_thu_lao_van_tinh_tren_gia_goc(self):
+    def test_PB09_goi_dai_khong_giam_gia_nhung_co_quyen_loi(self):
+        bg10, bg30 = tinh_gia(self.toan, 10, 60), tinh_gia(self.toan, 30, 60)
+        self.assertEqual((bg10.hoc_phi, bg30.hoc_phi, bg30.tong_hoc_phi), (70_000, 70_000, 2_100_000))
+        self.assertIn("Ưu tiên giữ nguyên gia sư", bg30.quyen_loi)
+        self.assertNotIn("Ưu tiên giữ nguyên gia sư", bg10.quyen_loi)
+
+    def test_PB09_khuyen_mai_5_phan_tram_thu_lao_van_tinh_tren_gia_goc(self):
+        GoiKhoaHoc.objects.filter(so_buoi=30).update(ty_le_giam=Decimal("5"))
         bg = tinh_gia(self.toan, 30, 60)  # 70.000 × 95% = 66.500 → làm tròn 67.000
         self.assertEqual((bg.hoc_phi, bg.thu_lao, bg.tong_hoc_phi), (67_000, 64_400, 2_010_000))
         self.assertEqual(bg.tiet_kiem, 90_000)
@@ -61,9 +69,9 @@ class TinhGiaTest(DuLieu):
         hom_nay = timezone.localdate()
         GoiKhoaHoc.objects.create(so_buoi=20, ty_le_giam=Decimal("7"), hieu_luc_tu=hom_nay + timedelta(days=1),
                                   hieu_luc_den=hom_nay + timedelta(days=30))
-        self.assertEqual(goi_dang_ap_dung(hom_nay)[20].ty_le_giam, Decimal("3"))
+        self.assertEqual(goi_dang_ap_dung(hom_nay)[20].ty_le_giam, Decimal("0"))
         self.assertEqual(goi_dang_ap_dung(hom_nay + timedelta(days=5))[20].ty_le_giam, Decimal("7"))
-        self.assertEqual(goi_dang_ap_dung(hom_nay + timedelta(days=31))[20].ty_le_giam, Decimal("3"))
+        self.assertEqual(goi_dang_ap_dung(hom_nay + timedelta(days=31))[20].ty_le_giam, Decimal("0"))
 
 
 class TaoKhoaTheoBangGiaTest(DuLieu):
@@ -82,9 +90,10 @@ class TaoKhoaTheoBangGiaTest(DuLieu):
         self.client.post(reverse("khoa_hoc_tao", args=[self.yc.pk]),
                          {"so_buoi": 20, "thoi_luong_phut": 120, "hoc_phi_moi_buoi": 1, "thu_lao_moi_buoi": 999_999})
         khoa = KhoaHoc.objects.get(yeu_cau=self.yc)
-        # 2 giờ × 70.000 = 140.000; gói 20 giảm 3% → 135.800 → 136.000; thù lao 140.000 × 92% = 128.800
-        self.assertEqual((khoa.hoc_phi_moi_buoi, khoa.thu_lao_moi_buoi, khoa.hoc_phi_goc_moi_buoi), (136_000, 128_800, 140_000))
-        self.assertEqual((khoa.ty_le_giam, khoa.ty_le_trung_tam, khoa.don_gia_gio), (Decimal("3"), Decimal("8"), 70_000))
+        # 2 giờ × 70.000 = 140.000 (không giảm); thù lao 140.000 × 92% = 128.800
+        self.assertEqual((khoa.hoc_phi_moi_buoi, khoa.thu_lao_moi_buoi, khoa.hoc_phi_goc_moi_buoi), (140_000, 128_800, 140_000))
+        self.assertEqual((khoa.ty_le_giam, khoa.ty_le_trung_tam, khoa.don_gia_gio), (Decimal("0"), Decimal("8"), 70_000))
+        self.assertIn("Ưu tiên giữ nguyên gia sư", khoa.quyen_loi_goi)  # chụp lại quyền lợi
 
     def test_PB09_doi_bang_gia_khong_anh_huong_khoa_da_tao(self):
         khoa = dv_kh.tao_khoa_hoc(self.nvts, self.yc, 10, 60)
@@ -111,11 +120,24 @@ class AdminBangGiaTest(DuLieu):
         self.assertTrue(NhatKy.objects.filter(hanh_dong="Đặt giảm giá gói").exists())
 
     def test_BRULE16_khong_ha_ty_le_trung_tam_duoi_muc_giam_dang_ap_dung(self):
+        GoiKhoaHoc.objects.filter(so_buoi=30).update(ty_le_giam=Decimal("5"))  # đang chạy khuyến mãi 5%
         r = self.client.post(reverse("bang_gia_sua_nhom", args=[self.thuong.pk]),
                              {f"n{self.thuong.pk}-don_gia_gio": 70_000, f"n{self.thuong.pk}-ty_le_trung_tam": "4"})
         self.assertContains(r, "mức giảm giá lớn nhất đang áp dụng")
         self.thuong.refresh_from_db()
         self.assertEqual(self.thuong.ty_le_trung_tam, Decimal("8"))
+
+    def test_PB09_them_khuyen_mai_khong_ghi_quyen_loi_thi_giu_quyen_loi_cu(self):
+        mai = (timezone.localdate() + timedelta(days=1)).isoformat()
+        self.client.post(reverse("bang_gia_them_goi"), {"so_buoi": 20, "ty_le_giam": "5", "hieu_luc_tu": mai})
+        moi = GoiKhoaHoc.objects.get(so_buoi=20, ty_le_giam=5)
+        self.assertIn("Ưu tiên giữ nguyên gia sư", moi.quyen_loi)
+
+    def test_PB09_sua_quyen_loi_khong_doi_khoa_da_tao(self):
+        goi = GoiKhoaHoc.objects.get(so_buoi=10)
+        self.client.post(reverse("bang_gia_sua_quyen_loi", args=[goi.pk]), {"quyen_loi": "Tặng tài liệu"})
+        goi.refresh_from_db()
+        self.assertEqual(goi.ds_quyen_loi, ["Tặng tài liệu"])
 
     def test_PB24_nvts_xem_bang_gia_nhung_khong_sua(self):
         self.client.logout()

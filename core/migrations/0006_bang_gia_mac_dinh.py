@@ -1,7 +1,7 @@
 """Bảng giá mặc định theo quy định của trung tâm (Admin sửa được trên trang Bảng giá):
 - Môn thường: 70.000đ/giờ, trung tâm giữ 8%
 - IELTS: 130.000đ/giờ, trung tâm giữ 10%
-- Gói 10 / 20 / 30 buổi: giảm 0% / 3% / 5% (áp dụng từ ngày chạy migration)
+- Gói 10 / 20 / 30 buổi: không giảm giá (quyền lợi gói dài do migration 0007 thêm)
 """
 
 from decimal import Decimal
@@ -23,7 +23,7 @@ def tao_mac_dinh(apps, schema_editor):
     MonHoc.objects.filter(nhom_gia__isnull=True).update(nhom_gia=thuong)
 
     hom_nay = timezone.localdate()
-    for so_buoi, giam in ((10, "0"), (20, "3"), (30, "5")):
+    for so_buoi, giam in ((10, "0"), (20, "0"), (30, "0")):
         if not GoiKhoaHoc.objects.filter(so_buoi=so_buoi).exists():
             GoiKhoaHoc.objects.create(so_buoi=so_buoi, ty_le_giam=Decimal(giam), hieu_luc_tu=hom_nay)
 

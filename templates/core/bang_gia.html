@@ -4,7 +4,7 @@
 {% block content %}
 <div class="dau-trang">
   <div><h1 class="mb-1">Bảng giá</h1>
-    <p class="mo-ta">Học phí tính theo giờ × khung buổi (1h / 1,5h / 2h), giảm theo gói. Thù lao gia sư tính trên giá gốc — phần giảm do trung tâm chịu.</p></div>
+    <p class="mo-ta">Học phí = đơn giá giờ × khung buổi (1h / 1,5h / 2h). Gói dài không giảm giá mà có thêm quyền lợi; khuyến mãi theo mùa (nếu có) do trung tâm chịu, thù lao gia sư luôn tính trên giá gốc.</p></div>
 </div>
 
 {# ---------------- Báo giá nhanh (cho cả NVTS) ---------------- #}
@@ -90,10 +90,19 @@
       <div class="card-body">
         <div class="row g-3">
           {% for so, g in goi.items %}
-            <div class="col-4"><div class="border rounded p-3 text-center h-100">
+            <div class="col-md-4"><div class="border rounded p-3 h-100">
               <div class="fw-semibold">{{ g.get_so_buoi_display }}</div>
-              <div class="fs-4 so" style="color:var(--gs-primary)">{% if g.ty_le_giam %}−{{ g.ty_le_giam|phan_tram }}{% else %}0%{% endif %}</div>
-              <div class="small text-muted">từ {{ g.hieu_luc_tu|date:"d/m/Y" }}{% if g.hieu_luc_den %} đến {{ g.hieu_luc_den|date:"d/m/Y" }}{% endif %}</div>
+              <div class="small mb-2">{% if g.ty_le_giam %}<span style="color:var(--gs-tone-success-fg)">Khuyến mãi −{{ g.ty_le_giam|phan_tram }}</span>{% else %}<span class="text-muted">Giá như nhau mọi gói</span>{% endif %}
+                {% if g.hieu_luc_den %}<span class="text-muted"> · đến {{ g.hieu_luc_den|date:"d/m/Y" }}</span>{% endif %}</div>
+              <ul class="small ps-3 mb-2">{% for q in g.ds_quyen_loi %}<li>{{ q }}</li>{% empty %}<li class="text-muted">Chưa có quyền lợi</li>{% endfor %}</ul>
+              {% if user.la_admin %}
+              <details><summary class="small">Sửa quyền lợi</summary>
+                <form method="post" action="{% url 'bang_gia_sua_quyen_loi' g.pk %}" class="mt-2">{% csrf_token %}
+                  <label class="visually-hidden" for="ql{{ g.pk }}">Quyền lợi {{ g.get_so_buoi_display }}</label>
+                  <textarea id="ql{{ g.pk }}" name="quyen_loi" rows="4" class="form-control form-control-sm mb-2">{{ g.quyen_loi }}</textarea>
+                  <button class="btn btn-sm btn-outline-primary">Lưu</button>
+                </form></details>
+              {% endif %}
             </div></div>
           {% endfor %}
         </div>
@@ -103,12 +112,12 @@
 
     {% if user.la_admin %}
     <div class="card mb-4">
-      <div class="card-header">Đặt mức giảm cho giai đoạn mới</div>
+      <div class="card-header">Khuyến mãi theo giai đoạn (không bắt buộc)</div>
       <div class="card-body">
         <form method="post" action="{% url 'bang_gia_them_goi' %}" novalidate>{% csrf_token %}
           {% with form=form_goi %}{% include "partials/form_fields.html" %}{% endwith %}
           <div class="form-text mb-3">Mức có ngày bắt đầu gần nhất (và còn hiệu lực) sẽ được áp dụng. Khóa học đã tạo giữ nguyên giá cũ.</div>
-          <button class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm mức giảm</button>
+          <button class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm mức khuyến mãi</button>
         </form>
       </div>
     </div>

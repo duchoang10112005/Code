@@ -38,11 +38,12 @@
       <div class="border rounded p-3 mb-3" style="background:var(--gs-primary-soft)" aria-live="polite">
         <div class="fw-semibold mb-2"><i class="bi bi-calculator me-1" aria-hidden="true"></i>Báo giá cho phụ huynh</div>
         <div class="row small g-2">
-          <div class="col-6 text-muted">Giá gốc mỗi buổi</div><div class="col-6 text-end so" id="bg-goc">—</div>
-          <div class="col-6 text-muted">Giảm theo gói</div><div class="col-6 text-end so" id="bg-giam">—</div>
+          <div class="col-6 text-muted dong-km">Giá gốc mỗi buổi</div><div class="col-6 text-end so dong-km" id="bg-goc">—</div>
+          <div class="col-6 text-muted dong-km">Khuyến mãi</div><div class="col-6 text-end so dong-km" id="bg-giam">—</div>
           <div class="col-6 text-muted">Học phí mỗi buổi</div><div class="col-6 text-end so fw-semibold" id="bg-hp">—</div>
           <div class="col-6 text-muted">Tổng học phí khóa</div><div class="col-6 text-end so fw-semibold fs-5" id="bg-tong">—</div>
-          <div class="col-6 text-muted">Phụ huynh tiết kiệm</div><div class="col-6 text-end so" id="bg-tk">—</div>
+          <div class="col-6 text-muted dong-km">Phụ huynh tiết kiệm</div><div class="col-6 text-end so dong-km" id="bg-tk">—</div>
+          <div class="col-12 mt-2"><div class="text-muted mb-1">Quyền lợi của gói</div><ul class="mb-0 ps-3" id="bg-ql"></ul></div>
           <div class="col-12"><hr class="my-1"></div>
           <div class="col-6 text-muted">Thù lao gia sư mỗi buổi</div><div class="col-6 text-end so" id="bg-tl">—</div>
         </div>
@@ -82,6 +83,11 @@
       dat("bg-tong", tien(b.hoc_phi * so));
       dat("bg-tk", tien((b.hoc_phi_goc - b.hoc_phi) * so));
       dat("bg-tl", tien(b.thu_lao));
+      document.querySelectorAll(".dong-km").forEach((e) => (e.hidden = !b.giam));
+      const ql = document.getElementById("bg-ql");
+      ql.replaceChildren(...(b.quyen_loi.length ? b.quyen_loi : ["Không có quyền lợi thêm"]).map((t) => {
+        const li = document.createElement("li"); li.textContent = t; return li;
+      }));
     }
     document.querySelectorAll('input[type="radio"]').forEach((r) => r.addEventListener("change", capNhat));
     capNhat();

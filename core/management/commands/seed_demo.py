@@ -170,6 +170,7 @@ class Command(BaseCommand):
             yeu_cau=yc2, hoc_vien=hv, gia_su=gs3, so_buoi_dang_ky=10, so_buoi_da_dung=8, thoi_luong_phut=90,
             don_gia_gio=bg.don_gia_gio, hoc_phi_goc_moi_buoi=bg.hoc_phi_goc, ty_le_giam=bg.ty_le_giam,
             ty_le_trung_tam=bg.ty_le_trung_tam, hoc_phi_moi_buoi=bg.hoc_phi, thu_lao_moi_buoi=bg.thu_lao,
+            quyen_loi_goi=bg.quyen_loi,
             tao_boi=nvts)
         # 8 buổi đã hoàn tất (mỗi buổi có đúng 1 bản ghi thù lao) để số liệu khớp nhau.
         for i in range(8):
