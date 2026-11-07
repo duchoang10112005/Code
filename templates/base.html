@@ -42,7 +42,6 @@
         <li><a class="nav-link {% if 'hoc_vien' in p %}active{% endif %}" href="{% url 'hoc_vien_danh_sach' %}"><i class="bi bi-person-lines-fill" aria-hidden="true"></i>Học viên</a></li>
         <li><a class="nav-link {% if 'gia_su' in p %}active{% endif %}" href="{% url 'gia_su_danh_sach' %}"><i class="bi bi-person-badge" aria-hidden="true"></i>Gia sư</a></li>
         <li><a class="nav-link {% if 'khoa_hoc' in p %}active{% endif %}" href="{% url 'khoa_hoc_danh_sach' %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Khóa học</a></li>
-        <li><a class="nav-link {% if 'bang_gia' in p %}active{% endif %}" href="{% url 'bang_gia' %}"><i class="bi bi-tags" aria-hidden="true"></i>Bảng giá</a></li>
         {% include "partials/muc_sap_co.html" with icon="cash-coin" ten="Đối soát thù lao" %}
       {% endif %}
 

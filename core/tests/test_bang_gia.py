@@ -139,10 +139,11 @@ class AdminBangGiaTest(DuLieu):
         goi.refresh_from_db()
         self.assertEqual(goi.ds_quyen_loi, ["Tặng tài liệu"])
 
-    def test_PB24_nvts_xem_bang_gia_nhung_khong_sua(self):
+    def test_PB24_chi_admin_vao_bang_gia(self):
+        self.assertContains(self.client.get(reverse("bang_gia")), "Giá mỗi buổi")
         self.client.logout()
         self.client.login(username="ts", password=MK)
-        self.assertContains(self.client.get(reverse("bang_gia")), "Báo giá hiện hành")
+        self.assertEqual(self.client.get(reverse("bang_gia")).status_code, 403)
         r = self.client.post(reverse("bang_gia_them_goi"), {"so_buoi": 10, "ty_le_giam": "1",
                                                            "hieu_luc_tu": timezone.localdate().isoformat()})
         self.assertEqual(r.status_code, 403)

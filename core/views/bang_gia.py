@@ -1,5 +1,7 @@
-"""Bảng giá: Admin cấu hình đơn giá / % trung tâm theo nhóm môn, gán môn vào nhóm, đặt % giảm của
-gói 10/20/30 buổi theo giai đoạn. NV tuyển sinh xem để báo giá cho phụ huynh."""
+"""Bảng giá – chỉ Admin: cấu hình đơn giá / % trung tâm theo nhóm môn, gán môn vào nhóm, quyền lợi gói,
+khuyến mãi theo giai đoạn. NV tuyển sinh không cần trang này: form tạo khóa tự báo giá."""
+
+from decimal import Decimal
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -7,25 +9,25 @@ from django.views.decorators.http import require_POST
 
 from core.forms import GoiKhoaHocForm, NhomGiaForm
 from core.models import GoiKhoaHoc, KhoaHoc, MonHoc, NhomGia
-from core.permissions import ADMIN, TUYEN_SINH, vai_tro_required
+from core.permissions import ADMIN, vai_tro_required
 from core.services import bang_gia
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.tien_ich import dinh_dang_phan_tram, dinh_dang_tien
 
 
-@vai_tro_required(ADMIN, TUYEN_SINH)
+@vai_tro_required(ADMIN)
 def xem(request, form_goi=None, form_nhom=None):
     ds_nhom = list(NhomGia.objects.all())
     goi = bang_gia.goi_dang_ap_dung()
-    bao_gia = bang_gia.bang_bao_gia()
-    # Bảng báo giá dạng lưới: nhóm → [(gói, [giá 1h, 1,5h, 2h])]
+    # Lưới: nhóm môn × khung giờ → học phí gốc / gia sư nhận / trung tâm giữ mỗi buổi
     luoi = []
     for nhom in ds_nhom:
-        hang = []
-        for so in sorted(goi):
-            o = [b for b in bao_gia if b["nhom_id"] == nhom.pk and b["so_buoi"] == so]
-            hang.append((goi[so], o))
-        luoi.append((nhom, hang))
+        o = []
+        for phut, _ in KhoaHoc.ThoiLuong.choices:
+            goc = nhom.don_gia_gio * phut // 60
+            thu_lao = bang_gia.lam_tron(Decimal(goc) * (100 - nhom.ty_le_trung_tam) / 100, 100)
+            o.append({"hoc_phi": goc, "thu_lao": thu_lao, "trung_tam": goc - thu_lao})
+        luoi.append((nhom, o))
     return render(request, "core/bang_gia.html", {
         "ds_nhom": ds_nhom,
         "forms_nhom": {n.pk: (form_nhom if form_nhom and form_nhom.instance.pk == n.pk else NhomGiaForm(instance=n, prefix=f"n{n.pk}")) for n in ds_nhom},
@@ -33,6 +35,7 @@ def xem(request, form_goi=None, form_nhom=None):
         "goi": goi, "lich_su_goi": GoiKhoaHoc.objects.select_related("tao_boi")[:30],
         "form_goi": form_goi or GoiKhoaHocForm(),
         "luoi": luoi, "khung_gio": KhoaHoc.ThoiLuong.choices,
+        "co_khuyen_mai": any(g.ty_le_giam for g in goi.values()),
         "gioi_han_giam": bang_gia.gioi_han_giam(),
     })
 

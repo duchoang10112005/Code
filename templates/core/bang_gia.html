@@ -4,25 +4,25 @@
 {% block content %}
 <div class="dau-trang">
   <div><h1 class="mb-1">Bảng giá</h1>
-    <p class="mo-ta">Học phí = đơn giá giờ × khung buổi (1h / 1,5h / 2h). Gói dài không giảm giá mà có thêm quyền lợi; khuyến mãi theo mùa (nếu có) do trung tâm chịu, thù lao gia sư luôn tính trên giá gốc.</p></div>
+    <p class="mo-ta">Điều chỉnh đơn giá theo giờ và tỉ lệ trung tâm giữ lại. Học phí mỗi buổi = đơn giá × khung buổi (1h / 1,5h / 2h); thù lao gia sư = học phí × (100% − tỉ lệ trung tâm). Khóa đã tạo giữ nguyên giá cũ.</p></div>
 </div>
 
-{# ---------------- Báo giá nhanh (cho cả NVTS) ---------------- #}
+{# ---------------- Giá mỗi buổi theo nhóm môn × khung giờ ---------------- #}
 <div class="card mb-4">
-  <div class="card-header">Báo giá hiện hành <span class="small text-muted fw-normal">· học phí mỗi buổi sau giảm (tổng khóa)</span></div>
+  <div class="card-header">Giá mỗi buổi <span class="small text-muted fw-normal">· như nhau với gói 10 / 20 / 30 buổi{% if co_khuyen_mai %}, chưa tính khuyến mãi đang chạy{% endif %}</span></div>
   <div class="table-responsive"><table class="table">
-    <thead><tr><th>Nhóm môn</th><th>Gói</th>{% for v, nhan in khung_gio %}<th class="cot-so">{{ nhan }}</th>{% endfor %}</tr></thead>
+    <thead><tr><th>Nhóm môn</th>{% for v, nhan in khung_gio %}<th class="cot-so">Buổi {{ nhan }}</th>{% endfor %}</tr></thead>
     <tbody>
-    {% for nhom, hang in luoi %}
-      {% for goi, o in hang %}
-        <tr>
-          {% if forloop.first %}<td rowspan="{{ hang|length }}" class="fw-semibold">{{ nhom.ten }}<div class="small text-muted fw-normal">{{ nhom.don_gia_gio|tien }}/giờ</div></td>{% endif %}
-          <td>{{ goi.get_so_buoi_display }}{% if goi.ty_le_giam %} <span class="small" style="color:var(--gs-tone-success-fg)">−{{ goi.ty_le_giam|phan_tram }}</span>{% endif %}</td>
-          {% for b in o %}<td class="cot-so">{{ b.hoc_phi|tien }}<div class="small text-muted">tổng {% widthratio b.hoc_phi 1 goi.so_buoi as tong %}{{ tong|tien }}</div></td>{% endfor %}
-        </tr>
-      {% endfor %}
+    {% for nhom, o in luoi %}
+      <tr>
+        <td class="fw-semibold">{{ nhom.ten }}<div class="small text-muted fw-normal">{{ nhom.don_gia_gio|tien }}/giờ · trung tâm giữ {{ nhom.ty_le_trung_tam|phan_tram }}</div></td>
+        {% for x in o %}
+          <td class="cot-so"><div class="fw-semibold">{{ x.hoc_phi|tien }}</div>
+            <div class="small text-muted">Gia sư {{ x.thu_lao|tien }} · TT {{ x.trung_tam|tien }}</div></td>
+        {% endfor %}
+      </tr>
     {% empty %}
-      <tr><td colspan="5"><div class="trang-rong py-3">Chưa có nhóm giá hoặc gói đang áp dụng.</div></td></tr>
+      <tr><td colspan="4"><div class="trang-rong py-3">Chưa có nhóm giá.</div></td></tr>
     {% endfor %}
     </tbody>
   </table></div>
