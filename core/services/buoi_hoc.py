@@ -252,9 +252,9 @@ def xac_nhan_hoan_tat(gia_su, buoi, du_lieu):
             if khoa.so_buoi_da_dung >= khoa.so_buoi_dang_ky and khoa.trang_thai == KH.DANG_HOC:
                 KhoaHoc.objects.filter(pk=khoa.pk).update(trang_thai=KH.HOAN_THANH)
             if buoi.thu_lao_du_kien:
-                ngay = timezone.localtime(buoi.bat_dau).date()
-                ThuLao.objects.create(buoi_hoc=buoi, gia_su=gia_su, thang=ngay.replace(day=1),
-                                      so_tien=buoi.thu_lao_du_kien)
+                from core.services.thu_lao import thang_ghi_nhan
+                ThuLao.objects.create(buoi_hoc=buoi, gia_su=gia_su, so_tien=buoi.thu_lao_du_kien,
+                                      thang=thang_ghi_nhan(gia_su, timezone.localtime(buoi.bat_dau).date()))
         ghi_nhat_ky(gia_su, "Xác nhận hoàn tất buổi học", buoi.ma,
                     str(BuoiHoc.XepLoai(du_lieu["xep_loai"]).label))
     buoi.refresh_from_db()

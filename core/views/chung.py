@@ -33,7 +33,20 @@ def trang_chu(request):
     hom_nay = timezone.localdate()
     chung = {"hom_nay": hom_nay, "thu_hom_nay": hom_nay.weekday()}
     if u.la_admin:
+        from core.models import DoiGiaSu, DoiSoatThang
+        from core.services.buoi_hoc import quet_han
+        from core.services.ngoai_le import ds_can_xem_xet, ds_cho_lau
+        quet_han()
+        can_xem = list(ds_can_xem_xet())
         ctx = {
+            "ds_can_xem_xet": can_xem[:5], "so_can_xem_xet_tong": len(can_xem),
+            "ds_doi_cho_duyet": DoiGiaSu.objects.filter(trang_thai=DoiGiaSu.TrangThai.CHO_DUYET)
+                                .select_related("khoa_hoc__hoc_vien", "khoa_hoc__yeu_cau__mon_hoc", "gia_su_cu"),
+            "ds_cho_chot": DoiSoatThang.objects.filter(trang_thai=DoiSoatThang.TrangThai.DA_KIEM_TRA)
+                           .select_related("gia_su", "kiem_tra_boi").order_by("thang", "gia_su__ho_ten"),
+            "so_cho_lau": ds_cho_lau().count(),
+            "so_buoi_hom_nay": BuoiHoc.objects.filter(bat_dau__date=hom_nay).exclude(
+                trang_thai=BuoiHoc.TrangThai.DA_HUY).count(),
             "so_tai_khoan": User.objects.count(),
             "so_bi_khoa": User.objects.filter(is_active=False).count(),
             "so_gia_su": User.objects.filter(vai_tro=User.VaiTro.GIA_SU, is_active=True).count(),

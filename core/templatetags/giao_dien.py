@@ -61,6 +61,10 @@ BANG_TRANG_THAI = {
     "TAM_TINH": ("info", "calculator"),
     "TAM_GIU": ("warning", "lock"),
     "DA_DOI_SOAT": ("success", "clipboard-check"),
+    "DA_KIEM_TRA": ("info", "clipboard"),
+    "CAN_KIEM_TRA_LAI": ("warning", "arrow-repeat"),
+    "DA_CHOT": ("success", "lock-fill"),
+    "DA_THUC_HIEN": ("success", "check2"),
 }
 
 

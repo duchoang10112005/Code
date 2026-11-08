@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, quy_chuan, tai_khoan, yeu_cau
+from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -71,6 +71,15 @@ urlpatterns = [
     path("khoa-hoc/<int:pk>/doi-gia-su/", ngoai_le.doi_gia_su, name="khoa_hoc_doi_gia_su"),
     path("khoa-hoc/<int:pk>/sua-so-buoi/", ngoai_le.sua_so_buoi, name="khoa_hoc_sua_so_buoi"),
     path("yeu-cau/<int:pk>/gan-thang/", ngoai_le.gan_thang, name="yeu_cau_gan_thang"),
+
+    # Phần 6 – Thu nhập, đối soát thù lao
+    path("thu-nhap/", thu_lao.thu_nhap, name="thu_nhap"),
+    path("doi-soat/", thu_lao.doi_soat, name="doi_soat"),
+    path("doi-soat/csv/", thu_lao.xuat_csv, name="doi_soat_csv"),
+    path("doi-soat/gia-su/<int:pk>/", thu_lao.doi_soat_gia_su, name="doi_soat_gia_su"),
+    path("doi-soat/gia-su/<int:pk>/dieu-chinh/", thu_lao.them_dieu_chinh, name="doi_soat_dieu_chinh"),
+    path("doi-soat/gia-su/<int:pk>/kiem-tra/", thu_lao.kiem_tra, name="doi_soat_kiem_tra"),
+    path("doi-soat/gia-su/<int:pk>/chot/", thu_lao.chot, name="doi_soat_chot"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

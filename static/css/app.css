@@ -289,3 +289,10 @@ body.trang-bia > main { min-height: 100vh; display: flex; flex-direction: column
 .dong-xem-xet:first-child { border-top: 0; }
 .dong-xem-xet .nhan-vo { text-decoration: none; color: var(--gs-text); }
 .khung-form { max-width: 40rem; }
+
+/* --- Tổng tháng (thu nhập / đối soát) ---------------------------------- */
+.tong-thang { display: flex; flex-wrap: wrap; gap: var(--gs-space-6) var(--gs-space-8); padding: var(--gs-space-4) var(--gs-space-6); }
+.tong-thang .nhan { display: block; font-size: var(--gs-fs-xs); color: var(--gs-text-muted); }
+.tong-thang b { font-size: var(--gs-fs-h3); }
+.tong-thang .tong b { font-size: var(--gs-fs-stat); color: var(--gs-cover); }
+.chu-tru { color: var(--gs-red); }

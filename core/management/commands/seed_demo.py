@@ -161,17 +161,36 @@ class Command(BaseCommand):
         khoa = KhoaHoc.objects.create(
             yeu_cau=yc2, hoc_vien=hv, gia_su=gs3, so_buoi_dang_ky=10, so_buoi_da_dung=8, thoi_luong_phut=90,
             hoc_phi_moi_buoi=150_000, thu_lao_moi_buoi=120_000, tao_boi=nvts)
-        # 8 buổi đã hoàn tất (mỗi buổi có đúng 1 bản ghi thù lao) để số liệu khớp nhau.
+        # 8 buổi đã xác nhận (mỗi buổi có đúng 1 bản ghi thù lao) để số liệu khớp nhau.
+        # Buổi thứ 8 không đạt hậu kiểm Zoom → "Đang xem xét", thù lao tạm giữ (demo màn hình Admin).
+        TT, han = BuoiHoc.TrangThai, timedelta(hours=12)
         for i in range(8):
-            bat_dau = now - timedelta(days=35 - i * 4, hours=3)
+            bat_dau = now - timedelta(days=29 - i * 3, hours=3)
+            co_van_de = i == 7
             b = BuoiHoc.objects.create(
                 loai=BuoiHoc.Loai.CHINH_THUC, khoa_hoc=khoa, yeu_cau=yc2, gia_su=gs3, hoc_vien=hv,
-                bat_dau=bat_dau, thoi_luong_phut=90, trang_thai=BuoiHoc.TrangThai.HOAN_TAT,
-                xac_nhan_luc=bat_dau + timedelta(hours=2), kiem_tra=BuoiHoc.KiemTra.HOP_LE,
+                bat_dau=bat_dau, thoi_luong_phut=90, so_thu_tu=i + 1, thu_lao_du_kien=khoa.thu_lao_moi_buoi,
+                han_xac_nhan=bat_dau + timedelta(minutes=90) + han,
+                trang_thai=TT.DANG_XEM_XET if co_van_de else TT.HOAN_TAT,
+                xac_nhan_luc=bat_dau + timedelta(hours=2),
+                kiem_tra=BuoiHoc.KiemTra.CO_VAN_DE if co_van_de else BuoiHoc.KiemTra.HOP_LE,
+                kiem_tra_ghi_chu="Gia sư và học viên cùng có mặt 22/90 phút (cần ≥ 67%)." if co_van_de else "",
+                phut_tham_gia_chung=22 if co_van_de else 88,
                 zoom_meeting_id=f"8100000000{i}", zoom_join_url=f"https://zoom.us/j/8100000000{i}?pwd=gia-lap",
                 noi_dung=f"Buổi {i + 1}: luyện tập phép nhân chia và bài toán có lời văn.",
-                danh_gia="Em làm bài cẩn thận hơn, tốc độ tính tăng.",
+                xep_loai=BuoiHoc.XepLoai.TOT, danh_gia="Em làm bài cẩn thận hơn, tốc độ tính tăng.",
+                zalo_trang_thai=BuoiHoc.GuiZalo.DA_GUI,
             )
             ThuLao.objects.create(buoi_hoc=b, gia_su=gs3, thang=timezone.localdate(bat_dau).replace(day=1),
-                                  so_tien=khoa.thu_lao_moi_buoi)
-        self.stdout.write(f"  + {khoa.ma} {hv} (nhánh A, 8/10 buổi)")
+                                  so_tien=khoa.thu_lao_moi_buoi,
+                                  trang_thai=ThuLao.TrangThai.TAM_GIU if co_van_de else ThuLao.TrangThai.TAM_TINH)
+        # Một buổi vừa dạy xong 2 giờ trước, chờ gia sư xác nhận; một buổi bị tự hủy vì quá hạn.
+        for bat_dau, trang_thai, ly_do in [(now - timedelta(hours=3, minutes=30), TT.DA_LEN_LICH, ""),
+                                           (now - timedelta(days=2), TT.DA_HUY, BuoiHoc.LyDoHuy.QUA_HAN)]:
+            BuoiHoc.objects.create(
+                loai=BuoiHoc.Loai.CHINH_THUC, khoa_hoc=khoa, yeu_cau=yc2, gia_su=gs3, hoc_vien=hv, bat_dau=bat_dau,
+                thoi_luong_phut=90, thu_lao_du_kien=khoa.thu_lao_moi_buoi, trang_thai=trang_thai, ly_do_huy=ly_do,
+                han_xac_nhan=bat_dau + timedelta(minutes=90) + han, ban_ghi_trang_thai=BuoiHoc.BanGhi.CHO_XU_LY,
+                zoom_meeting_id="8200000000" + str(int(trang_thai == TT.DA_HUY)),
+                zoom_join_url="https://zoom.us/j/82000000000?pwd=gia-lap")
+        self.stdout.write(f"  + {khoa.ma} {hv} (nhánh A, 8/10 buổi, 1 buổi chờ xác nhận, 1 buổi đang xem xét)")

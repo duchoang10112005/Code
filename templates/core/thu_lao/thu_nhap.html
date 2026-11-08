@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Thu nhập · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1>Thu nhập tháng {{ thang|date:"m/Y" }}</h1><p class="mo-ta">Thù lao được ghi tự động khi bạn xác nhận buổi học; trung tâm đối soát và chốt cuối tháng.</p></div>
+  <nav class="d-flex gap-2" aria-label="Chọn tháng">
+    <a class="btn btn-outline-secondary" href="?thang={{ thang_truoc|date:'Y-m' }}"><i class="bi bi-chevron-left" aria-hidden="true"></i>Tháng {{ thang_truoc|date:"m/Y" }}</a>
+    <a class="btn btn-outline-secondary" href="?thang={{ thang_sau|date:'Y-m' }}">Tháng {{ thang_sau|date:"m/Y" }}<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+  </nav>
+</div>
+{% include "core/thu_lao/_tong_thang.html" %}
+{% include "core/thu_lao/_bang_buoi.html" %}
+{% endblock %}

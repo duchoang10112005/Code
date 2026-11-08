@@ -588,13 +588,21 @@ class DieuChinhThuLao(models.Model):
 
 
 class DoiSoatThang(models.Model):
-    """Chốt đối soát một tháng của một gia sư → khóa sổ tháng đó."""
+    """Đối soát một tháng của một gia sư. Kiểm soát 2 người:
+    NV tuyển sinh kiểm tra (DA_KIEM_TRA) → Admin chốt (DA_CHOT) → khóa sổ tháng đó."""
+
+    class TrangThai(models.TextChoices):
+        DA_KIEM_TRA = "DA_KIEM_TRA", "NVTS đã kiểm tra"
+        DA_CHOT = "DA_CHOT", "Đã chốt"
 
     gia_su = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="doi_soat")
     thang = models.DateField()
-    tong_tien = models.IntegerField()
+    tong_tien = models.IntegerField(help_text="Tổng lúc NVTS kiểm tra; Admin chốt chỉ khi tổng không đổi")
+    trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DA_KIEM_TRA)
+    kiem_tra_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    kiem_tra_luc = models.DateTimeField(null=True, blank=True)
     chot_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
-    chot_luc = models.DateTimeField(auto_now_add=True)
+    chot_luc = models.DateTimeField(null=True, blank=True)
     ghi_chu = models.TextField(blank=True)
 
     class Meta:

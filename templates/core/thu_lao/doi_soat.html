@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Đối soát thù lao · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1>Đối soát thù lao tháng {{ thang|date:"m/Y" }}</h1>
+    <p class="mo-ta">NV tuyển sinh đối chiếu và bấm Kiểm tra; Admin chốt. Người kiểm tra và người chốt phải là hai người khác nhau.</p></div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="?thang={{ thang_truoc|date:'Y-m' }}" aria-label="Tháng trước"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+    <a class="btn btn-outline-secondary" href="?thang={{ thang_sau|date:'Y-m' }}" aria-label="Tháng sau"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+    <a class="btn btn-outline-primary" href="{% url 'doi_soat_csv' %}?thang={{ thang|date:'Y-m' }}"><i class="bi bi-download" aria-hidden="true"></i>Xuất CSV</a>
+  </div>
+</div>
+
+<div class="trang-giay"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Gia sư</th><th class="cot-so">Số buổi</th><th class="cot-so">Tạm tính</th><th class="cot-so">Tạm giữ</th><th class="cot-so">Điều chỉnh</th><th class="cot-so">Tổng</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
+  <tbody>
+  {% for d in bang %}
+    <tr>
+      <td><a href="{% url 'doi_soat_gia_su' d.gia_su.pk %}?thang={{ thang|date:'Y-m' }}"><b>{{ d.gia_su.ho_ten }}</b></a></td>
+      <td class="cot-so">{{ d.so_buoi }}</td>
+      <td class="cot-so">{{ d.tam_tinh|add:d.da_doi_soat|tien }}</td>
+      <td class="cot-so">{% if d.tam_giu %}<span class="loi-phe d-inline">{{ d.tam_giu|tien }}</span>{% else %}—{% endif %}</td>
+      <td class="cot-so">{% if d.dieu_chinh %}{{ d.dieu_chinh|tien }}{% else %}—{% endif %}</td>
+      <td class="cot-so"><b>{{ d.tong|tien }}</b></td>
+      <td>
+        {% if d.trang_thai == "DA_CHOT" %}{% nhan_tuy_chinh "DA_CHOT" "Đã chốt" %}<div class="small text-muted">{{ d.doi_soat.chot_boi.ho_ten }} · {{ d.doi_soat.chot_luc|date:"d/m" }}</div>
+        {% elif d.trang_thai == "DA_KIEM_TRA" %}{% nhan_tuy_chinh "DA_KIEM_TRA" "Đã kiểm tra" %}<div class="small text-muted">{{ d.doi_soat.kiem_tra_boi.ho_ten }} · {{ d.doi_soat.kiem_tra_luc|date:"d/m" }}</div>
+        {% elif d.trang_thai == "CAN_KIEM_TRA_LAI" %}{% nhan_tuy_chinh "CAN_KIEM_TRA_LAI" "Số liệu đổi, kiểm tra lại" %}
+        {% else %}{% nhan_tuy_chinh "CHUA_KIEM_TRA" "Chưa kiểm tra" %}{% endif %}
+      </td>
+      <td class="cot-thao-tac">
+        {% if user.la_tuyen_sinh and d.trang_thai != "DA_CHOT" and d.trang_thai != "DA_KIEM_TRA" %}
+          <form method="post" action="{% url 'doi_soat_kiem_tra' d.gia_su.pk %}" class="d-inline">{% csrf_token %}
+            <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+            <button class="btn btn-sm btn-primary"{% if d.so_tam_giu %} disabled title="Còn buổi tạm giữ"{% endif %}>Kiểm tra</button></form>
+        {% elif user.la_admin and d.trang_thai == "DA_KIEM_TRA" %}
+          <form method="post" action="{% url 'doi_soat_chot' d.gia_su.pk %}" class="d-inline"
+                data-xac-nhan="Chốt thù lao tháng {{ thang|date:'m/Y' }} của {{ d.gia_su.ho_ten }}: {{ d.tong|tien }}? Sau khi chốt không sửa được, chỉ điều chỉnh ở tháng sau." data-nut="Chốt tháng">{% csrf_token %}
+            <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+            <button class="btn btn-sm btn-primary">Chốt</button></form>
+        {% endif %}
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'doi_soat_gia_su' d.gia_su.pk %}?thang={{ thang|date:'Y-m' }}">Chi tiết</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8"><div class="trang-rong py-3"><i class="bi bi-cash-coin" aria-hidden="true"></i>Chưa có thù lao nào trong tháng {{ thang|date:"m/Y" }}.</div></td></tr>
+  {% endfor %}
+  </tbody>
+  {% if bang %}<tfoot><tr><th colspan="5" class="cot-so">Tổng cả tháng</th><th class="cot-so so">{{ tong_ca_thang|tien }}</th><th colspan="2"></th></tr></tfoot>{% endif %}
+</table></div></div>
+{% endblock %}

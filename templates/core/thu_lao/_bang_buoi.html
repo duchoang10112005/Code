@@ -1,0 +1,23 @@
+{% load giao_dien %}
+{# Danh sách buổi có thù lao trong tháng, gom theo học viên. Dùng: include with nhom=... #}
+{% for hv, ds in nhom %}
+<div class="trang-giay mb-3">
+  <div class="px-4 pt-3 pb-2 fw-semibold">{{ hv.ho_ten }} <span class="text-muted fw-normal small">· {{ ds|length }} buổi</span></div>
+  <div class="table-responsive"><table class="table">
+    <thead><tr><th>Buổi</th><th>Thời gian</th><th>Môn · khóa</th><th>Trạng thái</th><th class="cot-so">Thù lao</th></tr></thead>
+    <tbody>
+    {% for t in ds %}
+      <tr>
+        <td><b>{{ t.buoi_hoc.ma }}</b>{% if t.buoi_hoc.so_thu_tu %}<div class="small text-muted">buổi {{ t.buoi_hoc.so_thu_tu }}</div>{% endif %}</td>
+        <td class="so">{{ t.buoi_hoc.bat_dau|date:"H:i d/m" }}</td>
+        <td>{{ t.buoi_hoc.yeu_cau.mon_hoc }}{% if t.buoi_hoc.khoa_hoc %} · {{ t.buoi_hoc.khoa_hoc.ma }}{% endif %}</td>
+        <td>{% nhan_trang_thai t "trang_thai" %}</td>
+        <td class="cot-so">{% if t.trang_thai == "HUY" %}<s>{{ t.so_tien|tien }}</s>{% else %}{{ t.so_tien|tien }}{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% empty %}
+<div class="trang-giay trang-rong">Không có buổi nào được tính thù lao trong tháng này.</div>
+{% endfor %}

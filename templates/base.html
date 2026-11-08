@@ -34,7 +34,7 @@
         <li><a class="nav-link {% if 'khoa_hoc' in p %}active{% endif %}" href="{% url 'khoa_hoc_danh_sach' %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Khóa học</a></li>
         <li><a class="nav-link {% if p == 'xem_xet' %}active{% endif %}" href="{% url 'xem_xet' %}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Cần xem xét
           {% if so_can_xem_xet %}<span class="dem">{{ so_can_xem_xet }}<span class="visually-hidden"> việc cần xem xét</span></span>{% endif %}</a></li>
-        {% include "partials/muc_sap_co.html" with icon="speedometer2" ten="Dashboard vận hành" %}
+        <li><a class="nav-link {% if 'doi_soat' in p %}active{% endif %}" href="{% url 'doi_soat' %}"><i class="bi bi-cash-coin" aria-hidden="true"></i>Đối soát thù lao</a></li>
         <li><a class="nav-link {% if p == 'nhat_ky' %}active{% endif %}" href="{% url 'nhat_ky' %}"><i class="bi bi-journal-text" aria-hidden="true"></i>Nhật ký thao tác</a></li>
       {% endif %}
 
@@ -44,7 +44,7 @@
         <li><a class="nav-link {% if 'hoc_vien' in p %}active{% endif %}" href="{% url 'hoc_vien_danh_sach' %}"><i class="bi bi-person-lines-fill" aria-hidden="true"></i>Học viên</a></li>
         <li><a class="nav-link {% if 'gia_su' in p %}active{% endif %}" href="{% url 'gia_su_danh_sach' %}"><i class="bi bi-person-badge" aria-hidden="true"></i>Gia sư</a></li>
         <li><a class="nav-link {% if 'khoa_hoc' in p %}active{% endif %}" href="{% url 'khoa_hoc_danh_sach' %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Khóa học</a></li>
-        {% include "partials/muc_sap_co.html" with icon="cash-coin" ten="Đối soát thù lao" %}
+        <li><a class="nav-link {% if 'doi_soat' in p %}active{% endif %}" href="{% url 'doi_soat' %}"><i class="bi bi-cash-coin" aria-hidden="true"></i>Đối soát thù lao</a></li>
       {% endif %}
 
       {% if user.la_gia_su %}
@@ -55,7 +55,7 @@
         <li><a class="nav-link {% if p == 'lop_cua_toi' or p == 'khoa_cua_toi' %}active{% endif %}" href="{% url 'lop_cua_toi' %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Lớp của tôi</a></li>
         <li><a class="nav-link {% if 'buoi' in p %}active{% endif %}" href="{% url 'buoi_cua_toi' %}"><i class="bi bi-calendar-week" aria-hidden="true"></i>Buổi học của tôi
           {% if so_buoi_cho_xac_nhan %}<span class="dem">{{ so_buoi_cho_xac_nhan }}<span class="visually-hidden"> buổi chờ xác nhận</span></span>{% endif %}</a></li>
-        {% include "partials/muc_sap_co.html" with icon="wallet2" ten="Thu nhập" %}
+        <li><a class="nav-link {% if p == 'thu_nhap' %}active{% endif %}" href="{% url 'thu_nhap' %}"><i class="bi bi-wallet2" aria-hidden="true"></i>Thu nhập</a></li>
       {% endif %}
 
       <div class="muc">Cá nhân</div>
