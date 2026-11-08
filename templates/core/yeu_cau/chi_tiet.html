@@ -14,8 +14,10 @@
   </div>
   <div class="d-flex align-items-center gap-2">
     {% nhan_trang_thai yc "trang_thai" %}
-    {% if co_the_sua and user.la_tuyen_sinh %}
+    {% if co_the_sua and user.la_tuyen_sinh or user.la_admin and yc.trang_thai != "DONG" %}
       <a href="{% url 'yeu_cau_sua' yc.pk %}" class="btn btn-outline-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</a>
+    {% endif %}
+    {% if co_the_sua and user.la_tuyen_sinh %}
       <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#khoi-dong">Đóng yêu cầu</button>
     {% endif %}
   </div>
@@ -143,6 +145,24 @@
       {% endif %}
       </form>
     </div>
+    {% if de_xuat and user.la_admin %}
+    <div class="card mb-4 the-buoc-tiep">
+      <div class="card-header">Gán thẳng gia sư (vận hành)</div>
+      <div class="card-body">
+        <p class="small text-muted">Chỉ dùng khi yêu cầu chờ quá lâu hoặc đã thỏa thuận trực tiếp với gia sư. Hệ thống ghi "Vận hành chốt" vào nhật ký và báo cho gia sư.</p>
+        <form method="post" action="{% url 'yeu_cau_gan_thang' yc.pk %}" class="row g-2 align-items-end"
+              data-xac-nhan="Gán thẳng gia sư cho {{ yc.ma }}? Các lời mời đang chờ sẽ bị vô hiệu." data-nut="Gán thẳng">{% csrf_token %}
+          <div class="col-md-4"><label class="form-label" for="gt_gia_su">Gia sư</label>
+            <select id="gt_gia_su" name="gia_su" class="form-select" required>
+              {% for g in de_xuat %}<option value="{{ g.ho_so.user_id }}">{{ g.ho_so.user.ho_ten }}</option>{% endfor %}
+            </select></div>
+          <div class="col-md-5"><label class="form-label" for="gt_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
+            <input id="gt_ly_do" name="ly_do" class="form-control" required maxlength="300"></div>
+          <div class="col-md-3"><button class="btn btn-outline-primary w-100">Gán thẳng</button></div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
     {% endif %}
 
     <div class="card">

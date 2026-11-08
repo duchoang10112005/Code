@@ -368,6 +368,43 @@ class KhoaHoc(models.Model):
         return max(self.so_buoi_con_lai - self.so_buoi_dang_len_lich, 0)
 
 
+class DoiGiaSu(models.Model):
+    """Lịch sử đổi gia sư của một khóa (D6). NVTS thực hiện; từ lần thứ 2 trong cùng khóa cần Admin duyệt."""
+
+    class LyDo(models.TextChoices):
+        PHU_HUYNH_YEU_CAU = "PHU_HUYNH_YEU_CAU", "Phụ huynh muốn đổi gia sư"
+        KHONG_PHU_HOP = "KHONG_PHU_HOP", "Gia sư chưa phù hợp (chuyên môn, phương pháp)"
+        LICH_KHONG_KHOP = "LICH_KHONG_KHOP", "Lịch học không còn khớp"
+        GIA_SU_NGHI = "GIA_SU_NGHI", "Gia sư nghỉ / không tiếp tục dạy"
+        KHAC = "KHAC", "Lý do khác"
+
+    class TrangThai(models.TextChoices):
+        CHO_DUYET = "CHO_DUYET", "Chờ Admin duyệt"
+        DA_THUC_HIEN = "DA_THUC_HIEN", "Đã thực hiện"
+        TU_CHOI = "TU_CHOI", "Admin từ chối"
+
+    khoa_hoc = models.ForeignKey(KhoaHoc, on_delete=models.PROTECT, related_name="lich_su_doi_gia_su")
+    gia_su_cu = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
+    gia_su_moi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+                                   related_name="+")
+    ly_do = models.CharField("Lý do", max_length=30, choices=LyDo.choices)
+    ghi_chu = models.CharField("Ghi chú", max_length=300, blank=True)
+    trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DA_THUC_HIEN)
+    tao_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    tao_luc = models.DateTimeField(auto_now_add=True)
+    duyet_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                  related_name="+")
+    duyet_luc = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Đổi gia sư"
+        verbose_name_plural = "D6 · Lịch sử đổi gia sư"
+        ordering = ["-tao_luc"]
+
+    def __str__(self):
+        return f"Đổi GS {self.khoa_hoc.ma}: {self.gia_su_cu} ({self.get_trang_thai_display()})"
+
+
 # =============================================================================
 # D7 – Buổi học (PB-07, PB-11..15, PB-29, PB-31, PB-32)
 # Vòng đời: LOI_ZOOM ⇄ DA_LEN_LICH → HOAN_TAT → (hậu kiểm lỗi) DANG_XEM_XET → HOAN_TAT | DA_HUY

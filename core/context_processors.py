@@ -4,13 +4,16 @@ from django.utils import timezone
 def thong_tin_chung(request):
     """Biến dùng chung cho mọi template (menu, huy hiệu thông báo)."""
     # Tăng PHIEN_BAN_CSS mỗi khi sửa static/css/app.css để trình duyệt tải bản mới.
-    data = {"TEN_HE_THONG": "Trung tâm Gia sư Trực tuyến", "PHIEN_BAN_CSS": "2.2"}
+    data = {"TEN_HE_THONG": "Trung tâm Gia sư Trực tuyến", "PHIEN_BAN_CSS": "2.3"}
     user = getattr(request, "user", None)
     if user and user.is_authenticated and user.la_admin:
         from core.models import MonGiaSu
         data["so_mon_cho_duyet"] = MonGiaSu.objects.filter(
             trang_thai=MonGiaSu.TrangThai.CHO_DUYET, ho_so__user__vai_tro="GIA_SU"
         ).count()
+        from core.models import BuoiHoc, DoiGiaSu
+        data["so_can_xem_xet"] = (BuoiHoc.objects.filter(trang_thai="DANG_XEM_XET").count()
+                                  + DoiGiaSu.objects.filter(trang_thai="CHO_DUYET").count())
     if user and user.is_authenticated and user.la_gia_su:
         # Tính động, không cần kho "thông báo" riêng.
         data["so_loi_moi_cho"] = user.loi_moi.filter(

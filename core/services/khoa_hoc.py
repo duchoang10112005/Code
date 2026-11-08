@@ -159,6 +159,8 @@ def doi_trang_thai_khoa(nvts, khoa, moi, ly_do=""):
         raise ValidationError("Trạng thái không hợp lệ.")
     if moi in (KH.TAM_DUNG, KH.HUY) and not ly_do:
         raise ValidationError("Cần ghi lý do tạm dừng / hủy khóa.")
+    if moi == KH.DANG_HOC and not YeuCauHocTap.objects.filter(pk=khoa.yeu_cau_id, trang_thai=YC.CHINH_THUC).exists():
+        raise ValidationError("Khóa đang chờ gia sư mới nhận lớp; khóa sẽ tự học tiếp khi có gia sư nhận.")
     cu = khoa.get_trang_thai_display()
     n = KhoaHoc.objects.filter(pk=khoa.pk, trang_thai__in=CHUYEN_HOP_LE[moi]).update(
         trang_thai=moi, ghi_chu=ly_do)

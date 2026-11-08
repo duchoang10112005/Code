@@ -61,17 +61,60 @@
       <div class="text-muted">Thù lao gia sư</div><div class="mb-2 so">{{ khoa.thu_lao_moi_buoi|tien }}/buổi</div>
       <div class="text-muted">Thời lượng</div><div>{{ khoa.get_thoi_luong_phut_display }}/buổi</div>
     </div></div>
+
+    {% if not la_gia_su and lich_su_doi %}
+    <div class="card mt-4"><div class="card-header">Lịch sử đổi gia sư</div><div class="card-body small">
+      {% for d in lich_su_doi %}
+        <div class="mb-2"><b>{{ d.gia_su_cu.ho_ten }}</b>{% if d.gia_su_moi %} → {{ d.gia_su_moi.ho_ten }}{% endif %} · {{ d.tao_luc|date:"d/m/Y" }}
+          <div class="text-muted">{{ d.get_ly_do_display }}{% if d.ghi_chu %}: {{ d.ghi_chu }}{% endif %} · {{ d.get_trang_thai_display }}</div></div>
+      {% endfor %}
+    </div></div>
+    {% endif %}
+
+    {% if co_the_doi_gia_su %}
+    <div class="card mt-4"><div class="card-header">Đổi gia sư</div><div class="card-body">
+      {% if de_nghi_cho_duyet %}
+        <p class="loi-phe yen mb-0"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Đang chờ Admin duyệt đề nghị đổi gia sư ({{ de_nghi_cho_duyet.get_ly_do_display }}).</p>
+      {% else %}
+      <p class="small text-muted">Các buổi sắp tới của gia sư hiện tại sẽ bị hủy, khóa tạm dừng và yêu cầu quay về "Đang tìm gia sư". Số buổi còn lại ({{ khoa.so_buoi_con_lai }}) được giữ cho gia sư mới.{% if user.la_tuyen_sinh and so_lan_doi %} Đây là lần đổi thứ {{ so_lan_doi|add:1 }}, cần Admin duyệt.{% endif %}</p>
+      <form method="post" action="{% url 'khoa_hoc_doi_gia_su' khoa.pk %}"
+            data-xac-nhan="Đổi gia sư cho khóa {{ khoa.ma }}? Các buổi sắp tới của {{ khoa.gia_su.ho_ten }} sẽ bị hủy." data-nut="Đổi gia sư">{% csrf_token %}
+        <div class="mb-2"><label class="form-label" for="dg_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
+          <select id="dg_ly_do" name="ly_do" class="form-select" required>
+            {% for v, nhan in ly_do_doi %}<option value="{{ v }}">{{ nhan }}</option>{% endfor %}
+          </select></div>
+        <div class="mb-3"><label class="form-label" for="dg_ghi_chu">Ghi chú</label>
+          <input id="dg_ghi_chu" name="ghi_chu" class="form-control" maxlength="300"></div>
+        <button class="btn btn-outline-danger"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Đổi gia sư</button>
+      </form>
+      {% endif %}
+    </div></div>
+    {% endif %}
+
+    {% if user.la_admin and khoa.trang_thai != "HUY" %}
+    <div class="card mt-4"><div class="card-header">Sửa số buổi đăng ký</div><div class="card-body">
+      <p class="small text-muted">Dùng khi nhập nhầm. Không thấp hơn số buổi đã học cộng số buổi đang lên lịch.</p>
+      <form method="post" action="{% url 'khoa_hoc_sua_so_buoi' khoa.pk %}" class="row g-2 align-items-end">{% csrf_token %}
+        <div class="col-4"><label class="form-label" for="sb_so">Số buổi</label>
+          <input id="sb_so" type="number" name="so_buoi" min="1" value="{{ khoa.so_buoi_dang_ky }}" class="form-control" required></div>
+        <div class="col-8"><label class="form-label" for="sb_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
+          <input id="sb_ly_do" name="ly_do" class="form-control" required maxlength="300"></div>
+        <div class="col-12"><button class="btn btn-outline-primary">Lưu số buổi</button></div>
+      </form>
+    </div></div>
+    {% endif %}
   </div>
   <div class="col-xl-8">
     <div class="card"><div class="card-header">Buổi học</div>
       <div class="table-responsive"><table class="table">
-        <thead><tr><th>Thời gian</th><th>Loại</th><th>Trạng thái</th><th>Nội dung</th></tr></thead>
+        <thead><tr><th>Thời gian</th><th>Loại</th><th>Gia sư</th><th>Trạng thái</th><th>Nội dung</th></tr></thead>
         <tbody>
         {% for b in ds_buoi %}
-          <tr><td class="so text-nowrap">{{ b.bat_dau|date:"H:i d/m/Y" }}</td><td>{{ b.get_loai_display }}</td>
-            <td>{% nhan_trang_thai b "trang_thai" %}</td><td class="small text-muted">{{ b.noi_dung|truncatechars:80 }}</td></tr>
+          <tr><td class="so text-nowrap">{{ b.bat_dau|date:"H:i d/m/Y" }}</td><td>{{ b.get_loai_display }}{% if b.so_thu_tu %} · buổi {{ b.so_thu_tu }}{% endif %}</td>
+            <td class="small">{{ b.gia_su.ho_ten }}</td>
+            <td>{% nhan_trang_thai b "trang_thai" %}{% if b.trang_thai == "DA_HUY" %}<div class="small text-muted">{{ b.get_ly_do_huy_display }}</div>{% endif %}</td><td class="small text-muted">{{ b.noi_dung|truncatechars:80 }}</td></tr>
         {% empty %}
-          <tr><td colspan="4"><div class="trang-rong py-3"><i class="bi bi-calendar-x" aria-hidden="true"></i>Chưa có buổi học nào. Gia sư sẽ tạo buổi học (kèm phòng Zoom) ở chức năng Buổi học.</div></td></tr>
+          <tr><td colspan="5"><div class="trang-rong py-3"><i class="bi bi-calendar-x" aria-hidden="true"></i>Chưa có buổi học nào. Gia sư sẽ tạo buổi học (kèm phòng Zoom) ở chức năng Buổi học.</div></td></tr>
         {% endfor %}
         </tbody>
       </table></div>

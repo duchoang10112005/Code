@@ -108,19 +108,28 @@ def chi_tiet(request, pk):
     return render(request, "core/yeu_cau/chi_tiet.html", ctx)
 
 
-@vai_tro_required(TUYEN_SINH)
+@vai_tro_required(ADMIN, TUYEN_SINH)
 def sua(request, pk):
+    """NVTS sửa khi yêu cầu còn Mới/Đang tìm. Admin sửa được cả yêu cầu đã khóa (trừ đã đóng), bắt buộc lý do."""
     yc = get_object_or_404(YeuCauHocTap, pk=pk)
-    if not _co_the_sua(yc):
+    admin_sua_da_khoa = request.user.la_admin and not _co_the_sua(yc) and yc.trang_thai != YC.DONG
+    if not _co_the_sua(yc) and not admin_sua_da_khoa:
         messages.error(request, "Yêu cầu đã được phân công hoặc đã đóng, không sửa được nữa.")
         return redirect("yeu_cau_chi_tiet", pk=pk)
-    form = YeuCauForm(request.POST or None, instance=yc, khoa_mon=yc.loi_moi.exists())
-    if request.method == "POST" and form.is_valid():
+    if request.user.la_admin and not admin_sua_da_khoa and not request.user.la_tuyen_sinh:
+        admin_sua_da_khoa = True  # Admin sửa yêu cầu đang mở cũng phải ghi lý do
+    form = YeuCauForm(request.POST or None, instance=yc,
+                      khoa_mon=yc.loi_moi.exists() or hasattr(yc, "khoa_hoc"))
+    ly_do = (request.POST.get("ly_do") or "").strip()[:300]
+    loi_ly_do = request.method == "POST" and admin_sua_da_khoa and not ly_do
+    if request.method == "POST" and form.is_valid() and not loi_ly_do:
         form.save()
-        ghi_nhat_ky(request.user, "Sửa yêu cầu học tập", yc.ma, ", ".join(form.changed_data))
+        ghi_nhat_ky(request.user, "Admin sửa yêu cầu học tập" if admin_sua_da_khoa else "Sửa yêu cầu học tập",
+                    yc.ma, ", ".join(form.changed_data) + (f". Lý do: {ly_do}" if ly_do else ""))
         messages.success(request, f"Đã cập nhật {yc.ma}.")
         return redirect("yeu_cau_chi_tiet", pk=pk)
-    return render(request, "core/yeu_cau/sua.html", {"yc": yc, "form": form})
+    return render(request, "core/yeu_cau/sua.html", {"yc": yc, "form": form, "can_ly_do": admin_sua_da_khoa,
+                                                     "ly_do": ly_do, "loi_ly_do": loi_ly_do})
 
 
 @vai_tro_required(TUYEN_SINH)

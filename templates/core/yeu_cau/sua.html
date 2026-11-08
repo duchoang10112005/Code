@@ -7,7 +7,7 @@
   <li class="breadcrumb-item active" aria-current="page">Sửa</li>
 </ol></nav>
 <div class="dau-trang"><h1>Sửa {{ yc.ma }} · {{ yc.hoc_vien.ho_ten }}</h1></div>
-<div class="card" style="max-width:640px"><div class="card-body">
+<div class="card khung-form"><div class="card-body">
   <form method="post" novalidate>{% csrf_token %}
     {% for field in form %}
       <div class="mb-3">
@@ -21,6 +21,15 @@
         {% for e in field.errors %}<div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</div>{% endfor %}
       </div>
     {% endfor %}
+    {% if can_ly_do %}
+      <div class="mb-3">
+        <label class="form-label" for="ly_do">Lý do sửa <span class="bat-buoc" aria-hidden="true">*</span></label>
+        <input id="ly_do" name="ly_do" value="{{ ly_do }}" maxlength="300" class="form-control{% if loi_ly_do %} is-invalid{% endif %}"
+               {% if loi_ly_do %}aria-invalid="true" aria-describedby="ly_do_loi"{% endif %}>
+        <div class="form-text">Admin sửa dữ liệu phải ghi lý do; lý do được lưu vào nhật ký thao tác.</div>
+        {% if loi_ly_do %}<div class="loi-truong" id="ly_do_loi"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Cần ghi lý do sửa.</div>{% endif %}
+      </div>
+    {% endif %}
     <div class="d-flex gap-2">
       <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu</button>
       <a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-outline-secondary">Hủy</a>

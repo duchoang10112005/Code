@@ -97,9 +97,18 @@ def danh_sach(request):
 
 
 def _trang_chi_tiet(request, khoa, la_gia_su):
+    from core.models import DoiGiaSu
+    lich_su = khoa.lich_su_doi_gia_su.select_related("gia_su_cu", "gia_su_moi")
     return render(request, "core/khoa_hoc/chi_tiet.html", {
         "khoa": khoa, "la_gia_su": la_gia_su,
-        "ds_buoi": khoa.buoi_hoc.order_by("-bat_dau"),
+        "ds_buoi": khoa.buoi_hoc.select_related("gia_su").order_by("-bat_dau"),
+        "lich_su_doi": lich_su if not la_gia_su else [],
+        "co_the_doi_gia_su": (not la_gia_su and (request.user.la_tuyen_sinh or request.user.la_admin)
+                              and khoa.trang_thai in (KH.DANG_HOC, KH.TAM_DUNG)
+                              and khoa.yeu_cau.trang_thai == YC.CHINH_THUC),
+        "de_nghi_cho_duyet": lich_su.filter(trang_thai=DoiGiaSu.TrangThai.CHO_DUYET).first(),
+        "so_lan_doi": lich_su.filter(trang_thai=DoiGiaSu.TrangThai.DA_THUC_HIEN).count(),
+        "ly_do_doi": DoiGiaSu.LyDo.choices,
         "sap_het": khoa.trang_thai == KH.DANG_HOC and khoa.so_buoi_con_lai <= SO_BUOI_SAP_HET,
         "co_the_doi_trang_thai": khoa.trang_thai in (KH.DANG_HOC, KH.TAM_DUNG),
         "KH": KH,

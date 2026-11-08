@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Cần xem xét · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1>Cần xem xét</h1><p class="mo-ta">Những trường hợp ngoài luồng cần Admin quyết định. Mọi thao tác đều ghi lý do vào nhật ký.</p></div>
+</div>
+
+<section class="nhom{% if ds_buoi %} gap{% endif %}" aria-labelledby="n-buoi">
+  <div class="nhom-dau"><h2 id="n-buoi">Buổi học có vấn đề <span class="dem-nhom">{{ ds_buoi|length }}</span></h2></div>
+  <div class="trang-giay">
+    {% for b in ds_buoi %}
+    <div class="dong-xem-xet">
+      <div class="d-flex justify-content-between gap-3 flex-wrap">
+        <div class="d-flex gap-3">
+          <span class="nhan-vo"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</span>
+          <div class="noi-dung-dong">GS {{ b.gia_su.ho_ten }} · {{ b.bat_dau|date:"H:i d/m/Y" }}
+            <small>{{ b.get_loai_display }}{% if b.khoa_hoc %} · {{ b.khoa_hoc.ma }}{% endif %} · {{ b.thoi_luong_phut }} phút</small></div>
+        </div>
+        <div>{% nhan_trang_thai b "trang_thai" %}</div>
+      </div>
+      <p class="loi-phe mt-2"><i class="bi bi-pen" aria-hidden="true"></i>
+        {% if b.trang_thai == "DANG_XEM_XET" %}Hậu kiểm Zoom không đạt: {{ b.kiem_tra_ghi_chu }} Thù lao đang tạm giữ.
+        {% else %}Hệ thống tự hủy vì gia sư không xác nhận trước {{ b.han_xac_nhan|date:"H:i d/m" }}. Mở lại nếu buổi học thực sự đã diễn ra.{% endif %}</p>
+      {% if b.xac_nhan_luc %}<p class="small text-muted mb-2">Gia sư ghi: {{ b.noi_dung|truncatechars:140 }}</p>{% endif %}
+      <form method="post" class="row g-2 align-items-end" action="">{% csrf_token %}
+        <div class="col-md-6"><label class="form-label" for="ld{{ b.pk }}">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
+          <input id="ld{{ b.pk }}" name="ly_do" class="form-control" required maxlength="300" placeholder="VD: đã gọi phụ huynh xác nhận em có học"></div>
+        <div class="col-md-6 d-flex gap-2 flex-wrap">
+          {% if b.trang_thai == "DANG_XEM_XET" %}
+            <button class="btn btn-primary" formaction="{% url 'xem_xet_buoi' b.pk 'hop_le' %}">Công nhận hợp lệ</button>
+            <button class="btn btn-outline-danger" formaction="{% url 'xem_xet_buoi' b.pk 'huy' %}"
+                    data-xac-nhan="Không công nhận {{ b.ma }}? Buổi bị hủy, không tính thù lao, trả lại 1 buổi cho khóa." data-nut="Không công nhận">Không công nhận</button>
+          {% else %}
+            <button class="btn btn-primary" formaction="{% url 'xem_xet_buoi' b.pk 'mo_lai' %}">Mở lại cho gia sư xác nhận</button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Không có buổi học nào cần xem xét.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="nhom{% if ds_doi %} gap{% endif %}" aria-labelledby="n-doi">
+  <div class="nhom-dau"><h2 id="n-doi">Đề nghị đổi gia sư chờ duyệt <span class="dem-nhom">{{ ds_doi|length }}</span></h2></div>
+  <div class="trang-giay">
+    {% for d in ds_doi %}
+    <div class="dong-xem-xet">
+      <div class="d-flex gap-3">
+        <a class="nhan-vo" href="{% url 'khoa_hoc_chi_tiet' d.khoa_hoc.pk %}"><span class="ma">{{ d.khoa_hoc.ma }}</span><br><b>{{ d.khoa_hoc.hoc_vien.ho_ten }}</b> · {{ d.khoa_hoc.yeu_cau.mon_hoc }}</a>
+        <div class="noi-dung-dong">Đổi khỏi GS {{ d.gia_su_cu.ho_ten }}<small>{{ d.tao_boi.ho_ten }} đề nghị lúc {{ d.tao_luc|date:"H:i d/m" }}</small></div>
+      </div>
+      <p class="loi-phe mt-2"><i class="bi bi-pen" aria-hidden="true"></i>Khóa này đã đổi gia sư trước đây. Lý do lần này: {{ d.get_ly_do_display }}{% if d.ghi_chu %} ({{ d.ghi_chu }}){% endif %}.</p>
+      <form method="post" action="{% url 'duyet_doi_gia_su' d.pk %}" class="row g-2 align-items-end">{% csrf_token %}
+        <div class="col-md-6"><label class="form-label" for="dg{{ d.pk }}">Ghi chú (bắt buộc khi từ chối)</label>
+          <input id="dg{{ d.pk }}" name="ghi_chu" class="form-control" maxlength="300"></div>
+        <div class="col-md-6 d-flex gap-2">
+          <button class="btn btn-primary" name="dong_y" value="1">Đồng ý đổi</button>
+          <button class="btn btn-outline-secondary" name="dong_y" value="0">Từ chối</button>
+        </div>
+      </form>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Không có đề nghị nào.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="nhom" aria-labelledby="n-cho-lau">
+  <div class="nhom-dau"><h2 id="n-cho-lau">Yêu cầu chờ quá 24 giờ chưa có gia sư <span class="dem-nhom">{{ ds_cho_lau|length }}</span></h2></div>
+  <div class="trang-giay">
+    {% for y in ds_cho_lau %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
+      <div class="noi-dung-dong">{{ y.get_trang_thai_display }}<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Kiểm tra lý do, sửa yêu cầu hoặc gán thẳng gia sư.</p>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Mở</a>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Không có yêu cầu nào chờ quá lâu.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

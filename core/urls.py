@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from core.views import buoi_hoc, chung, gia_su, khoa_hoc, quy_chuan, tai_khoan, yeu_cau
+from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -63,6 +63,14 @@ urlpatterns = [
     path("buoi-hoc/<int:pk>/huy/", buoi_hoc.huy, name="buoi_huy"),
     path("buoi-hoc/<int:pk>/doi-lich/", buoi_hoc.doi_lich, name="buoi_doi_lich"),
     path("buoi-hoc/<int:pk>/xac-nhan/", buoi_hoc.xac_nhan, name="buoi_xac_nhan"),
+
+    # Phần 5b – Ngoại lệ (Admin) và đổi gia sư (NVTS)
+    path("xem-xet/", ngoai_le.xem_xet, name="xem_xet"),
+    path("xem-xet/buoi/<int:pk>/<str:hanh_dong>/", ngoai_le.xu_ly_buoi, name="xem_xet_buoi"),
+    path("xem-xet/doi-gia-su/<int:pk>/", ngoai_le.duyet_doi_gia_su, name="duyet_doi_gia_su"),
+    path("khoa-hoc/<int:pk>/doi-gia-su/", ngoai_le.doi_gia_su, name="khoa_hoc_doi_gia_su"),
+    path("khoa-hoc/<int:pk>/sua-so-buoi/", ngoai_le.sua_so_buoi, name="khoa_hoc_sua_so_buoi"),
+    path("yeu-cau/<int:pk>/gan-thang/", ngoai_le.gan_thang, name="yeu_cau_gan_thang"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

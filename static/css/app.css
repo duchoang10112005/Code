@@ -283,3 +283,9 @@ body.trang-bia > main { min-height: 100vh; display: flex; flex-direction: column
 .form-check-input { border: 1.5px solid var(--gs-border-strong); }
 .form-check-input:checked { background-color: var(--gs-cover); border-color: var(--gs-cover); }
 .table > tbody td:first-child > b, .table > tbody td:first-child > strong { color: var(--gs-ink); }
+
+/* --- Xem xét ngoại lệ: dòng có form xử lý -------------------------------- */
+.dong-xem-xet { padding: var(--gs-space-4) var(--gs-space-6); border-top: 1px solid var(--gs-border); }
+.dong-xem-xet:first-child { border-top: 0; }
+.dong-xem-xet .nhan-vo { text-decoration: none; color: var(--gs-text); }
+.khung-form { max-width: 40rem; }

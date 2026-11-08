@@ -184,6 +184,9 @@ def chap_nhan(gia_su, loi_moi):
                 raise _DaCoNguoiNhan
             LoiMoi.objects.filter(yeu_cau=yc, trang_thai=LM.CHO).update(trang_thai=LM.VOIDED, phan_hoi_luc=now)
             ghi_nhat_ky(gia_su, "Nhận lớp (Accept)", str(yc), f"Gia sư {gia_su.ho_ten} được phân công")
+            # Yêu cầu đã có khóa (đang đổi gia sư) → gia sư mới nhận lại khóa, học tiếp số buổi còn lại.
+            from core.services.ngoai_le import nhan_lai_khoa
+            nhan_lai_khoa(gia_su, yc)
     except _DaCoNguoiNhan:
         LoiMoi.objects.filter(pk=loi_moi.pk, trang_thai=LM.CHO).update(trang_thai=LM.VOIDED, phan_hoi_luc=now)
         raise ValidationError("Lớp này đã có gia sư khác nhận trước. Cảm ơn bạn đã phản hồi.")
