@@ -320,7 +320,7 @@ class _GioBatDauField(forms.DateTimeField):
     def __init__(self, **kw):
         kw.setdefault("label", "Ngày giờ bắt đầu")
         kw.setdefault("input_formats", [DINH_DANG_GIO])
-        kw.setdefault("widget", forms.DateTimeInput(attrs={"type": "datetime-local", "step": 300},
+        kw.setdefault("widget", forms.DateTimeInput(attrs={"type": "datetime-local", "step": 60},
                                                     format=DINH_DANG_GIO))
         super().__init__(**kw)
 

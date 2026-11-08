@@ -160,4 +160,7 @@ NGHIEP_VU = {
     # Admin chỉ được mở lại buổi bị tự hủy trong số ngày này; khi mở lại gia sư có thêm số giờ này.
     "NGAY_MO_LAI_TOI_DA": int(os.getenv("NGAY_MO_LAI_TOI_DA", "7")),
     "GIO_XAC_NHAN_KHI_MO_LAI": int(os.getenv("GIO_XAC_NHAN_KHI_MO_LAI", "24")),
+    # CHỈ ĐỂ CHẠY THỬ: > 0 thì mọi buổi học mới dài đúng số phút này (VD 1) và hậu kiểm chạy ngay sau buổi,
+    # để test trọn luồng tạo buổi → xác nhận → thù lao → đối soát mà không phải chờ 1 giờ. Để 0 khi dùng thật.
+    "THOI_LUONG_BUOI_DEMO": int(os.getenv("THOI_LUONG_BUOI_DEMO", "0")),
 }

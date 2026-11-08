@@ -5,6 +5,8 @@ def thong_tin_chung(request):
     """Biến dùng chung cho mọi template (menu, huy hiệu thông báo)."""
     # Tăng PHIEN_BAN_CSS mỗi khi sửa static/css/app.css để trình duyệt tải bản mới.
     data = {"TEN_HE_THONG": "Trung tâm Gia sư Trực tuyến", "PHIEN_BAN_CSS": "2.4"}
+    from django.conf import settings
+    data["THOI_LUONG_BUOI_DEMO"] = settings.NGHIEP_VU.get("THOI_LUONG_BUOI_DEMO", 0)
     user = getattr(request, "user", None)
     if user and user.is_authenticated and user.la_admin:
         from core.models import MonGiaSu

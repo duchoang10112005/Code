@@ -40,6 +40,16 @@ def _gio(n):
     return timedelta(hours=n)
 
 
+def thoi_luong_demo():
+    """Số phút của buổi học ở chế độ chạy thử (0 = tắt). Đọc lúc gọi để test bật/tắt được."""
+    return settings.NGHIEP_VU.get("THOI_LUONG_BUOI_DEMO", 0)
+
+
+def _cho_zoom_tong_hop():
+    """Thời gian chờ Zoom tổng hợp báo cáo sau buổi học trước khi hậu kiểm."""
+    return timedelta(minutes=1 if thoi_luong_demo() else 30)
+
+
 # =============================================================================
 # Kiểm tra khung giờ
 # =============================================================================
@@ -125,8 +135,9 @@ def tao_buoi_chinh_thuc(gia_su, khoa, bat_dau, thay_the_cho=None):
         raise ValidationError(f"Khóa đang ở trạng thái \"{khoa.get_trang_thai_display()}\", chưa xếp lịch được.")
     if khoa.so_buoi_co_the_xep <= 0 and not thay_the_cho:
         raise ValidationError("Khóa đã xếp đủ số buổi đăng ký, không tạo thêm buổi được.")
-    kiem_tra_khung_gio(gia_su, bat_dau, khoa.thoi_luong_phut, bo_qua_pk=getattr(thay_the_cho, "pk", None))
-    return _tao(gia_su, BuoiHoc.Loai.CHINH_THUC, khoa.yeu_cau, bat_dau, khoa.thoi_luong_phut,
+    thoi_luong = thoi_luong_demo() or khoa.thoi_luong_phut
+    kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=getattr(thay_the_cho, "pk", None))
+    return _tao(gia_su, BuoiHoc.Loai.CHINH_THUC, khoa.yeu_cau, bat_dau, thoi_luong,
                 khoa=khoa, thu_lao=khoa.thu_lao_moi_buoi, thay_the_cho=thay_the_cho)
 
 
@@ -134,7 +145,9 @@ def tao_buoi_hoc_thu(gia_su, yc, bat_dau, thoi_luong, thay_the_cho=None):
     yc.refresh_from_db()
     if yc.gia_su_id != gia_su.pk or yc.trang_thai != YC.DA_PHAN_CONG:
         raise ValidationError("Chỉ tạo buổi học thử cho lớp bạn đã nhận và đang chờ chốt.")
-    if thoi_luong not in THOI_LUONG_HOC_THU:
+    if thoi_luong_demo():
+        thoi_luong = thoi_luong_demo()
+    elif thoi_luong not in THOI_LUONG_HOC_THU:
         raise ValidationError({"thoi_luong": "Thời lượng học thử không hợp lệ."})
     da_co = yc.buoi_hoc.filter(loai=BuoiHoc.Loai.HOC_THU, gia_su=gia_su).exclude(trang_thai=TT.DA_HUY)
     if thay_the_cho:
@@ -376,7 +389,7 @@ def hau_kiem(now=None):
     ds = BuoiHoc.objects.filter(trang_thai=TT.HOAN_TAT, kiem_tra=BuoiHoc.KiemTra.CHUA_KIEM_TRA,
                                 bat_dau__gte=now - timedelta(days=NV["NGAY_MO_LAI_TOI_DA"])).exclude(zoom_meeting_id="")
     for b in ds.select_related("gia_su", "hoc_vien", "yeu_cau__mon_hoc"):
-        if b.ket_thuc + timedelta(minutes=30) > now:
+        if b.ket_thuc + _cho_zoom_tong_hop() > now:
             continue  # Zoom cần thời gian tổng hợp báo cáo
         try:
             nguoi = zoom.lay_nguoi_tham_gia(b.zoom_meeting_id)
@@ -412,7 +425,7 @@ def hau_kiem(now=None):
     cho = BuoiHoc.objects.filter(trang_thai__in=[TT.HOAN_TAT, TT.DANG_XEM_XET],
                                  ban_ghi_trang_thai=BuoiHoc.BanGhi.CHO_XU_LY).exclude(zoom_meeting_id="")
     for b in cho:
-        if b.ket_thuc + timedelta(minutes=30) > now:
+        if b.ket_thuc + _cho_zoom_tong_hop() > now:
             continue
         try:
             bg = zoom.lay_ban_ghi(b.zoom_meeting_id)

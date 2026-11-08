@@ -6,7 +6,8 @@ Backlog: PB-07 (gia sư tạo buổi học thử), PB-11..PB-15, PB-16, PB-29, P
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -30,6 +31,8 @@ def ngay_mai(gio=19):
 
 class DuLieu(TestCase):
     def setUp(self):
+        # Test luôn chạy với thời lượng thật, dù file .env đang bật chế độ chạy thử.
+        self.enterContext(override_settings(NGHIEP_VU={**settings.NGHIEP_VU, "THOI_LUONG_BUOI_DEMO": 0}))
         zoom._fake_singleton.gia_lap_loi = False
         zoom._fake_singleton.kich_ban_tham_gia.clear()
         zalo._fake_singleton.gia_lap_loi = False
@@ -132,6 +135,17 @@ class TaoBuoiTest(DuLieu):
         b = BuoiHoc.objects.get()
         self.assertRedirects(r, reverse("buoi_chi_tiet", args=[b.pk]))
         self.assertContains(self.client.get(reverse("buoi_chi_tiet", args=[b.pk])), b.zoom_join_url)
+
+
+class CheDoChayThuTest(DuLieu):
+    def test_buoi_hoc_dai_1_phut_khi_bat_che_do_chay_thu(self):
+        with override_settings(NGHIEP_VU={**settings.NGHIEP_VU, "THOI_LUONG_BUOI_DEMO": 1}):
+            b = dv.tao_buoi_chinh_thuc(self.gs, self.khoa, timezone.now() + timedelta(minutes=2))
+            self.assertEqual(b.thoi_luong_phut, 1)
+            BuoiHoc.objects.filter(pk=b.pk).update(bat_dau=timezone.now() - timedelta(minutes=2))
+            b.refresh_from_db()
+            dv.xac_nhan_hoan_tat(self.gs, b, DANH_GIA)
+            self.assertEqual(ThuLao.objects.get(buoi_hoc=b).so_tien, 120_000)
 
 
 class HuyDoiLichTest(DuLieu):
