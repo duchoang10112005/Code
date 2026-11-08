@@ -116,3 +116,17 @@ def tien(so):
     from core.services.tien_ich import dinh_dang_tien
     return dinh_dang_tien(so)
 
+
+
+@register.filter
+def da_qua(thoi_diem):
+    """Thời gian đã trôi qua từ `thoi_diem`, tiếng Việt: "2 ngày", "14 giờ", "5 phút"."""
+    from django.utils import timezone
+    if not thoi_diem:
+        return ""
+    phut = max(int((timezone.now() - thoi_diem).total_seconds()) // 60, 0)
+    if phut >= 1440:
+        return f"{phut // 1440} ngày"
+    if phut >= 60:
+        return f"{phut // 60} giờ"
+    return f"{max(phut, 1)} phút"

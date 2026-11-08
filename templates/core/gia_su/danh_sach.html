@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load giao_dien %}
-{% block title %}Gia sư · {{ TEN_HE_THONG }}{% endblock %}
+{% block title %}Hồ sơ gia sư · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
 <div class="dau-trang">
-  <div><h1 class="mb-1">Hồ sơ gia sư</h1>
+  <div><h1>Hồ sơ gia sư</h1>
     <p class="mo-ta">{% if user.la_admin %}Duyệt môn dạy và quản lý trạng thái hồ sơ gia sư{% else %}Tra cứu gia sư theo môn và lịch rảnh{% endif %}</p></div>
 </div>
 
@@ -29,7 +29,7 @@
         </div>
       </td>
       <td>{% nhan_trang_thai hs "trang_thai" %}
-        {% if hs.so_cho_duyet %}<div class="small mt-1" style="color:var(--gs-tone-warning-fg)">{{ hs.so_cho_duyet }} môn chờ duyệt</div>{% endif %}</td>
+        {% if hs.so_cho_duyet %}<div class="small mt-1 loi-phe">{{ hs.so_cho_duyet }} môn chờ duyệt</div>{% endif %}</td>
       <td class="cot-thao-tac">
         <a class="btn btn-sm {% if user.la_admin and hs.so_cho_duyet %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'gia_su_chi_tiet' hs.pk %}">
           {% if user.la_admin and hs.so_cho_duyet %}<i class="bi bi-patch-check" aria-hidden="true"></i>Duyệt{% else %}Xem hồ sơ{% endif %}</a>

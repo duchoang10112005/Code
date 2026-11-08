@@ -1,13 +1,65 @@
 {% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Việc cần làm hôm nay · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
 <div class="dau-trang">
-  <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Lớp và buổi học của bạn</p></div>
+  <div>
+    <h1>Việc cần làm hôm nay</h1>
+    <p class="mo-ta">{% ten_thu thu_hom_nay %}, {{ hom_nay|date:"d/m/Y" }} · Xin chào, {{ user.ho_ten }}</p>
+  </div>
+  <a href="{% url 'ho_so_cua_toi' %}" class="btn btn-outline-primary"><i class="bi bi-person-badge" aria-hidden="true"></i>Hồ sơ của tôi</a>
 </div>
-<div class="row g-3 mb-4">
-  {% url 'loi_moi_cua_toi' as lm %}
-  {% include "partials/the_so.html" with nhan="Lời mời đang chờ bạn" so=so_loi_moi_cho|default:0 icon="envelope-open" can_xu_ly=True link=lm link_chu="Phản hồi" %}
-  {% url 'lop_cua_toi' as lop %}
-  {% include "partials/the_so.html" with nhan="Khóa đang phụ trách" so=so_khoa_phu_trach icon="journal-bookmark" link=lop link_chu="Lớp của tôi" %}
-  {% include "partials/the_so.html" with nhan="Buổi sắp tới" so=so_buoi_sap_toi icon="calendar-week" %}
-</div>
+
+<section class="nhom{% if ds_loi_moi %} gap{% endif %}" aria-labelledby="n-loi-moi">
+  <div class="nhom-dau">
+    <h2 id="n-loi-moi">Lời mời đang chờ bạn <span class="dem-nhom">{{ ds_loi_moi|length }}</span></h2>
+    <a href="{% url 'loi_moi_cua_toi' %}">Xem tất cả lời mời</a>
+  </div>
+  <div class="trang-giay">
+    {% for lm in ds_loi_moi %}
+    <div class="dong-viec">
+      <span class="nhan-vo"><span class="ma">{{ lm.yeu_cau.ma }}</span><br><b>{{ lm.yeu_cau.hoc_vien.ho_ten }}</b> · {{ lm.yeu_cau.trinh_do }} · {{ lm.yeu_cau.mon_hoc }}</span>
+      <div class="noi-dung-dong">Mong muốn {{ lm.yeu_cau.ten_thu_mong_muon }}<small>{{ lm.yeu_cau.lich_mong_muon }}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ lm.het_han_luc|con_lai }} để nhận hoặc từ chối. Người nhận hợp lệ đầu tiên được lớp.</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'loi_moi_cua_toi' %}">Phản hồi</a>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Chưa có lời mời nào. Trung tâm sẽ gửi email khi có lớp phù hợp với môn bạn đã được duyệt.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% if ds_cho_chot %}
+<section class="nhom" aria-labelledby="n-cho-chot">
+  <div class="nhom-dau"><h2 id="n-cho-chot">Lớp mới nhận, chờ trung tâm chốt <span class="dem-nhom">{{ ds_cho_chot|length }}</span></h2>
+    <a href="{% url 'lop_cua_toi' %}">Lớp của tôi</a></div>
+  <div class="trang-giay">
+    {% for y in ds_cho_chot %}
+    <div class="dong-viec">
+      <span class="nhan-vo"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</span>
+      <div class="noi-dung-dong">{{ y.get_trang_thai_display }}<small>Mong muốn {{ y.ten_thu_mong_muon }}</small></div>
+      <p class="loi-phe yen"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Trung tâm đang chốt với phụ huynh: học thử hay đăng ký chính thức.</p>
+      <span></span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="nhom" aria-labelledby="n-khoa">
+  <div class="nhom-dau"><h2 id="n-khoa">Khóa đang phụ trách <span class="dem-nhom">{{ so_khoa_phu_trach }}</span></h2>
+    <a href="{% url 'lop_cua_toi' %}">Lớp của tôi</a></div>
+  <div class="trang-giay">
+    {% for k in ds_khoa %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'khoa_cua_toi' k.pk %}"><span class="ma">{{ k.ma }}</span><br><b>{{ k.hoc_vien.ho_ten }}</b> · {{ k.yeu_cau.mon_hoc }}</a>
+      <div class="noi-dung-dong">{% include "partials/tien_do_khoa.html" with khoa=k %}<small>{{ k.thoi_luong_phut }} phút/buổi · thù lao {{ k.thu_lao_moi_buoi|tien }}/buổi</small></div>
+      {% if k.so_buoi_con_lai <= 2 %}<p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ k.so_buoi_con_lai }} buổi trong khóa.</p>{% else %}<p class="loi-phe yen">Còn {{ k.so_buoi_con_lai }} buổi.</p>{% endif %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}">Xem khóa</a>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Bạn chưa phụ trách khóa nào đang học.</p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

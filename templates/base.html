@@ -11,14 +11,16 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{% static 'css/app.css' %}?v={{ PHIEN_BAN_CSS }}" rel="stylesheet">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
+<a class="bo-qua" href="#noi-dung">Bỏ qua menu, tới nội dung</a>
 {% if user.is_authenticated %}
 <div class="d-lg-flex">
   <nav class="sidebar p-3 flex-shrink-0" aria-label="Menu chính">
-    <a href="{% url 'trang_chu' %}" class="thuong-hieu d-flex align-items-center gap-2 mb-1">
-      <i class="bi bi-mortarboard-fill fs-4" aria-hidden="true"></i>{{ TEN_HE_THONG }}
+    <a href="{% url 'trang_chu' %}" class="nhan-bia">
+      <b>{% if user.la_admin %}SỔ QUẢN TRỊ{% elif user.la_tuyen_sinh %}SỔ TUYỂN SINH{% else %}SỔ GIA SƯ{% endif %}</b>
+      <span>{{ TEN_HE_THONG }}</span>
+      <span>{{ user.ho_ten }} · {{ user.get_vai_tro_display }}</span>
     </a>
-    <div class="small mb-2" style="color:var(--gs-nav-muted)">{{ user.ho_ten }} · {{ user.get_vai_tro_display }}</div>
     {% with p=request.resolver_match.url_name %}
     <ul class="nav flex-column gap-1">
       <li><a class="nav-link {% if p == 'trang_chu' %}active{% endif %}" href="{% url 'trang_chu' %}"><i class="bi bi-house" aria-hidden="true"></i>Trang chủ</a></li>
@@ -64,7 +66,7 @@
     </ul>
     {% endwith %}
   </nav>
-  <main class="noi-dung">
+  <main class="noi-dung" id="noi-dung" tabindex="-1">
     {% include "partials/thong_bao.html" %}
     {% block content %}{% endblock %}
   </main>
@@ -75,6 +77,45 @@
     {% block public_content %}{% endblock %}
   </main>
 {% endif %}
+<div class="modal fade" id="hop-xac-nhan" tabindex="-1" aria-labelledby="hop-xac-nhan-tieu-de" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-5 m-0" id="hop-xac-nhan-tieu-de">Xác nhận thao tác</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
+    <div class="modal-body"><p class="m-0" id="hop-xac-nhan-noi-dung"></p></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="hop-xac-nhan-quay-lai">Quay lại</button>
+      <button type="button" class="btn btn-danger" id="hop-xac-nhan-dong-y">Đồng ý</button>
+    </div>
+  </div></div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+  /* Hộp xác nhận cho thao tác khó hoàn tác: gắn data-xac-nhan lên <form> hoặc nút submit. */
+  var hop = document.getElementById("hop-xac-nhan"), modal = null, cho = null;
+  document.addEventListener("submit", function (e) {
+    var form = e.target, nut = e.submitter;
+    var nguon = (nut && nut.dataset.xacNhan) ? nut : (form.dataset.xacNhan ? form : null);
+    if (!nguon || form.dataset.daXacNhan === "1") { return; }
+    e.preventDefault();
+    cho = { form: form, nut: nut };
+    document.getElementById("hop-xac-nhan-noi-dung").textContent = nguon.dataset.xacNhan;
+    document.getElementById("hop-xac-nhan-dong-y").textContent = nguon.dataset.nut || "Đồng ý";
+    modal = modal || new bootstrap.Modal(hop);
+    modal.show();
+  }, true);
+  document.getElementById("hop-xac-nhan-dong-y").addEventListener("click", function () {
+    if (!cho) { return; }
+    cho.form.dataset.daXacNhan = "1";
+    if (cho.form.requestSubmit) { cho.form.requestSubmit(cho.nut || undefined); } else { cho.form.submit(); }
+    modal.hide();
+  });
+  hop.addEventListener("shown.bs.modal", function () { document.getElementById("hop-xac-nhan-quay-lai").focus(); });
+  hop.addEventListener("hidden.bs.modal", function () { cho = null; });
+  /* Form có lỗi: đưa con trỏ tới tóm tắt lỗi để biết ngay cần sửa gì. */
+  var tomTat = document.querySelector(".tom-tat-loi");
+  if (tomTat) { tomTat.focus(); }
+})();
+</script>
 </body>
 </html>

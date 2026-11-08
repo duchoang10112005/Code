@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Không có quyền{% endblock %}
+{% block title %}Không có quyền · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
-<div class="card"><div class="trang-rong py-5">
-  <i class="bi bi-shield-lock" aria-hidden="true" style="color:var(--gs-tone-danger-fg)"></i>
-  <h1 class="h1-trang mt-2" style="color:var(--gs-text)">Bạn không có quyền truy cập chức năng này</h1>
-  <p>Chức năng này dành cho vai trò khác. Liên hệ Admin nếu bạn cho rằng đây là nhầm lẫn.</p>
+<div class="trang-giay trang-loi">
+  <p class="loi-phe"><i class="bi bi-shield-lock" aria-hidden="true"></i>Trang này dành cho vai trò khác.</p>
+  <h1>Bạn không có quyền truy cập chức năng này</h1>
+  <p class="text-muted">Liên hệ Admin nếu bạn cho rằng đây là nhầm lẫn.</p>
   <a href="{% url 'trang_chu' %}" class="btn btn-primary"><i class="bi bi-house" aria-hidden="true"></i>Về trang chủ</a>
-</div></div>
+</div>
 {% endblock %}
-{% block public_content %}<p>Bạn không có quyền truy cập. <a href="/dang-nhap/">Đăng nhập</a></p>{% endblock %}
+{% block public_content %}<p>Bạn không có quyền truy cập. <a href="{% url 'dang_nhap' %}">Đăng nhập</a></p>{% endblock %}

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load giao_dien %}
-{% block title %}Tài khoản{% endblock %}
+{% block title %}Tài khoản · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
 <div class="dau-trang">
-  <div><h1 class="mb-1">Quản lý tài khoản</h1><p class="mo-ta">Tạo, phân quyền, khóa và mở khóa tài khoản người dùng</p></div>
+  <div><h1>Quản lý tài khoản</h1><p class="mo-ta">Tạo, phân quyền, khóa và mở khóa tài khoản người dùng</p></div>
   <a href="{% url 'tai_khoan_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo tài khoản</a>
 </div>
 
@@ -39,7 +39,7 @@
         <a href="{% url 'tai_khoan_sua' u.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</a>
         {% if u != user %}
         <form method="post" action="{% url 'tai_khoan_doi_trang_thai' u.pk %}" class="d-inline"
-              onsubmit="return confirm('{% if u.is_active %}Khóa{% else %}Mở khóa{% endif %} tài khoản {{ u.username }}?')">
+              data-xac-nhan="{% if u.is_active %}Khóa tài khoản {{ u.username }} ({{ u.ho_ten }})? Người này sẽ bị đăng xuất và không đăng nhập được cho tới khi mở khóa.{% else %}Mở khóa tài khoản {{ u.username }} ({{ u.ho_ten }})?{% endif %}" data-nut="{% if u.is_active %}Khóa tài khoản{% else %}Mở khóa{% endif %}">
           {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
           {% if u.is_active %}
             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-lock" aria-hidden="true"></i>Khóa</button>

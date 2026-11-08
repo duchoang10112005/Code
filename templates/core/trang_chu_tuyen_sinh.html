@@ -1,17 +1,117 @@
 {% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Việc cần làm hôm nay · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
+{% url 'yeu_cau_danh_sach' as ds %}{% url 'khoa_hoc_danh_sach' as dskh %}
 <div class="dau-trang">
-  <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Yêu cầu học tập và khóa học</p></div>
+  <div>
+    <h1>Việc cần làm hôm nay</h1>
+    <p class="mo-ta">{% ten_thu thu_hom_nay %}, {{ hom_nay|date:"d/m/Y" }} · Xin chào, {{ user.ho_ten }}</p>
+  </div>
   <a href="{% url 'yeu_cau_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tiếp nhận yêu cầu</a>
 </div>
-<div class="row g-3 mb-4">
-  {% url 'yeu_cau_danh_sach' as ds %}
-  {% include "partials/the_so.html" with nhan="Cần mời thêm gia sư" so=so_can_moi_them icon="person-plus" can_xu_ly=True link=ds|add:"?can_moi_them=on" link_chu="Mời thêm" %}
-  {% include "partials/the_so.html" with nhan="Yêu cầu mới, chưa gửi lời mời" so=so_yeu_cau_moi icon="inbox" can_xu_ly=True link=ds|add:"?trang_thai=MOI" link_chu="Chọn gia sư" %}
-  {% include "partials/the_so.html" with nhan="Đang tìm gia sư" so=so_dang_tim icon="search" link=ds|add:"?trang_thai=DANG_TIM" link_chu="Xem" %}
-  {% include "partials/the_so.html" with nhan="Đã có gia sư, chờ chốt hình thức học" so=so_cho_chot icon="signpost-split" can_xu_ly=True link=ds|add:"?cho_chot=on" link_chu="Chốt với phụ huynh" %}
-  {% url 'khoa_hoc_danh_sach' as dskh %}
-  {% include "partials/the_so.html" with nhan="Khóa sắp hết buổi (còn ≤ 2)" so=so_sap_het icon="hourglass-split" can_xu_ly=True link=dskh|add:"?sap_het=on" link_chu="Liên hệ gia hạn" %}
-  {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" link=dskh|add:"?trang_thai=DANG_HOC" link_chu="Xem" %}
-</div>
+
+{% if not so_can_moi_them and not so_yeu_cau_moi and not so_cho_chot and not so_sap_het and not ds_loi_moi_cho %}
+  <div class="trang-giay trang-rong"><i class="bi bi-check2-circle" aria-hidden="true"></i>Hôm nay chưa có việc nào cần bạn xử lý.</div>
+{% endif %}
+
+{% if so_can_moi_them %}
+<section class="nhom gap" aria-labelledby="n-moi-them">
+  <div class="nhom-dau">
+    <h2 id="n-moi-them">Cần mời thêm gia sư <span class="dem-nhom">{{ so_can_moi_them }}</span></h2>
+    <a href="{{ ds }}?can_moi_them=on">Xem tất cả</a>
+  </div>
+  <div class="trang-giay">
+    {% for y in ds_can_moi_them %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
+      <div class="noi-dung-dong">Đang tìm gia sư<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Không còn lời mời nào đang chờ, cần mời thêm gia sư dạy {{ y.mon_hoc }}.</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Mời thêm</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if so_cho_chot %}
+<section class="nhom gap" aria-labelledby="n-cho-chot">
+  <div class="nhom-dau">
+    <h2 id="n-cho-chot">Chờ chốt hình thức học <span class="dem-nhom">{{ so_cho_chot }}</span></h2>
+    <a href="{{ ds }}?cho_chot=on">Xem tất cả</a>
+  </div>
+  <div class="trang-giay">
+    {% for y in ds_cho_chot %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
+      <div class="noi-dung-dong">{{ y.get_trang_thai_display }}<small>Gia sư {{ y.gia_su.ho_ten|default:"—" }}{% if y.phan_cong_luc %} · nhận lớp {{ y.phan_cong_luc|da_qua }} trước{% endif %}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>{% if y.trang_thai == "HOC_THU_XONG" %}Đã học thử, tạo khóa chính thức.{% else %}Gọi phụ huynh chốt: học thử hay đăng ký chính thức luôn.{% endif %}</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Chốt</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if so_sap_het %}
+<section class="nhom gap" aria-labelledby="n-sap-het">
+  <div class="nhom-dau">
+    <h2 id="n-sap-het">Khóa sắp hết buổi <span class="dem-nhom">{{ so_sap_het }}</span></h2>
+    <a href="{{ dskh }}?sap_het=on">Xem tất cả</a>
+  </div>
+  <div class="trang-giay">
+    {% for k in ds_sap_het %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'khoa_hoc_chi_tiet' k.pk %}"><span class="ma">{{ k.ma }}</span><br><b>{{ k.hoc_vien.ho_ten }}</b> · {{ k.yeu_cau.mon_hoc }}</a>
+      <div class="noi-dung-dong">{% include "partials/tien_do_khoa.html" with khoa=k %}<small>Gia sư {{ k.gia_su.ho_ten }}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ k.so_buoi_con_lai }} buổi, hỏi phụ huynh về việc gia hạn.</p>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}">Xem khóa</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if so_yeu_cau_moi %}
+<section class="nhom" aria-labelledby="n-moi">
+  <div class="nhom-dau">
+    <h2 id="n-moi">Yêu cầu mới, chưa gửi lời mời <span class="dem-nhom">{{ so_yeu_cau_moi }}</span></h2>
+    <a href="{{ ds }}?trang_thai=MOI">Xem tất cả</a>
+  </div>
+  <div class="trang-giay">
+    {% for y in ds_yeu_cau_moi %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
+      <div class="noi-dung-dong">Mới tiếp nhận<small>{{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Chọn gia sư phù hợp và gửi lời mời.</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Chọn gia sư</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if ds_loi_moi_cho %}
+<section class="nhom" aria-labelledby="n-cho-phan-hoi">
+  <div class="nhom-dau">
+    <h2 id="n-cho-phan-hoi">Lời mời đang chờ gia sư phản hồi</h2>
+  </div>
+  <div class="trang-giay">
+    {% for lm in ds_loi_moi_cho %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' lm.yeu_cau.pk %}"><span class="ma">{{ lm.yeu_cau.ma }}</span><br><b>{{ lm.yeu_cau.hoc_vien.ho_ten }}</b> · {{ lm.yeu_cau.mon_hoc }}</a>
+      <div class="noi-dung-dong">Đã mời {{ lm.gia_su.ho_ten }}<small>Còn {{ lm.het_han_luc|con_lai }} để phản hồi</small></div>
+      <p class="loi-phe yen"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Chưa cần làm gì, chờ gia sư phản hồi.</p>
+      <span></span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<p class="chan-trang">
+  <a href="{{ ds }}?trang_thai=DANG_TIM">Đang tìm gia sư: <b class="so">{{ so_dang_tim }}</b></a>
+  <span aria-hidden="true">·</span>
+  <a href="{{ dskh }}?trang_thai=DANG_HOC">Khóa đang học: <b class="so">{{ so_khoa_dang_hoc }}</b></a>
+</p>
 {% endblock %}

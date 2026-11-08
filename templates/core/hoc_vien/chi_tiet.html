@@ -7,7 +7,7 @@
   <li class="breadcrumb-item active" aria-current="page">{{ hv.ho_ten }}</li>
 </ol></nav>
 <div class="dau-trang">
-  <div><h1 class="mb-1">{{ hv.ho_ten }}</h1><p class="mo-ta">Phụ huynh {{ hv.ten_phu_huynh }} · <span class="so">{{ hv.sdt_phu_huynh }}</span></p></div>
+  <div><h1>{{ hv.ho_ten }}</h1><p class="mo-ta">Phụ huynh {{ hv.ten_phu_huynh }} · <span class="so">{{ hv.sdt_phu_huynh }}</span></p></div>
   {% if user.la_tuyen_sinh %}<a href="{% url 'yeu_cau_tao' %}?hoc_vien={{ hv.pk }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Yêu cầu mới cho học viên này</a>{% endif %}
 </div>
 <div class="row g-4">

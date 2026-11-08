@@ -10,7 +10,7 @@
 
 <div class="dau-trang">
   <div>
-    <h1 class="mb-1">{{ khoa.ma }} · {{ khoa.yeu_cau.mon_hoc }} – {{ khoa.hoc_vien.ho_ten }}</h1>
+    <h1>{{ khoa.ma }} · {{ khoa.yeu_cau.mon_hoc }} – {{ khoa.hoc_vien.ho_ten }}</h1>
     <p class="mo-ta">Mở ngày {{ khoa.tao_luc|date:"d/m/Y" }}{% if not la_gia_su %} · từ {% if khoa.yeu_cau %}<a href="{% url 'yeu_cau_chi_tiet' khoa.yeu_cau.pk %}">{{ khoa.yeu_cau.ma }}</a>{% endif %}{% endif %}</p>
   </div>
   <div class="d-flex align-items-center gap-2">

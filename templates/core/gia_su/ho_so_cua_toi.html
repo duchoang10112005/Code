@@ -4,7 +4,7 @@
 {% block content %}
 <div class="dau-trang">
   <div>
-    <h1 class="mb-1">Hồ sơ của tôi</h1>
+    <h1>Hồ sơ của tôi</h1>
     <p class="mo-ta">Trung tâm dùng hồ sơ này để chọn gia sư phù hợp và gửi lời mời nhận lớp.</p>
   </div>
   <div>{% nhan_trang_thai ho_so "trang_thai" %}</div>
@@ -56,7 +56,7 @@
               <td class="cot-thao-tac">
                 {% if mg.trang_thai != "DA_DUYET" %}
                 <form method="post" action="{% url 'ho_so_rut_mon' mg.pk %}" class="d-inline"
-                      onsubmit="return confirm('Rút đăng ký môn {{ mg.mon_hoc }}?')">{% csrf_token %}
+                      data-xac-nhan="Rút đăng ký môn {{ mg.mon_hoc }}?" data-nut="Rút môn">{% csrf_token %}
                   <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Rút</button>
                 </form>
                 {% endif %}

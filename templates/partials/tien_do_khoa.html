@@ -1,8 +1,8 @@
-{# Thanh tiến độ khóa học: đã học / đăng ký (PB-10). Dùng: {% include "partials/tien_do_khoa.html" with khoa=k %} #}
-<div class="d-flex align-items-center gap-2" style="min-width:160px">
-  <div class="progress flex-grow-1" style="height:.5rem" role="progressbar" aria-label="Tiến độ {{ khoa.ma }}"
+{# Thanh tiến độ khóa học: đã học / đăng ký. Dùng: {% include "partials/tien_do_khoa.html" with khoa=k %} #}
+<div class="tien-do">
+  <div class="progress" role="progressbar" aria-label="Tiến độ {{ khoa.ma }}"
        aria-valuenow="{{ khoa.so_buoi_da_dung }}" aria-valuemin="0" aria-valuemax="{{ khoa.so_buoi_dang_ky }}">
-    <div class="progress-bar" style="width:{{ khoa.phan_tram }}%; background:var(--gs-primary)"></div>
+    <div class="progress-bar{% if khoa.so_buoi_con_lai <= 2 and khoa.so_buoi_dang_ky %} sap-het{% endif %}" style="width:{{ khoa.phan_tram }}%"></div>
   </div>
   <span class="small so text-nowrap">{{ khoa.so_buoi_da_dung }}/{{ khoa.so_buoi_dang_ky }}</span>
 </div>

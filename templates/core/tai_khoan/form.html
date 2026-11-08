@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{{ tieu_de }}{% endblock %}
+{% block title %}{{ tieu_de }} · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
   <li class="breadcrumb-item"><a href="{% url 'tai_khoan_danh_sach' %}">Tài khoản</a></li>
   <li class="breadcrumb-item active" aria-current="page">{{ tieu_de }}</li>
 </ol></nav>
-<div class="dau-trang"><h1 class="mb-0">{{ tieu_de }}</h1></div>
+<div class="dau-trang"><h1>{{ tieu_de }}</h1></div>
 <div class="card" style="max-width:560px"><div class="card-body">
   <form method="post" novalidate>{% csrf_token %}
     {% include "partials/form_fields.html" %}

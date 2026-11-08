@@ -1,17 +1,57 @@
 {% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Việc cần làm hôm nay · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
 <div class="dau-trang">
-  <div><h1 class="mb-1">Xin chào, {{ user.ho_ten }}</h1><p class="mo-ta">Tổng quan hệ thống hôm nay</p></div>
+  <div>
+    <h1>Việc cần làm hôm nay</h1>
+    <p class="mo-ta">{% ten_thu thu_hom_nay %}, {{ hom_nay|date:"d/m/Y" }} · Xin chào, {{ user.ho_ten }}</p>
+  </div>
   <a href="{% url 'tai_khoan_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo tài khoản</a>
 </div>
-<div class="row g-3 mb-4">
-  {% url 'tai_khoan_danh_sach' as ds_tk %}
-  {% include "partials/the_so.html" with nhan="Tài khoản" so=so_tai_khoan icon="people" %}
-  {% include "partials/the_so.html" with nhan="Tài khoản bị khóa" so=so_bi_khoa icon="lock" link=ds_tk|add:"?trang_thai=khoa" link_chu="Xem danh sách" %}
-  {% include "partials/the_so.html" with nhan="Gia sư đang hoạt động" so=so_gia_su icon="person-badge" %}
-  {% include "partials/the_so.html" with nhan="Học viên" so=so_hoc_vien icon="person-lines-fill" %}
-  {% include "partials/the_so.html" with nhan="Khóa đang học" so=so_khoa_dang_hoc icon="journal-bookmark" %}
-  {% include "partials/the_so.html" with nhan="Buổi đang xem xét" so=so_buoi_xem_xet icon="eye" can_xu_ly=True %}
-</div>
-<div class="alert alert-info"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><div>Dashboard vận hành đầy đủ (vấn đề cần xử lý, thống kê) sẽ có ở Phần 6.</div></div>
+
+<section class="nhom{% if ds_mon_cho_duyet %} gap{% endif %}" aria-labelledby="n-duyet">
+  <div class="nhom-dau">
+    <h2 id="n-duyet">Môn dạy chờ duyệt <span class="dem-nhom">{{ so_mon_cho_duyet|default:0 }}</span></h2>
+    <a href="{% url 'gia_su_danh_sach' %}?cho_duyet=on">Xem tất cả</a>
+  </div>
+  <div class="trang-giay">
+    {% for mg in ds_mon_cho_duyet %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'gia_su_chi_tiet' mg.ho_so.pk %}"><span class="ma">{{ mg.mon_hoc }}</span><br><b>{{ mg.ho_so.user.ho_ten }}</b>{% if mg.cap_do %} · {{ mg.cap_do }}{% endif %}</a>
+      <div class="noi-dung-dong">Gia sư đăng ký dạy {{ mg.mon_hoc }}<small>{{ mg.ho_so.trinh_do|default:"Chưa ghi trình độ" }}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Kiểm tra hồ sơ rồi duyệt hoặc từ chối (kèm lý do).</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'gia_su_chi_tiet' mg.ho_so.pk %}">Xét duyệt</a>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Không có môn nào chờ duyệt.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="nhom" aria-labelledby="n-khoa-tk">
+  <div class="nhom-dau">
+    <h2 id="n-khoa-tk">Tài khoản bị khóa <span class="dem-nhom">{{ so_bi_khoa }}</span></h2>
+    <a href="{% url 'tai_khoan_danh_sach' %}?trang_thai=khoa">Xem danh sách</a>
+  </div>
+  <div class="trang-giay">
+    {% for u in ds_bi_khoa %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'tai_khoan_sua' u.pk %}"><span class="ma">{{ u.username }}</span><br><b>{{ u.ho_ten }}</b> · {{ u.get_vai_tro_display }}</a>
+      <div class="noi-dung-dong">Không đăng nhập được<small>Mở khóa ở trang Tài khoản khi cần</small></div>
+      <p class="loi-phe yen">Không cần làm gì nếu khóa là chủ ý.</p>
+      <span></span>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Không có tài khoản nào bị khóa.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<p class="chan-trang">
+  <a href="{% url 'tai_khoan_danh_sach' %}">Tài khoản: <b class="so">{{ so_tai_khoan }}</b></a> <span aria-hidden="true">·</span>
+  <a href="{% url 'gia_su_danh_sach' %}">Gia sư đang hoạt động: <b class="so">{{ so_gia_su }}</b></a> <span aria-hidden="true">·</span>
+  Học viên: <b class="so">{{ so_hoc_vien }}</b> <span aria-hidden="true">·</span>
+  <a href="{% url 'khoa_hoc_danh_sach' %}?trang_thai=DANG_HOC">Khóa đang học: <b class="so">{{ so_khoa_dang_hoc }}</b></a>
+</p>
 {% endblock %}

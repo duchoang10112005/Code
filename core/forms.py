@@ -25,14 +25,25 @@ class BootstrapMixin:
                 w.attrs.setdefault("class", "form-select")
             else:
                 w.attrs.setdefault("class", "form-control")
+        # Nối ô nhập với dòng gợi ý (đọc được bằng trình đọc màn hình).
+        for ten_o, f in self.fields.items():
+            if f.help_text and self[ten_o].auto_id:
+                f.widget.attrs["aria-describedby"] = f"{self[ten_o].auto_id}_goi_y"
+            else:
+                f.widget.attrs.pop("aria-describedby", None)
 
     def full_clean(self):
         super().full_clean()
-        # Viền đỏ cho ô nhập bị lỗi (quy chuẩn: lỗi hiện ngay tại ô sai).
+        # Viền đỏ + nối lỗi với ô nhập (quy chuẩn: lỗi hiện ngay tại ô sai).
         for ten in self.errors:
             if ten in self.fields:
                 w = self.fields[ten].widget
                 w.attrs["class"] = (w.attrs.get("class", "") + " is-invalid").strip()
+                w.attrs["aria-invalid"] = "true"
+                id_o = self[ten].auto_id
+                if id_o:
+                    mo_ta = [x for x in [w.attrs.get("aria-describedby"), f"{id_o}_loi"] if x]
+                    w.attrs["aria-describedby"] = " ".join(mo_ta)
 
 
 class DangNhapForm(BootstrapMixin, AuthenticationForm):

@@ -9,7 +9,7 @@
 
 <div class="dau-trang">
   <div>
-    <h1 class="mb-1">{{ yc.ma }} · {{ yc.mon_hoc }} – {{ yc.hoc_vien.ho_ten }}</h1>
+    <h1>{{ yc.ma }} · {{ yc.mon_hoc }} – {{ yc.hoc_vien.ho_ten }}</h1>
     <p class="mo-ta">Tiếp nhận {{ yc.tao_luc|date:"H:i d/m/Y" }}{% if yc.tao_boi %} bởi {{ yc.tao_boi.ho_ten }}{% endif %}</p>
   </div>
   <div class="d-flex align-items-center gap-2">
@@ -33,7 +33,7 @@
 {% endif %}
 
 {% if yc.trang_thai == "DA_PHAN_CONG" or yc.trang_thai == "HOC_THU_XONG" %}
-  <div class="card mb-4" style="border-color:var(--gs-primary)">
+  <div class="card mb-4 the-buoc-tiep">
     <div class="card-header d-flex justify-content-between align-items-center">
       <span><i class="bi bi-signpost-split me-1" aria-hidden="true"></i>Bước tiếp theo</span>
       <span class="small text-muted fw-normal">{{ yc.gia_su.ho_ten }} nhận lớp lúc {{ yc.phan_cong_luc|date:"H:i d/m/Y" }}</span>
@@ -121,7 +121,7 @@
                        {% if g.dang_cho %}disabled{% endif %} aria-label="Chọn {{ g.ho_so.user.ho_ten }}"></td>
             {% endif %}
             <td><label for="gs{{ g.ho_so.user_id }}" class="fw-semibold">{{ g.ho_so.user.ho_ten }}</label>
-              {% if g.thu_trung %}<div class="small" style="color:var(--gs-tone-success-fg)">Trùng {{ g.thu_trung|length }} ngày mong muốn</div>{% endif %}</td>
+              {% if g.thu_trung %}<div class="small chu-tot">Trùng {{ g.thu_trung|length }} ngày mong muốn</div>{% endif %}</td>
             <td class="small">{{ g.mon.cap_do|default:"—" }}</td>
             <td class="small">
               {% for l in g.lich_ranh %}<span class="d-inline-block me-2 {% if l.thu in thu_can %}fw-semibold{% else %}text-muted{% endif %}">{{ l }}</span>{% empty %}<span class="text-muted">Chưa khai báo</span>{% endfor %}

@@ -9,7 +9,7 @@
 
 <div class="dau-trang">
   <div>
-    <h1 class="mb-1">{{ ho_so.user.ho_ten }}</h1>
+    <h1>{{ ho_so.user.ho_ten }}</h1>
     <p class="mo-ta">{{ ho_so.user.email }}{% if ho_so.user.so_dien_thoai %} · {{ ho_so.user.so_dien_thoai }}{% endif %}</p>
   </div>
   <div class="d-flex align-items-center gap-2">
@@ -18,7 +18,7 @@
       <form method="post" action="{% url 'gia_su_doi_trang_thai' ho_so.pk %}" class="d-inline">{% csrf_token %}
         {% if ho_so.trang_thai == "HOAT_DONG" %}
           <input type="hidden" name="trang_thai" value="TAM_NGUNG">
-          <button class="btn btn-outline-danger" onclick="return confirm('Tạm ngừng hồ sơ {{ ho_so.user.ho_ten }}? Gia sư sẽ không nhận được lời mời mới.')"><i class="bi bi-pause-circle" aria-hidden="true"></i>Tạm ngừng</button>
+          <button class="btn btn-outline-danger" data-xac-nhan="Tạm ngừng hồ sơ {{ ho_so.user.ho_ten }}? Gia sư sẽ không nhận được lời mời mới." data-nut="Tạm ngừng"><i class="bi bi-pause-circle" aria-hidden="true"></i>Tạm ngừng</button>
         {% else %}
           <input type="hidden" name="trang_thai" value="HOAT_DONG">
           <button class="btn btn-primary"><i class="bi bi-check-circle" aria-hidden="true"></i>Cho hoạt động</button>
@@ -70,7 +70,7 @@
                   <button name="hanh_dong" value="duyet" class="btn btn-sm btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Duyệt</button>
                   <button name="hanh_dong" value="tu_choi" class="btn btn-sm btn-outline-danger">Từ chối</button>
                 {% elif mg.trang_thai == "DA_DUYET" %}
-                  <button name="hanh_dong" value="thu_hoi" class="btn btn-sm btn-outline-danger" onclick="return confirm('Thu hồi môn {{ mg.mon_hoc }} đã duyệt?')">Thu hồi</button>
+                  <button name="hanh_dong" value="thu_hoi" class="btn btn-sm btn-outline-danger" data-xac-nhan="Thu hồi môn {{ mg.mon_hoc }} đã duyệt? Gia sư sẽ không được đề xuất cho môn này nữa." data-nut="Thu hồi">Thu hồi</button>
                 {% else %}
                   <button name="hanh_dong" value="duyet" class="btn btn-sm btn-outline-primary">Duyệt lại</button>
                 {% endif %}

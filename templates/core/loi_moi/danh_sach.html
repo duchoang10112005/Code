@@ -3,7 +3,7 @@
 {% block title %}Lời mời nhận lớp · {{ TEN_HE_THONG }}{% endblock %}
 {% block content %}
 <div class="dau-trang">
-  <div><h1 class="mb-1">Lời mời nhận lớp</h1>
+  <div><h1>Lời mời nhận lớp</h1>
     <p class="mo-ta">Mỗi lời mời có hiệu lực 24 giờ. Lớp thuộc về gia sư nhận hợp lệ đầu tiên.</p></div>
 </div>
 
@@ -18,12 +18,12 @@
     <div class="card-body">
       <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
         <div>
-          <div class="fw-semibold" style="font-size:var(--gs-fs-h3)">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
+          <div class="fw-semibold fs-tieu-de">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
           <div class="small text-muted">Học viên {{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %} · {{ yc.hoc_vien.lop }}{% endif %} · mã {{ yc.ma }}</div>
         </div>
         <div class="text-end">
           {% nhan_trang_thai lm "trang_thai" %}
-          {% if lm.trang_thai == "CHO" %}<div class="small mt-1" style="color:var(--gs-tone-warning-fg)">Còn {{ lm.het_han_luc|con_lai }}</div>{% endif %}
+          {% if lm.trang_thai == "CHO" %}<div class="small mt-1 loi-phe">Còn {{ lm.het_han_luc|con_lai }}</div>{% endif %}
         </div>
       </div>
       <div class="row small g-2 mb-3">

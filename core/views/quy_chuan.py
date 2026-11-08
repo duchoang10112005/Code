@@ -23,21 +23,21 @@ def xem_truoc(request):
         ("Môn dạy của gia sư (D2)", MonGiaSu.TrangThai.choices),
     ]
     mau = [
-        ("Chính", "--gs-primary", "#0F766E", "Nút chính, link, mục đang chọn"),
-        ("Chính – hover", "--gs-primary-hover", "#115E59", "Khi rê chuột / nhấn"),
-        ("Nhấn", "--gs-accent", "#D97706", "Huy hiệu đếm, việc cần làm"),
-        ("Menu", "--gs-nav-bg", "#134E4A", "Thanh menu bên trái"),
-        ("Chữ", "--gs-text", "#0F172A", "Nội dung chính"),
-        ("Chữ phụ", "--gs-text-muted", "#475569", "Nhãn, chú thích"),
-        ("Viền", "--gs-border", "#E2E8F0", "Card, bảng"),
-        ("Nền", "--gs-bg", "#F6F8F9", "Nền trang"),
+        ("Bìa sổ", "--gs-cover", "#1D3A7A", "Menu trái, nút chính, đường kẻ đầu nhóm"),
+        ("Mực xanh", "--gs-ink", "#1E40AF", "Link, mã hồ sơ, dữ liệu"),
+        ("Mực đỏ", "--gs-red", "#B71C1C", "Chỉ cho lời phê: việc cần xử lý, số đếm cần làm"),
+        ("Chữ", "--gs-text", "#16213B", "Nội dung chính"),
+        ("Chữ phụ", "--gs-text-muted", "#45557D", "Nhãn, chú thích"),
+        ("Viền nhãn vở", "--gs-tag", "#8AA0D0", "Viền kép của nhãn hồ sơ"),
+        ("Viền", "--gs-border", "#D5DDEF", "Trang giấy, bảng"),
+        ("Nền giấy", "--gs-bg", "#EEF2F9", "Nền trang"),
     ]
     sac_thai = [
-        ("neutral", "Trung tính", "Kết thúc, không cần làm gì: Đã hủy, Đã đóng, Hết hạn"),
-        ("info", "Thông tin", "Mới / đã lên lịch, chờ diễn ra: Mới, Đã lên lịch, Tạm tính"),
-        ("progress", "Đang tiến hành", "Đang chạy bình thường: Đã phân công, Đang học"),
-        ("success", "Thành công", "Đã xong, hợp lệ: Hoàn tất, Đã duyệt, Đã đối soát"),
-        ("warning", "Cần chú ý", "Chờ người xử lý: Đang tìm gia sư, Đang xem xét, Tạm giữ"),
-        ("danger", "Lỗi", "Cần sửa ngay: Lỗi Zoom, Có vấn đề, Gửi lỗi"),
+        ("neutral", "Trung tính (nét đứt)", "Chờ hoặc không cần làm gì: Hết hạn, Vô hiệu"),
+        ("info", "Thông tin (nét đứt)", "Mới / đã lên lịch, chờ diễn ra: Mới, Đã lên lịch, Tạm tính"),
+        ("progress", "Đang chạy (nét liền)", "Đang chạy bình thường: Đã phân công, Đang học"),
+        ("success", "Xong (nét liền)", "Đã xong, hợp lệ: Hoàn tất, Đã duyệt, Đã đối soát"),
+        ("warning", "Chờ xử lý (nét đứt)", "Chờ người xử lý: Đang tìm gia sư, Đang xem xét, Tạm giữ"),
+        ("danger", "Lỗi / đã đóng (gạch ngang)", "Cần sửa ngay: Lỗi Zoom, Có vấn đề, Gửi lỗi"),
     ]
     return render(request, "core/quy_chuan_giao_dien.html", {"nhom": nhom, "mau": mau, "sac_thai": sac_thai})
