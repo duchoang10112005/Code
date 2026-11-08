@@ -186,13 +186,18 @@ def chap_nhan(gia_su, loi_moi):
             ghi_nhat_ky(gia_su, "Nhận lớp (Accept)", str(yc), f"Gia sư {gia_su.ho_ten} được phân công")
             # Yêu cầu đã có khóa (đang đổi gia sư) → gia sư mới nhận lại khóa, học tiếp số buổi còn lại.
             from core.services.ngoai_le import nhan_lai_khoa
-            nhan_lai_khoa(gia_su, yc)
+            khoa = nhan_lai_khoa(gia_su, yc)
     except _DaCoNguoiNhan:
         LoiMoi.objects.filter(pk=loi_moi.pk, trang_thai=LM.CHO).update(trang_thai=LM.VOIDED, phan_hoi_luc=now)
         raise ValidationError("Lớp này đã có gia sư khác nhận trước. Cảm ơn bạn đã phản hồi.")
 
     yc.refresh_from_db()
-    if yc.tao_boi:
+    if yc.tao_boi and khoa:
+        gui_email(yc.tao_boi, f"{khoa.ma} đã có gia sư mới",
+                  f"Gia sư {gia_su.ho_ten} đã nhận khóa {yc.mon_hoc} của học viên {yc.hoc_vien}. "
+                  f"Khóa đã tự học tiếp với {khoa.so_buoi_con_lai} buổi còn lại.\n"
+                  "Bước tiếp theo: báo phụ huynh tên gia sư mới và lập nhóm Zalo mới.")
+    elif yc.tao_boi:
         gui_email(yc.tao_boi, f"{yc} đã có gia sư nhận",
                   f"Gia sư {gia_su.ho_ten} đã nhận lớp {yc.mon_hoc} ({yc.trinh_do}) của học viên {yc.hoc_vien}.\n"
                   "Bước tiếp theo: liên hệ phụ huynh để chốt học thử hoặc đăng ký chính thức.")

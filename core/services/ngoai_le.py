@@ -96,8 +96,12 @@ def mo_lai(admin, buoi, ly_do):
         raise ValidationError(f"Buổi đã hủy quá {NV['NGAY_MO_LAI_TOI_DA']} ngày, không mở lại được nữa.")
     if buoi.khoa_hoc_id:
         k = KhoaHoc.objects.get(pk=buoi.khoa_hoc_id)
-        if k.so_buoi_da_dung >= k.so_buoi_dang_ky:
-            raise ValidationError("Khóa học đã dùng hết số buổi, không mở lại được.")
+        if k.trang_thai == KH.HUY:
+            raise ValidationError("Khóa học đã hủy, không mở lại buổi được.")
+        if k.so_buoi_co_the_xep <= 0:
+            raise ValidationError(f"Khóa không còn chỗ: đã học {k.so_buoi_da_dung}, đang lên lịch "
+                                  f"{k.so_buoi_dang_len_lich} / {k.so_buoi_dang_ky} buổi. "
+                                  "Hủy bớt buổi sắp tới hoặc sửa số buổi đăng ký trước.")
     han_moi = now + timedelta(hours=NV["GIO_XAC_NHAN_KHI_MO_LAI"])
     n = BuoiHoc.objects.filter(pk=buoi.pk, trang_thai=TT.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.QUA_HAN).update(
         trang_thai=TT.DA_LEN_LICH, ly_do_huy="", han_xac_nhan=han_moi, da_nhac_han=False, mo_lai_luc=now,
@@ -202,7 +206,11 @@ def nhan_lai_khoa(gia_su_moi, yc):
     if not khoa:
         return None
     now = timezone.now()
-    KhoaHoc.objects.filter(pk=khoa.pk).update(gia_su=gia_su_moi, trang_thai=KH.DANG_HOC, ghi_chu="")
+    # Chỉ khóa đang tạm dừng vì đổi gia sư mới được nhận lại (khóa đã hủy / hoàn thành thì không).
+    if not KhoaHoc.objects.filter(pk=khoa.pk, trang_thai=KH.TAM_DUNG).update(
+            gia_su=gia_su_moi, trang_thai=KH.DANG_HOC, ghi_chu=""):
+        raise ValidationError("Khóa học của lớp này không còn chờ gia sư mới.")
+    khoa.refresh_from_db()
     YeuCauHocTap.objects.filter(pk=yc.pk).update(trang_thai=YC.CHINH_THUC, cap_nhat_luc=now)
     DoiGiaSu.objects.filter(khoa_hoc=khoa, trang_thai=DoiGiaSu.TrangThai.DA_THUC_HIEN, gia_su_moi__isnull=True).update(
         gia_su_moi=gia_su_moi)

@@ -177,3 +177,63 @@ class GanThangTest(NgoaiLe):
         self.assertEqual((yc2.trang_thai, yc2.gia_su), (YC.DA_PHAN_CONG, self.gs2))
         self.assertFalse(yc2.loi_moi.filter(trang_thai=LoiMoi.TrangThai.CHO).exists())
         self.assertTrue(NhatKy.objects.filter(hanh_dong="Vận hành gán thẳng gia sư").exists())
+
+
+class SuaLoiReviewTest(NgoaiLe):
+    """Các lỗi phát hiện ở lần code-review Phần 5–6."""
+
+    def test_huy_khoa_huy_luon_buoi_sap_toi_va_xoa_zoom(self):
+        from core.services import khoa_hoc as dv_kh
+        b = dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai())
+        with self.captureOnCommitCallbacks(execute=True):
+            dv_kh.doi_trang_thai_khoa(self.nvts, self.khoa, KH.HUY, "Phụ huynh dừng học")
+        b.refresh_from_db()
+        self.assertEqual(b.trang_thai, TT.DA_HUY)
+        self.assertNotIn(b.zoom_meeting_id, zoom._fake_singleton.phong_da_tao)
+
+    def test_huy_khoa_dang_doi_gia_su_thi_khong_song_lai(self):
+        from core.services import khoa_hoc as dv_kh
+        dv.de_nghi_doi_gia_su(self.nvts, self.khoa, DoiGiaSu.LyDo.GIA_SU_NGHI)
+        self.yc.refresh_from_db()
+        (lm,), _ = dv_yc.gui_loi_moi(self.nvts, self.yc, [self.gs2.pk])
+        self.khoa.refresh_from_db()
+        dv_kh.doi_trang_thai_khoa(self.nvts, self.khoa, KH.HUY, "Phụ huynh dừng học")
+        self.yc.refresh_from_db()
+        self.assertEqual(self.yc.trang_thai, YC.DONG)
+        with self.assertRaises(ValidationError):
+            dv_yc.chap_nhan(self.gs2, lm)
+        self.khoa.refresh_from_db()
+        self.assertEqual(self.khoa.trang_thai, KH.HUY)
+
+    def test_doi_lich_loi_thi_giu_nguyen_buoi_cu_va_phong_zoom(self):
+        b = dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai(8))
+        KhoaHoc.objects.filter(pk=self.khoa.pk).update(trang_thai=KH.TAM_DUNG)
+        with self.captureOnCommitCallbacks(execute=True):
+            with self.assertRaises(ValidationError):
+                dv_buoi.doi_lich(self.gs, b, ngay_mai(10))
+        b.refresh_from_db()
+        self.assertEqual(b.trang_thai, TT.DA_LEN_LICH)
+        self.assertIn(b.zoom_meeting_id, zoom._fake_singleton.phong_da_tao)
+
+    def test_mo_lai_bi_chan_khi_khoa_het_cho(self):
+        b = self.buoi_qua_han()
+        dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai(8))
+        dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai(10))  # 2/2 chỗ đã lên lịch
+        with self.assertRaisesMessage(ValidationError, "không còn chỗ"):
+            dv.mo_lai(self.admin, b, "Quên xác nhận")
+
+    def test_buoi_loi_zoom_qua_gio_huy_dung_ly_do_va_bao_gia_su(self):
+        zoom._fake_singleton.gia_lap_loi = True
+        b = dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai())
+        BuoiHoc.objects.filter(pk=b.pk).update(bat_dau=timezone.now() - timedelta(minutes=5))
+        dv_buoi.quet_han()
+        b.refresh_from_db()
+        self.assertEqual((b.trang_thai, b.ly_do_huy), (TT.DA_HUY, BuoiHoc.LyDoHuy.LOI_ZOOM))
+        from core.models import NhatKyGuiTin
+        self.assertTrue(NhatKyGuiTin.objects.filter(buoi_hoc=b, tieu_de__contains="chưa có phòng Zoom").exists())
+
+    def test_loi_gio_hien_tai_o_gio_bat_dau(self):
+        self.dang_nhap(self.gs)
+        r = self.client.post(reverse("buoi_tao"), {"lop": f"k-{self.khoa.pk}", "bat_dau": "2020-01-01T08:00"})
+        self.assertContains(r, 'id="id_bat_dau_loi"')
+        self.assertContains(r, "tương lai")

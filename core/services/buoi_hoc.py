@@ -55,18 +55,18 @@ def _buoi_trung_gio(bat_dau, ket_thuc, bo_qua_pk=None):
 def kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=None):
     now = timezone.now()
     if bat_dau <= now:
-        raise ValidationError("Giờ bắt đầu phải ở tương lai.")
+        raise ValidationError({"bat_dau": "Giờ bắt đầu phải ở tương lai."})
     if bat_dau > now + timedelta(days=60):
-        raise ValidationError("Chỉ xếp lịch trước tối đa 60 ngày.")
+        raise ValidationError({"bat_dau": "Chỉ xếp lịch trước tối đa 60 ngày."})
     ket_thuc = bat_dau + timedelta(minutes=thoi_luong)
     trung = _buoi_trung_gio(bat_dau, ket_thuc, bo_qua_pk)
     cua_minh = [b for b in trung if b.gia_su_id == gia_su.pk]
     if cua_minh:
         b = cua_minh[0]
-        raise ValidationError(f"Bạn đã có buổi học {timezone.localtime(b.bat_dau):%H:%M %d/%m} trùng khung giờ này.")
+        raise ValidationError({"bat_dau": f"Bạn đã có buổi học {timezone.localtime(b.bat_dau):%H:%M %d/%m} trùng khung giờ này."})
     if len(trung) >= NV["SO_PHONG_ZOOM_DONG_THOI"]:
-        raise ValidationError("Khung giờ này đã có buổi học khác dùng phòng Zoom của trung tâm. "
-                              "Vui lòng chọn giờ khác.")
+        raise ValidationError({"bat_dau": "Khung giờ này đã có buổi học khác dùng phòng Zoom của trung tâm. "
+                                          "Vui lòng chọn giờ khác."})
 
 
 # =============================================================================
@@ -135,7 +135,7 @@ def tao_buoi_hoc_thu(gia_su, yc, bat_dau, thoi_luong, thay_the_cho=None):
     if yc.gia_su_id != gia_su.pk or yc.trang_thai != YC.DA_PHAN_CONG:
         raise ValidationError("Chỉ tạo buổi học thử cho lớp bạn đã nhận và đang chờ chốt.")
     if thoi_luong not in THOI_LUONG_HOC_THU:
-        raise ValidationError("Thời lượng học thử không hợp lệ.")
+        raise ValidationError({"thoi_luong": "Thời lượng học thử không hợp lệ."})
     da_co = yc.buoi_hoc.filter(loai=BuoiHoc.Loai.HOC_THU, gia_su=gia_su).exclude(trang_thai=TT.DA_HUY)
     if thay_the_cho:
         da_co = da_co.exclude(pk=thay_the_cho.pk)
@@ -198,7 +198,8 @@ def huy_buoi(nguoi, buoi, ly_do_huy, ghi_chu="", boi_he_thong=False):
         raise ValidationError("Buổi học không còn ở trạng thái hủy được.")
     buoi.refresh_from_db()
     ghi_nhat_ky(nguoi, "Hủy buổi học", buoi.ma, f"{buoi.get_ly_do_huy_display()}. {ghi_chu}".strip())
-    _xoa_zoom(buoi)
+    # Xóa phòng Zoom SAU khi lưu thành công: nếu thao tác bị rollback, phòng cũ vẫn còn dùng được.
+    transaction.on_commit(lambda: _xoa_zoom(buoi))
     return buoi
 
 
@@ -208,14 +209,14 @@ def doi_lich(gia_su, buoi, bat_dau_moi):
         raise ValidationError("Buổi học này không dời lịch được.")
     if buoi.bat_dau <= timezone.now():
         raise ValidationError("Buổi học đã bắt đầu, không dời lịch được.")
-    kiem_tra_khung_gio(gia_su, bat_dau_moi, buoi.thoi_luong_phut, bo_qua_pk=buoi.pk)
     with transaction.atomic():
-        huy_buoi(gia_su, buoi, BuoiHoc.LyDoHuy.DOI_LICH,
-                 f"Dời sang {timezone.localtime(bat_dau_moi):%H:%M %d/%m/%Y}")
+        # Tạo buổi mới TRƯỚC (kiểm tra giờ, khóa…); lỗi ở bước này thì buổi cũ giữ nguyên, phòng Zoom cũ còn.
         if buoi.loai == BuoiHoc.Loai.CHINH_THUC:
             moi = tao_buoi_chinh_thuc(gia_su, buoi.khoa_hoc, bat_dau_moi, thay_the_cho=buoi)
         else:
             moi = tao_buoi_hoc_thu(gia_su, buoi.yeu_cau, bat_dau_moi, buoi.thoi_luong_phut, thay_the_cho=buoi)
+        huy_buoi(gia_su, buoi, BuoiHoc.LyDoHuy.DOI_LICH,
+                 f"Dời sang {timezone.localtime(bat_dau_moi):%H:%M %d/%m/%Y}")
     return moi
 
 
@@ -330,9 +331,16 @@ def quet_han(now=None):
                       f"không được xác nhận trước {timezone.localtime(b.han_xac_nhan):%H:%M %d/%m} nên đã bị hủy. "
                       f"Nếu buổi học thực sự đã diễn ra, liên hệ Admin trong {NV['NGAY_MO_LAI_TOI_DA']} ngày "
                       "để được mở lại.", buoi_hoc=b)
-    # 3) Buổi lỗi Zoom đã qua giờ bắt đầu → hủy (không còn ý nghĩa thử lại).
-    BuoiHoc.objects.filter(trang_thai=TT.LOI_ZOOM, bat_dau__lt=now).update(
-        trang_thai=TT.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.ADMIN_HUY, kiem_tra_ghi_chu="Lỗi Zoom, không tạo được phòng")
+    # 3) Buổi lỗi Zoom đã qua giờ bắt đầu → hủy (không còn ý nghĩa thử lại) và báo gia sư.
+    for b in BuoiHoc.objects.filter(trang_thai=TT.LOI_ZOOM, bat_dau__lt=now).select_related(
+            "gia_su", "hoc_vien", "yeu_cau__mon_hoc"):
+        if BuoiHoc.objects.filter(pk=b.pk, trang_thai=TT.LOI_ZOOM).update(
+                trang_thai=TT.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.LOI_ZOOM, cap_nhat_luc=now):
+            ghi_nhat_ky(None, "Tự hủy buổi không tạo được phòng Zoom", b.ma, b.zoom_loi[:300])
+            gui_email(b.gia_su, f"Buổi học {b.ma} bị hủy vì chưa có phòng Zoom",
+                      f"Buổi {b.yeu_cau.mon_hoc} với {b.hoc_vien.ho_ten} lúc {timezone.localtime(b.bat_dau):%H:%M %d/%m} "
+                      "chưa tạo được phòng Zoom trước giờ học nên đã bị hủy và không tính vào khóa. "
+                      "Hãy tạo buổi bù và báo phụ huynh.", buoi_hoc=b)
     return len(qua_han)
 
 

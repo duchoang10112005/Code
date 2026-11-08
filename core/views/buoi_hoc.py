@@ -74,7 +74,7 @@ def tao(request):
                 yc = get_object_or_404(YeuCauHocTap, pk=pk, gia_su=u)
                 buoi = dv.tao_buoi_hoc_thu(u, yc, form.cleaned_data["bat_dau"], form.cleaned_data["thoi_luong"] or 60)
         except ValidationError as e:
-            form.add_error("bat_dau" if "giờ" in _loi(e).lower() else None, _loi(e))
+            form.add_error(None, e)  # lỗi theo ô (bat_dau, thoi_luong) hiện tại ô; lỗi chung hiện ở đầu form
         else:
             if buoi.trang_thai == TT.DA_LEN_LICH:
                 messages.success(request, "Đã tạo buổi học và phòng Zoom. Sao chép link gửi học viên qua Zalo.")

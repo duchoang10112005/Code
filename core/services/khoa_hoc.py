@@ -14,7 +14,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from core.models import BuoiHoc, KhoaHoc, YeuCauHocTap
+from core.models import BuoiHoc, KhoaHoc, LoiMoi, YeuCauHocTap
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
 from core.services.tien_ich import dinh_dang_tien
@@ -162,12 +162,33 @@ def doi_trang_thai_khoa(nvts, khoa, moi, ly_do=""):
     if moi == KH.DANG_HOC and not YeuCauHocTap.objects.filter(pk=khoa.yeu_cau_id, trang_thai=YC.CHINH_THUC).exists():
         raise ValidationError("Khóa đang chờ gia sư mới nhận lớp; khóa sẽ tự học tiếp khi có gia sư nhận.")
     cu = khoa.get_trang_thai_display()
-    n = KhoaHoc.objects.filter(pk=khoa.pk, trang_thai__in=CHUYEN_HOP_LE[moi]).update(
-        trang_thai=moi, ghi_chu=ly_do)
-    if n == 0:
-        raise ValidationError(f"Không chuyển được từ \"{cu}\" sang \"{KH(moi).label}\".")
-    khoa.refresh_from_db()
-    ghi_nhat_ky(nvts, "Đổi trạng thái khóa học", str(khoa), f"{cu} → {khoa.get_trang_thai_display()}. {ly_do}".strip())
+    from core.services.buoi_hoc import _xoa_zoom
+
+    now = timezone.now()
+    sap_toi = []
+    with transaction.atomic():
+        n = KhoaHoc.objects.filter(pk=khoa.pk, trang_thai__in=CHUYEN_HOP_LE[moi]).update(
+            trang_thai=moi, ghi_chu=ly_do)
+        if n == 0:
+            raise ValidationError(f"Không chuyển được từ \"{cu}\" sang \"{KH(moi).label}\".")
+        # Tạm dừng / hủy: các buổi CHƯA diễn ra bị hủy (buổi đã dạy nhưng chưa xác nhận vẫn được xác nhận).
+        if moi in (KH.TAM_DUNG, KH.HUY):
+            sap_toi = list(khoa.buoi_hoc.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now))
+            BuoiHoc.objects.filter(pk__in=[b.pk for b in sap_toi]).update(
+                trang_thai=BuoiHoc.TrangThai.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.ADMIN_HUY,
+                kiem_tra_ghi_chu=f"Khóa {KH(moi).label.lower()}: {ly_do}"[:300], cap_nhat_luc=now)
+            transaction.on_commit(lambda: [_xoa_zoom(b) for b in sap_toi])
+        # Hủy khóa khi đang tìm gia sư mới (đổi gia sư) → đóng yêu cầu, vô hiệu lời mời đang chờ.
+        if moi == KH.HUY and YeuCauHocTap.objects.filter(
+                pk=khoa.yeu_cau_id, trang_thai__in=[YC.MOI, YC.DANG_TIM]).update(
+                trang_thai=YC.DONG, ly_do_dong=f"Khóa đã hủy: {ly_do}"[:300], cap_nhat_luc=now):
+            LoiMoi.objects.filter(yeu_cau_id=khoa.yeu_cau_id, trang_thai=LoiMoi.TrangThai.CHO).update(
+                trang_thai=LoiMoi.TrangThai.VOIDED, phan_hoi_luc=now)
+        khoa.refresh_from_db()
+        ghi_nhat_ky(nvts, "Đổi trạng thái khóa học", str(khoa),
+                    f"{cu} → {khoa.get_trang_thai_display()}. {ly_do}".strip()
+                    + (f"; hủy {len(sap_toi)} buổi sắp tới" if sap_toi else ""))
     gui_email(khoa.gia_su, f"{khoa}: {khoa.get_trang_thai_display()}",
-              f"Khóa {khoa} chuyển sang trạng thái {khoa.get_trang_thai_display()}." + (f"\nLý do: {ly_do}" if ly_do else ""))
+              f"Khóa {khoa} chuyển sang trạng thái {khoa.get_trang_thai_display()}." + (f"\nLý do: {ly_do}" if ly_do else "")
+              + (f"\n{len(sap_toi)} buổi sắp tới đã được hủy, phòng Zoom đã xóa." if sap_toi else ""))
     return khoa

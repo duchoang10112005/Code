@@ -429,6 +429,7 @@ class BuoiHoc(models.Model):
         HOC_VIEN_HUY = "HOC_VIEN_HUY", "Học viên xin nghỉ"
         HAU_KIEM = "HAU_KIEM", "Không đạt hậu kiểm"
         ADMIN_HUY = "ADMIN_HUY", "Trung tâm hủy"
+        LOI_ZOOM = "LOI_ZOOM", "Không tạo được phòng Zoom"
 
     class KiemTra(models.TextChoices):
         CHUA_KIEM_TRA = "CHUA_KIEM_TRA", "Chưa kiểm tra"
