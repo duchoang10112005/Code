@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.password_validation import validate_password
 
-from .models import HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
+from .models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
 from .services.tien_ich import chuan_hoa_sdt
 
 
@@ -308,3 +308,68 @@ class LocKhoaHocForm(BootstrapMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["trang_thai"].choices = [("", "Mọi trạng thái")] + list(KhoaHoc.TrangThai.choices)
+
+
+# =============================================================================
+# Phần 5 – Buổi học
+# =============================================================================
+DINH_DANG_GIO = "%Y-%m-%dT%H:%M"
+
+
+class _GioBatDauField(forms.DateTimeField):
+    def __init__(self, **kw):
+        kw.setdefault("label", "Ngày giờ bắt đầu")
+        kw.setdefault("input_formats", [DINH_DANG_GIO])
+        kw.setdefault("widget", forms.DateTimeInput(attrs={"type": "datetime-local", "step": 300},
+                                                    format=DINH_DANG_GIO))
+        super().__init__(**kw)
+
+
+class TaoBuoiForm(BootstrapMixin, forms.Form):
+    """Gia sư chọn lớp: khóa chính thức (k-<id>) hoặc lớp chờ học thử (t-<id>)."""
+
+    lop = forms.ChoiceField(label="Lớp")
+    bat_dau = _GioBatDauField()
+    thoi_luong = forms.TypedChoiceField(
+        label="Thời lượng buổi học thử", coerce=int, required=False, initial=60,
+        choices=[(60, "1 giờ"), (90, "1,5 giờ"), (120, "2 giờ")], widget=forms.RadioSelect,
+        help_text="Buổi chính thức luôn theo thời lượng đã đăng ký của khóa.")
+
+    def __init__(self, *args, ds_khoa=(), ds_thu=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        nhom = []
+        if ds_khoa:
+            nhom.append(("Khóa chính thức", [
+                (f"k-{k.pk}", f"{k.ma} · {k.hoc_vien.ho_ten} · {k.yeu_cau.mon_hoc} "
+                              f"(còn xếp được {k.so_buoi_co_the_xep} buổi)") for k in ds_khoa]))
+        if ds_thu:
+            nhom.append(("Học thử", [(f"t-{y.pk}", f"{y.ma} · {y.hoc_vien.ho_ten} · {y.mon_hoc}") for y in ds_thu]))
+        self.fields["lop"].choices = [("", "— Chọn lớp —")] + nhom
+
+
+class XacNhanBuoiForm(BootstrapMixin, forms.Form):
+    noi_dung = forms.CharField(label="Nội dung đã dạy", max_length=1000,
+                               widget=forms.Textarea(attrs={"rows": 3}))
+    xep_loai = forms.ChoiceField(label="Đánh giá chung", choices=BuoiHoc.XepLoai.choices, widget=forms.RadioSelect)
+    danh_gia = forms.CharField(label="Nhận xét học viên", max_length=1000, widget=forms.Textarea(attrs={"rows": 3}),
+                               help_text="Nội dung này được gửi cho phụ huynh qua Zalo.")
+    dan_do_buoi_sau = forms.CharField(label="Dặn dò cho buổi sau", max_length=500, required=False,
+                                      widget=forms.Textarea(attrs={"rows": 2}))
+
+
+class HuyBuoiForm(BootstrapMixin, forms.Form):
+    ly_do_huy = forms.ChoiceField(label="Lý do hủy", choices=[
+        (BuoiHoc.LyDoHuy.GIA_SU_HUY, "Gia sư bận / có việc đột xuất"),
+        (BuoiHoc.LyDoHuy.HOC_VIEN_HUY, BuoiHoc.LyDoHuy.HOC_VIEN_HUY.label)])
+    ghi_chu = forms.CharField(label="Ghi chú", max_length=300, required=False)
+
+
+class DoiLichForm(BootstrapMixin, forms.Form):
+    bat_dau = _GioBatDauField(label="Giờ mới")
+
+
+class LocBuoiForm(BootstrapMixin, forms.Form):
+    thang = forms.DateField(label="Tháng", required=False, input_formats=["%Y-%m"],
+                            widget=forms.DateInput(attrs={"type": "month"}, format="%Y-%m"))
+    trang_thai = forms.ChoiceField(label="Trạng thái", required=False,
+                                   choices=[("", "Mọi trạng thái")] + list(BuoiHoc.TrangThai.choices))

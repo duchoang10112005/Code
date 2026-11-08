@@ -52,7 +52,8 @@
         <li><a class="nav-link {% if 'loi_moi' in p %}active{% endif %}" href="{% url 'loi_moi_cua_toi' %}"><i class="bi bi-envelope-open" aria-hidden="true"></i>Lời mời nhận lớp
           {% if so_loi_moi_cho %}<span class="dem">{{ so_loi_moi_cho }}<span class="visually-hidden"> lời mời đang chờ</span></span>{% endif %}</a></li>
         <li><a class="nav-link {% if p == 'lop_cua_toi' or p == 'khoa_cua_toi' %}active{% endif %}" href="{% url 'lop_cua_toi' %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Lớp của tôi</a></li>
-        {% include "partials/muc_sap_co.html" with icon="calendar-week" ten="Buổi học của tôi" %}
+        <li><a class="nav-link {% if 'buoi' in p %}active{% endif %}" href="{% url 'buoi_cua_toi' %}"><i class="bi bi-calendar-week" aria-hidden="true"></i>Buổi học của tôi
+          {% if so_buoi_cho_xac_nhan %}<span class="dem">{{ so_buoi_cho_xac_nhan }}<span class="visually-hidden"> buổi chờ xác nhận</span></span>{% endif %}</a></li>
         {% include "partials/muc_sap_co.html" with icon="wallet2" ten="Thu nhập" %}
       {% endif %}
 
@@ -112,6 +113,31 @@
   });
   hop.addEventListener("shown.bs.modal", function () { document.getElementById("hop-xac-nhan-quay-lai").focus(); });
   hop.addEventListener("hidden.bs.modal", function () { cho = null; });
+  /* Nút có data-dang-gui: khi gửi form thì khóa nút + đổi chữ (tránh bấm 2 lần khi chờ Zoom). */
+  document.addEventListener("submit", function (e) {
+    var nut = e.submitter;
+    if (e.defaultPrevented || !nut || !nut.dataset.dangGui) { return; }
+    setTimeout(function () {
+      nut.disabled = true;
+      nut.textContent = nut.dataset.dangGui;
+    }, 0);
+  });
+  /* Nút sao chép: data-sao-chep="id ô cần chép". */
+  document.addEventListener("click", function (e) {
+    var nut = e.target.closest("[data-sao-chep]");
+    if (!nut) { return; }
+    var o = document.getElementById(nut.dataset.saoChep);
+    var xong = function () {
+      var cu = nut.innerHTML;
+      nut.textContent = "Đã sao chép";
+      setTimeout(function () { nut.innerHTML = cu; }, 1600);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(o.value).then(xong);
+    } else {
+      o.select(); document.execCommand("copy"); xong();
+    }
+  });
   /* Form có lỗi: đưa con trỏ tới tóm tắt lỗi để biết ngay cần sửa gì. */
   var tomTat = document.querySelector(".tom-tat-loi");
   if (tomTat) { tomTat.focus(); }

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Tạo buổi học · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<nav aria-label="Đường dẫn" class="small mb-2"><a href="{% url 'buoi_cua_toi' %}">Buổi học của tôi</a> / Tạo buổi học</nav>
+<div class="dau-trang">
+  <div><h1>Tạo buổi học</h1><p class="mo-ta">Hệ thống tạo phòng Zoom cho buổi học; bạn sao chép link gửi học viên qua Zalo</p></div>
+</div>
+{% if khong_co_lop %}
+  <div class="trang-giay trang-rong">Bạn chưa có khóa nào còn buổi để xếp lịch, cũng chưa có lớp nào chờ học thử. <a href="{% url 'lop_cua_toi' %}">Xem Lớp của tôi</a></div>
+{% else %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="trang-giay p-4">
+      <form method="post" novalidate>{% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" data-dang-gui="Đang tạo phòng Zoom…"><i class="bi bi-camera-video" aria-hidden="true"></i>Tạo buổi học</button>
+          <a href="{% url 'buoi_cua_toi' %}" class="btn btn-outline-secondary">Hủy bỏ</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="trang-giay p-4">
+      <h2 class="fs-tieu-de mt-0">Lưu ý</h2>
+      <ul class="small mb-0 ps-3">
+        <li>Trung tâm dùng chung một tài khoản Zoom, nên mỗi khung giờ chỉ có một buổi học. Nếu giờ bị trùng, hệ thống sẽ báo để bạn chọn giờ khác.</li>
+        <li>Sau giờ kết thúc, bạn có <b>12 giờ</b> để xác nhận buổi học. Quá hạn, buổi bị hủy và không tính thù lao.</li>
+        <li>Muốn đổi giờ, dùng <b>Dời lịch</b> trong trang buổi học, không tạo buổi mới.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

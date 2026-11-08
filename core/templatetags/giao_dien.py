@@ -50,6 +50,7 @@ BANG_TRANG_THAI = {
     "HOP_LE": ("success", "shield-check"),
     "CO_VAN_DE": ("danger", "shield-exclamation"),
     "DA_XU_LY": ("info", "check2-square"),
+    "KHONG_DU_LIEU": ("neutral", "question-circle"),
     "KHONG_GHI": ("neutral", "camera-video-off"),
     "CHO_XU_LY": ("info", "hourglass"),
     "SAN_SANG": ("success", "play-btn"),

@@ -152,4 +152,11 @@ NGHIEP_VU = {
     "HAN_LOI_MOI_GIO": int(os.getenv("HAN_LOI_MOI_GIO", "24")),
     # Bản ghi Zoom được lưu bao nhiêu ngày.
     "NGAY_LUU_BAN_GHI": int(os.getenv("NGAY_LUU_BAN_GHI", "30")),
+    # Gửi email nhắc gia sư khi còn số giờ này là hết hạn xác nhận.
+    "NHAC_TRUOC_HAN_GIO": int(os.getenv("NHAC_TRUOC_HAN_GIO", "3")),
+    # Số phòng Zoom chạy cùng lúc = số tài khoản Zoom có license. MVP: 1 tài khoản → 1 buổi tại một thời điểm.
+    "SO_PHONG_ZOOM_DONG_THOI": int(os.getenv("SO_PHONG_ZOOM_DONG_THOI", "1")),
+    # Admin chỉ được mở lại buổi bị tự hủy trong số ngày này; khi mở lại gia sư có thêm số giờ này.
+    "NGAY_MO_LAI_TOI_DA": int(os.getenv("NGAY_MO_LAI_TOI_DA", "7")),
+    "GIO_XAC_NHAN_KHI_MO_LAI": int(os.getenv("GIO_XAC_NHAN_KHI_MO_LAI", "24")),
 }

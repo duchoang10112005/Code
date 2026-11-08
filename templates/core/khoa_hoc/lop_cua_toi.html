@@ -19,7 +19,7 @@
         <td class="small">
           {% if yc.trang_thai == "HOC_THU_XONG" %}{% nhan_trang_thai yc "trang_thai" %}<div class="text-muted mt-1">Phụ huynh đồng ý học tiếp — trung tâm đang mở khóa.</div>
           {% elif buoi_thu %}{% nhan_trang_thai buoi_thu "trang_thai" %}<div class="text-muted mt-1">Buổi học thử {{ buoi_thu.bat_dau|date:"H:i d/m" }} — chờ trung tâm chốt với phụ huynh.</div>
-          {% else %}<span class="text-muted">Chờ trung tâm chốt: đăng ký thẳng hoặc học thử. Nếu học thử, bạn sẽ tạo buổi học thử ở mục Buổi học.</span>{% endif %}
+          {% else %}<span class="text-muted">Chờ trung tâm chốt: đăng ký thẳng hoặc học thử.</span> <a href="{% url 'buoi_tao' %}?yc={{ yc.pk }}" class="d-block mt-1">Trung tâm báo học thử? Tạo buổi học thử</a>{% endif %}
         </td>
       </tr>
     {% empty %}
@@ -42,7 +42,7 @@
         <td class="cot-so">{{ k.so_buoi_con_lai }}</td>
         <td class="cot-so">{{ k.thu_lao_moi_buoi|tien }}</td>
         <td>{% nhan_trang_thai k "trang_thai" %}</td>
-        <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}">Mở</a></td>
+        <td class="cot-thao-tac">{% if k.trang_thai == "DANG_HOC" and k.so_buoi_co_the_xep %}<a class="btn btn-sm btn-primary" href="{% url 'buoi_tao' %}?khoa={{ k.pk }}">Tạo buổi</a> {% endif %}<a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}">Mở</a></td>
       </tr>
     {% empty %}
       <tr><td colspan="7"><div class="trang-rong py-3"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Bạn chưa phụ trách khóa học nào.</div></td></tr>

@@ -398,6 +398,12 @@ class BuoiHoc(models.Model):
         HOP_LE = "HOP_LE", "Hợp lệ"
         CO_VAN_DE = "CO_VAN_DE", "Có vấn đề"
         DA_XU_LY = "DA_XU_LY", "Đã xử lý"
+        KHONG_DU_LIEU = "KHONG_DU_LIEU", "Không có dữ liệu Zoom"
+
+    class XepLoai(models.TextChoices):
+        TOT = "TOT", "Tiếp thu tốt, nắm chắc bài"
+        KHA = "KHA", "Tiếp thu cơ bản, cần luyện thêm"
+        CAN_HO_TRO = "CAN_HO_TRO", "Chưa nắm được bài, cần hỗ trợ thêm"
 
     class BanGhi(models.TextChoices):
         KHONG_GHI = "KHONG_GHI", "Không ghi hình"
@@ -439,8 +445,18 @@ class BuoiHoc(models.Model):
 
     # Kết quả buổi học (gia sư nhập)
     noi_dung = models.TextField("Nội dung buổi học", blank=True)
+    xep_loai = models.CharField("Đánh giá chung", max_length=20, choices=XepLoai.choices, blank=True)
     danh_gia = models.TextField("Nhận xét học viên", blank=True)
+    dan_do_buoi_sau = models.TextField("Dặn dò cho buổi sau", blank=True)
     xac_nhan_luc = models.DateTimeField(null=True, blank=True)
+    # Hạn xác nhận = giờ kết thúc + HAN_XAC_NHAN_GIO; quá hạn thì hệ thống tự hủy buổi.
+    han_xac_nhan = models.DateTimeField("Hạn xác nhận", null=True, blank=True)
+    da_nhac_han = models.BooleanField(default=False)
+    mo_lai_luc = models.DateTimeField("Admin mở lại lúc", null=True, blank=True)
+    so_thu_tu = models.PositiveIntegerField("Buổi thứ", null=True, blank=True)
+    # Thù lao chụp lại lúc tạo buổi (dự kiến) và thời lượng đo được từ Zoom (thực tế).
+    thu_lao_du_kien = models.PositiveIntegerField("Thù lao dự kiến (đ)", default=0)
+    thoi_luong_thuc_te = models.PositiveIntegerField("Thời lượng thực tế (phút)", null=True, blank=True)
 
     # Hậu kiểm (chạy SAU khi gia sư xác nhận, không chặn xác nhận)
     kiem_tra = models.CharField(max_length=20, choices=KiemTra.choices, default=KiemTra.CHUA_KIEM_TRA)
@@ -477,6 +493,17 @@ class BuoiHoc(models.Model):
     @property
     def ket_thuc(self):
         return self.bat_dau + timedelta(minutes=self.thoi_luong_phut)
+
+    @property
+    def ma(self):
+        return f"BH-{self.pk:05d}"
+
+    @property
+    def cho_xac_nhan(self):
+        """Đã qua giờ kết thúc, chưa xác nhận và còn hạn."""
+        now = timezone.now()
+        return (self.trang_thai == self.TrangThai.DA_LEN_LICH and self.ket_thuc <= now
+                and (self.han_xac_nhan is None or now <= self.han_xac_nhan))
 
 
 # =============================================================================

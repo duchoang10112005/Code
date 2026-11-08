@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load giao_dien %}
+{% block title %}Buổi học của tôi · {{ TEN_HE_THONG }}{% endblock %}
+{% block content %}
+<div class="dau-trang">
+  <div><h1>Buổi học của tôi</h1><p class="mo-ta">Tạo buổi, mở phòng Zoom và xác nhận sau mỗi buổi dạy</p></div>
+  {% if co_lop %}<a href="{% url 'buoi_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi học</a>{% endif %}
+</div>
+
+{% if cho_xac_nhan %}
+<section class="nhom gap" aria-labelledby="n-cho-xn">
+  <div class="nhom-dau"><h2 id="n-cho-xn">Chờ bạn xác nhận <span class="dem-nhom">{{ cho_xac_nhan|length }}</span></h2></div>
+  <div class="trang-giay">
+    {% for b in cho_xac_nhan %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'buoi_chi_tiet' b.pk %}"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</a>
+      <div class="noi-dung-dong">{{ b.bat_dau|date:"H:i d/m" }} · {{ b.thoi_luong_phut }} phút<small>{{ b.get_loai_display }}</small></div>
+      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ b.han_xac_nhan|con_lai }} để xác nhận, quá hạn buổi sẽ bị hủy và không tính thù lao.</p>
+      <a class="btn btn-sm btn-primary" href="{% url 'buoi_chi_tiet' b.pk %}#xac-nhan">Xác nhận</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="nhom" aria-labelledby="n-sap-toi">
+  <div class="nhom-dau"><h2 id="n-sap-toi">Buổi sắp tới <span class="dem-nhom">{{ sap_toi|length }}</span></h2></div>
+  <div class="trang-giay">
+    {% for b in sap_toi %}
+    <div class="dong-viec">
+      <a class="nhan-vo" href="{% url 'buoi_chi_tiet' b.pk %}"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</a>
+      <div class="noi-dung-dong">{{ b.bat_dau|date:"H:i" }} · {{ b.bat_dau|date:"d/m/Y" }}<small>{{ b.get_loai_display }} · {{ b.thoi_luong_phut }} phút</small></div>
+      {% if b.trang_thai == "LOI_ZOOM" %}<p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Chưa có phòng Zoom, mở buổi và bấm Thử lại.</p>
+      {% else %}<p class="loi-phe yen">{% nhan_trang_thai b "trang_thai" %}</p>{% endif %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}">Mở</a>
+    </div>
+    {% empty %}
+    <p class="trang-rong m-0">Chưa có buổi nào sắp tới.{% if co_lop %} <a href="{% url 'buoi_tao' %}">Tạo buổi học</a>{% endif %}</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="nhom" aria-labelledby="n-thang">
+  <div class="nhom-dau"><h2 id="n-thang">Trong tháng {{ thang|date:"m/Y" }} <span class="dem-nhom">{{ ds|length }}</span></h2></div>
+  <form class="row g-2 mb-3 align-items-end" method="get" role="search">
+    <div class="col-md-3"><label class="form-label" for="{{ form.thang.id_for_label }}">Tháng</label>{{ form.thang }}</div>
+    <div class="col-md-3"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
+    <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
+  </form>
+  <div class="trang-giay"><div class="table-responsive"><table class="table table-hover">
+    <thead><tr><th>Mã</th><th>Thời gian</th><th>Học viên · môn</th><th>Loại</th><th class="cot-so">Buổi thứ</th><th>Trạng thái</th><th class="cot-so">Thù lao</th><th class="cot-thao-tac"></th></tr></thead>
+    <tbody>
+    {% for b in ds %}
+      <tr>
+        <td><b>{{ b.ma }}</b></td>
+        <td class="so">{{ b.bat_dau|date:"H:i d/m" }}</td>
+        <td>{{ b.hoc_vien.ho_ten }}<div class="small text-muted">{{ b.yeu_cau.mon_hoc }}</div></td>
+        <td class="small">{{ b.get_loai_display }}</td>
+        <td class="cot-so">{{ b.so_thu_tu|default:"—" }}</td>
+        <td>{% nhan_trang_thai b "trang_thai" %}{% if b.trang_thai == "DA_HUY" %}<div class="small text-muted">{{ b.get_ly_do_huy_display }}</div>{% endif %}</td>
+        <td class="cot-so">{% if b.thu_lao_du_kien %}{{ b.thu_lao_du_kien|tien }}{% else %}—{% endif %}</td>
+        <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}">Mở</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8"><div class="trang-rong py-3"><i class="bi bi-calendar-x" aria-hidden="true"></i>Không có buổi học nào trong tháng này.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div></div>
+</section>
+{% endblock %}

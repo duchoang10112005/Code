@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from core.views import chung, gia_su, khoa_hoc, quy_chuan, tai_khoan, yeu_cau
+from core.views import buoi_hoc, chung, gia_su, khoa_hoc, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -53,6 +53,16 @@ urlpatterns = [
     path("khoa-hoc/<int:pk>/trang-thai/", khoa_hoc.doi_trang_thai, name="khoa_hoc_doi_trang_thai"),
     path("lop-cua-toi/", khoa_hoc.lop_cua_toi, name="lop_cua_toi"),
     path("lop-cua-toi/khoa/<int:pk>/", khoa_hoc.khoa_cua_toi, name="khoa_cua_toi"),
+
+    # Phần 5 – Buổi học (gia sư)
+    path("buoi-hoc/", buoi_hoc.danh_sach, name="buoi_cua_toi"),
+    path("buoi-hoc/tao/", buoi_hoc.tao, name="buoi_tao"),
+    path("buoi-hoc/<int:pk>/", buoi_hoc.chi_tiet, name="buoi_chi_tiet"),
+    path("buoi-hoc/<int:pk>/mo-phong/", buoi_hoc.mo_phong, name="buoi_mo_phong"),
+    path("buoi-hoc/<int:pk>/thu-lai-zoom/", buoi_hoc.thu_lai_zoom, name="buoi_thu_lai_zoom"),
+    path("buoi-hoc/<int:pk>/huy/", buoi_hoc.huy, name="buoi_huy"),
+    path("buoi-hoc/<int:pk>/doi-lich/", buoi_hoc.doi_lich, name="buoi_doi_lich"),
+    path("buoi-hoc/<int:pk>/xac-nhan/", buoi_hoc.xac_nhan, name="buoi_xac_nhan"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

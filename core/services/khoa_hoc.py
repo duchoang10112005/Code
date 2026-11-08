@@ -45,12 +45,16 @@ def buoi_hoc_thu_gan_nhat(yc):
 
 
 def huy_buoi_thu_chua_hoc(yc, gia_su, ly_do):
-    """Hủy các buổi học thử chưa diễn ra của một gia sư (khi đổi gia sư / đóng yêu cầu).
-    Phòng Zoom tương ứng sẽ được xóa khi Phần 5 nối Zoom thật."""
-    return yc.buoi_hoc.filter(loai=BuoiHoc.Loai.HOC_THU, gia_su=gia_su,
-                              trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO).update(
+    """Hủy các buổi học thử chưa diễn ra của một gia sư (khi đổi gia sư / đóng yêu cầu) và xóa phòng Zoom."""
+    from core.services.buoi_hoc import _xoa_zoom
+
+    ds = list(yc.buoi_hoc.filter(loai=BuoiHoc.Loai.HOC_THU, gia_su=gia_su,
+                                 trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO))
+    n = BuoiHoc.objects.filter(pk__in=[b.pk for b in ds]).update(
         trang_thai=BuoiHoc.TrangThai.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.ADMIN_HUY,
         kiem_tra_ghi_chu=ly_do[:300])
+    transaction.on_commit(lambda: [_xoa_zoom(b) for b in ds])
+    return n
 
 
 def co_buoi_hoc_thu(yc):
