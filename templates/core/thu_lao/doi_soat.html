@@ -1,52 +1,97 @@
-{% extends "base.html" %}
-{% load giao_dien %}
-{% block title %}Đối soát thù lao · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Đối soát thù lao{% endblock %}
+{% block crumb %}<span class="muted">Tài chính</span><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Đối soát thù lao</h1>{% endblock %}
 {% block content %}
-<div class="dau-trang">
-  <div><h1>Đối soát thù lao tháng {{ thang|date:"m/Y" }}</h1>
-    <p class="mo-ta">NV tuyển sinh đối chiếu và bấm Kiểm tra; Admin chốt. Người kiểm tra và người chốt phải là hai người khác nhau.</p></div>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="?thang={{ thang_truoc|date:'Y-m' }}" aria-label="Tháng trước"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
-    <a class="btn btn-outline-secondary" href="?thang={{ thang_sau|date:'Y-m' }}" aria-label="Tháng sau"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
-    <a class="btn btn-outline-primary" href="{% url 'doi_soat_csv' %}?thang={{ thang|date:'Y-m' }}"><i class="bi bi-download" aria-hidden="true"></i>Xuất CSV</a>
-  </div>
+<div class="head"><div><h2 class="h2">Đối soát thù lao tháng {{ thang|date:"m/Y" }}</h2><p class="lead">Thù lao tính theo buổi đã xác nhận hoàn tất. Tuyển sinh kiểm tra từng gia sư, Quản trị viên chốt tháng để chi trả.</p></div>
+  <div class="tabs" style="margin-left:auto">{% for t in ds_thang %}<a href="?thang={{ t.thang|date:'Y-m' }}"{% if t.thang == thang %} aria-current="page"{% endif %}>T{{ t.thang|date:"n/Y" }}<span class="sm" style="color:{% if t.tt == 'DA_CHOT' or t.tt == 'DA_CHI_TRA' %}#4F46E5{% else %}#0F766E{% endif %}">{% if t.tt == 'DA_CHI_TRA' %}Đã chi trả{% elif t.tt == 'DA_CHOT' %}Đã chốt{% elif t.tt == 'DA_KIEM_TRA' %}Chờ chốt{% else %}Đang mở{% endif %}</span></a>{% endfor %}</div>
 </div>
 
-<div class="trang-giay"><div class="table-responsive"><table class="table table-hover">
-  <thead><tr><th>Gia sư</th><th class="cot-so">Số buổi</th><th class="cot-so">Tạm tính</th><th class="cot-so">Tạm giữ</th><th class="cot-so">Điều chỉnh</th><th class="cot-so">Tổng</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
-  <tbody>
+{% with tt=tt_thang %}
+<div class="card" style="display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden">
+  <div class="row" style="padding:14px 18px;gap:12px"><span class="tile" style="width:30px;height:30px;border-radius:50%;background:#14B8A6;color:#fff"><i class="bi bi-check-lg"></i></span><div><b class="b6">Ghi nhận buổi dạy</b><div class="sm" style="color:#0F766E">Tự động theo buổi hoàn tất</div></div></div>
+  <div class="row" style="padding:14px 18px;gap:12px;{% if tt == 'DANG_MO' %}box-shadow:inset 0 -2px #6366F1{% endif %}"><span class="tile" style="width:30px;height:30px;border-radius:50%;{% if tt == 'DANG_MO' %}background:#6366F1;color:#fff{% else %}background:#14B8A6;color:#fff{% endif %}">{% if tt == 'DANG_MO' %}2{% else %}<i class="bi bi-check-lg"></i>{% endif %}</span><div><b class="b6">Tuyển sinh kiểm tra</b><div class="sm" style="color:#4F46E5">{{ so_kt }}/{{ so_gs }} gia sư</div></div></div>
+  <div class="row" style="padding:14px 18px;gap:12px;{% if tt == 'DA_KIEM_TRA' %}box-shadow:inset 0 -2px #6366F1{% endif %}"><span class="tile" style="width:30px;height:30px;border-radius:50%;{% if tt == 'DA_CHOT' or tt == 'DA_CHI_TRA' %}background:#14B8A6;color:#fff{% elif tt == 'DA_KIEM_TRA' %}background:#6366F1;color:#fff{% else %}border:1px solid #D5D9E6;color:#646B85{% endif %}">{% if tt == 'DA_CHOT' or tt == 'DA_CHI_TRA' %}<i class="bi bi-check-lg"></i>{% else %}3{% endif %}</span><div><b class="b6">Quản trị viên chốt</b><div class="sm muted">{% if tt == 'DA_CHOT' or tt == 'DA_CHI_TRA' %}Đã chốt{% elif tt == 'DA_KIEM_TRA' %}Sẵn sàng chốt{% else %}Chờ kiểm tra xong{% endif %}</div></div></div>
+  <div class="row" style="padding:14px 18px;gap:12px;{% if tt == 'DA_CHOT' %}box-shadow:inset 0 -2px #6366F1{% endif %}"><span class="tile" style="width:30px;height:30px;border-radius:50%;{% if tt == 'DA_CHI_TRA' %}background:#14B8A6;color:#fff{% elif tt == 'DA_CHOT' %}background:#6366F1;color:#fff{% else %}border:1px solid #D5D9E6;color:#646B85{% endif %}">{% if tt == 'DA_CHI_TRA' %}<i class="bi bi-check-lg"></i>{% else %}4{% endif %}</span><div><b class="b6">Chi trả cho gia sư</b><div class="sm muted">{% if tt == 'DA_CHI_TRA' %}Đã chi trả{% else %}Ngày {{ ngay_tra|date:"d/m/Y" }}{% endif %}</div></div></div>
+</div>
+{% endwith %}
+
+<div class="kpis card" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+  <div class="kpi"><div class="v">{{ tong_ca_thang|tien }}</div><div class="l">Tổng thù lao {% if tt_thang == 'DA_CHOT' or tt_thang == 'DA_CHI_TRA' %}đã chốt{% else %}tạm tính{% endif %}</div></div>
+  <div class="kpi"><div class="v">{{ so_buoi }}</div><div class="l">Buổi hợp lệ</div></div>
+  <div class="kpi"><div class="v" style="color:{% if so_giu %}#C2410C{% else %}inherit{% endif %}">{{ so_giu }}</div><div class="l">Buổi tạm giữ · đang xem xét</div></div>
+  <div class="kpi"><div class="v">{{ so_kt }}/{{ so_gs }}</div><div class="l">Gia sư đã kiểm tra</div><div style="height:5px;border-radius:3px;background:#EEF0F5;margin-top:8px;overflow:hidden"><span style="display:block;height:5px;width:{{ pt_kt|stringformat:'d' }}%;background:#14B8A6"></span></div></div>
+</div>
+
+{% if so_giu %}<div class="banner" style="background:#FFF8EC;border-color:#FFE1B3"><span class="ic" style="color:#B45309"><i class="bi bi-exclamation-triangle"></i></span><div style="flex:1"><b class="b6">Còn {{ so_giu }} buổi tạm giữ chưa xử lý</b><div class="sm" style="color:#4A5068">Buổi tạm giữ không được tính khi chốt. Tuyển sinh phụ trách xử lý ở Hậu kiểm buổi học trước khi kiểm tra gia sư đó.</div></div>
+  {% if user.la_tuyen_sinh %}<a class="btn sm" href="{% url 'hau_kiem' %}?tab=co_van_de">Mở Hậu kiểm</a>{% endif %}</div>{% endif %}
+{% if tt_thang == 'DA_CHI_TRA' %}<div class="banner" style="background:#E6FAF7;border-color:#B5EDE3"><span class="ic" style="color:#0F766E"><i class="bi bi-check-circle"></i></span><span class="sm">Đã chi trả thù lao tháng {{ thang|date:"m/Y" }}{% with d=bang.0.doi_soat %}{% if d %} · chứng từ {{ d.chung_tu }} · {{ d.chi_tra_boi.ho_ten }} {{ d.chi_tra_luc|date:"d/m/Y" }}{% endif %}{% endwith %}.</span></div>{% endif %}
+
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>Theo gia sư</h3><span class="sm muted">{{ so_gs }} gia sư</span>
+    <div class="row" style="margin-left:auto;gap:8px">
+      <a class="btn sm" href="{% url 'doi_soat_csv' %}?thang={{ thang|date:'Y-m' }}"><i class="bi bi-box-arrow-up-right"></i>Xuất CSV</a>
+      {% if user.la_admin %}
+        {% if chi_tra_duoc %}<button type="button" class="btn pri sm" data-mo-hop="hop-chi-tra"><i class="bi bi-cash-coin"></i>Đánh dấu đã chi trả</button>
+        {% elif tt_thang != 'DA_CHI_TRA' %}<button type="button" class="btn pri sm" data-mo-hop="hop-chot"{% if not chot_duoc %} disabled title="Cần kiểm tra hết gia sư trước khi chốt"{% endif %}><i class="bi bi-lock"></i>Chốt tháng</button>{% endif %}
+      {% endif %}</div></div>
+  {% if bang %}
+  {% with cot="minmax(0,1.5fr) 100px 90px 110px 120px 130px 260px" %}
+  <div class="gt-h" style="--cols:{{ cot }}"><span>Gia sư</span><span class="r">Buổi hoàn tất</span><span class="r">Tạm giữ</span><span class="r">Điều chỉnh</span><span class="r">Thành tiền</span><span>Trạng thái</span><span></span></div>
   {% for d in bang %}
-    <tr>
-      <td><a href="{% url 'doi_soat_gia_su' d.gia_su.pk %}?thang={{ thang|date:'Y-m' }}"><b>{{ d.gia_su.ho_ten }}</b></a></td>
-      <td class="cot-so">{{ d.so_buoi }}</td>
-      <td class="cot-so">{{ d.tam_tinh|add:d.da_doi_soat|tien }}</td>
-      <td class="cot-so">{% if d.tam_giu %}<span class="loi-phe d-inline">{{ d.tam_giu|tien }}</span>{% else %}—{% endif %}</td>
-      <td class="cot-so">{% if d.dieu_chinh %}{{ d.dieu_chinh|tien }}{% else %}—{% endif %}</td>
-      <td class="cot-so"><b>{{ d.tong|tien }}</b></td>
-      <td>
-        {% if d.trang_thai == "DA_CHOT" %}{% nhan_tuy_chinh "DA_CHOT" "Đã chốt" %}<div class="small text-muted">{{ d.doi_soat.chot_boi.ho_ten }} · {{ d.doi_soat.chot_luc|date:"d/m" }}</div>
-        {% elif d.trang_thai == "DA_KIEM_TRA" %}{% nhan_tuy_chinh "DA_KIEM_TRA" "Đã kiểm tra" %}<div class="small text-muted">{{ d.doi_soat.kiem_tra_boi.ho_ten }} · {{ d.doi_soat.kiem_tra_luc|date:"d/m" }}</div>
-        {% elif d.trang_thai == "CAN_KIEM_TRA_LAI" %}{% nhan_tuy_chinh "CAN_KIEM_TRA_LAI" "Số liệu đổi, kiểm tra lại" %}
-        {% else %}{% nhan_tuy_chinh "CHUA_KIEM_TRA" "Chưa kiểm tra" %}{% endif %}
-      </td>
-      <td class="cot-thao-tac">
-        {% if user.la_tuyen_sinh and d.trang_thai != "DA_CHOT" and d.trang_thai != "DA_KIEM_TRA" %}
-          <form method="post" action="{% url 'doi_soat_kiem_tra' d.gia_su.pk %}" class="d-inline">{% csrf_token %}
-            <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
-            <button class="btn btn-sm btn-primary"{% if d.so_tam_giu %} disabled title="Còn buổi tạm giữ"{% endif %}><i class="bi bi-clipboard-check" aria-hidden="true"></i>Kiểm tra</button></form>
-        {% elif user.la_admin and d.trang_thai == "DA_KIEM_TRA" %}
-          <form method="post" action="{% url 'doi_soat_chot' d.gia_su.pk %}" class="d-inline"
-                data-xac-nhan="Chốt thù lao tháng {{ thang|date:'m/Y' }} của {{ d.gia_su.ho_ten }}: {{ d.tong|tien }}? Sau khi chốt không sửa được, chỉ điều chỉnh ở tháng sau." data-nut="Chốt tháng">{% csrf_token %}
-            <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
-            <button class="btn btn-sm btn-primary"><i class="bi bi-lock" aria-hidden="true"></i>Chốt</button></form>
+  <details class="dong-ds">
+    <summary class="gt-r" style="--cols:{{ cot }};cursor:pointer;list-style:none">
+      <span class="who"><i class="bi bi-chevron-right muted mui-ds"></i><span class="av" style="width:32px;height:32px;font-size:11px;background:#FFF1EA;color:#C2410C">{{ d.gia_su.ho_ten|slice:":1" }}{{ d.gia_su.ho_ten.split|last|slice:":1" }}</span><span style="min-width:0"><b class="ell">{{ d.gia_su.ho_ten }}</b><small class="ell">{{ d.mon|default:"—" }}</small></span></span>
+      <span class="r">{{ d.so_buoi }}</span>
+      <span class="r" style="color:{% if d.so_tam_giu %}#C2410C{% else %}#9AA1B8{% endif %}">{% if d.so_tam_giu %}{{ d.so_tam_giu }} buổi{% else %}—{% endif %}</span>
+      <span class="r" style="color:{% if d.dieu_chinh > 0 %}#0F766E{% elif d.dieu_chinh < 0 %}#C2292E{% else %}#9AA1B8{% endif %}">{% if d.dieu_chinh %}{% if d.dieu_chinh > 0 %}+{% endif %}{{ d.dieu_chinh|tien }}{% else %}—{% endif %}</span>
+      <b class="r">{{ d.tong|tien }}</b>
+      <span>{% with t=d.trang_thai %}<span class="chip {% if t == 'DA_KIEM_TRA' %}xanh_la{% elif t == 'DA_CHOT' or t == 'DA_CHI_TRA' %}tim{% elif t == 'CAN_KIEM_TRA_LAI' %}cam{% else %}xam{% endif %}"><span class="d"></span>{% if t == 'DA_KIEM_TRA' %}Đã kiểm tra{% elif t == 'DA_CHOT' %}Đã chốt{% elif t == 'DA_CHI_TRA' %}Đã chi trả{% elif t == 'CAN_KIEM_TRA_LAI' %}Cần kiểm tra lại{% else %}Đang mở{% endif %}</span>{% endwith %}</span>
+      <span class="row" style="gap:6px;justify-content:flex-end">
+        {% if d.trang_thai != 'DA_CHOT' and d.trang_thai != 'DA_CHI_TRA' %}<button type="button" class="btn sm" data-mo-hop="hop-dc-{{ d.gia_su.pk }}">Điều chỉnh</button>{% endif %}
+        {% if user.la_tuyen_sinh %}
+          {% if d.trang_thai == 'DA_KIEM_TRA' %}<span class="btn sm" style="color:#0F766E;border-color:#B5EDE3;background:#F2FCFA;cursor:default"><i class="bi bi-check-circle-fill"></i>Đã kiểm tra</span>
+          {% elif d.trang_thai == 'CHUA_KIEM_TRA' or d.trang_thai == 'CAN_KIEM_TRA_LAI' %}<form method="post" action="{% url 'doi_soat_kiem_tra' d.gia_su.pk %}">{% csrf_token %}<input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}"><button class="btn sm"{% if d.so_tam_giu %} disabled title="Còn buổi tạm giữ"{% endif %}><i class="bi bi-circle"></i>Đánh dấu kiểm tra</button></form>{% endif %}
         {% endif %}
-        <a class="btn btn-sm btn-outline-primary" href="{% url 'doi_soat_gia_su' d.gia_su.pk %}?thang={{ thang|date:'Y-m' }}"><i class="bi bi-eye" aria-hidden="true"></i>Chi tiết</a>
-      </td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="8"><div class="trang-rong py-3"><i class="bi bi-cash-coin" aria-hidden="true"></i>Chưa có thù lao nào trong tháng {{ thang|date:"m/Y" }}.</div></td></tr>
+      </span>
+    </summary>
+    <div style="padding:6px 16px 14px 60px;background:#FAFBFD;border-bottom:1px solid #EEF0F5">
+      {% for t in d.ds_buoi %}<div class="row sm" style="padding:6px 0;border-bottom:1px solid #F1F3F8;gap:12px"><b style="width:86px">{{ t.buoi_hoc.ma }}</b><span style="width:110px">{{ t.buoi_hoc.bat_dau|date:"H:i d/m" }}</span><span style="flex:1" class="ell">{{ t.buoi_hoc.yeu_cau.mon_hoc }} · {{ t.buoi_hoc.hoc_vien.ho_ten }}{% if t.buoi_hoc.khoa_hoc %} · {{ t.buoi_hoc.khoa_hoc.ma }}{% endif %}</span><span class="chip {% if t.trang_thai == 'TAM_GIU' %}cam{% elif t.trang_thai == 'HUY' %}xam{% elif t.trang_thai == 'DA_DOI_SOAT' %}tim{% else %}xanh{% endif %}">{{ t.get_trang_thai_display }}</span><span style="width:100px;text-align:right">{% if t.trang_thai == 'HUY' %}<s>{{ t.so_tien|tien }}</s>{% else %}{{ t.so_tien|tien }}{% endif %}</span></div>{% empty %}<div class="sm muted">Không có buổi nào.</div>{% endfor %}
+      {% for x in d.ds_dieu_chinh %}<div class="row sm" style="padding:6px 0;gap:12px"><i class="bi bi-plus-slash-minus muted"></i><span style="flex:1">{{ x.ly_do }} <span class="muted">· {{ x.tao_boi.ho_ten|default:"Hệ thống" }}</span></span><b style="color:{% if x.so_tien > 0 %}#0F766E{% else %}#C2292E{% endif %}">{% if x.so_tien > 0 %}+{% endif %}{{ x.so_tien|tien }}</b></div>{% endfor %}
+      {% if d.doi_soat %}<div class="sm muted" style="margin-top:6px">Kiểm tra: {{ d.doi_soat.kiem_tra_boi.ho_ten|default:"—" }} {{ d.doi_soat.kiem_tra_luc|date:"d/m H:i" }}{% if d.doi_soat.chot_boi %} · Chốt: {{ d.doi_soat.chot_boi.ho_ten }} {{ d.doi_soat.chot_luc|date:"d/m H:i" }}{% endif %}</div>{% endif %}
+    </div>
+  </details>
   {% endfor %}
-  </tbody>
-  {% if bang %}<tfoot><tr><th colspan="5" class="cot-so">Tổng cả tháng</th><th class="cot-so so">{{ tong_ca_thang|tien }}</th><th colspan="2"></th></tr></tfoot>{% endif %}
-</table></div></div>
+  <div class="gt-r" style="--cols:{{ cot }};background:#F7F8FC"><b>Tổng cộng</b><b class="r">{{ so_buoi }}</b><b class="r">{{ so_giu }} buổi</b><b class="r">{% if tong_dc > 0 %}+{% endif %}{{ tong_dc|tien }}</b><b class="r">{{ tong_ca_thang|tien }}</b><span></span><span></span></div>
+  {% endwith %}
+  {% else %}<div class="empty"><span class="ring"><i class="bi bi-wallet2"></i></span>Chưa có thù lao nào trong tháng {{ thang|date:"m/Y" }}.</div>{% endif %}
+</section>
+
+{% for d in bang %}{% if d.trang_thai != 'DA_CHOT' and d.trang_thai != 'DA_CHI_TRA' %}
+<div class="overlay" id="hop-dc-{{ d.gia_su.pk }}" hidden>
+  <form class="dialog" method="post" action="{% url 'doi_soat_dieu_chinh' d.gia_su.pk %}">{% csrf_token %}<input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-plus-slash-minus"></i></span><div><h2>Điều chỉnh · {{ d.gia_su.ho_ten }}</h2><p>Thưởng, phụ cấp hoặc khoản trừ (nhập số âm). Thêm điều chỉnh thì gia sư phải được kiểm tra lại.</p></div></div>
+    <div class="field"><label for="dc-t-{{ d.gia_su.pk }}">Số tiền (đ) <span class="req">*</span></label><input id="dc-t-{{ d.gia_su.pk }}" name="so_tien" type="number" step="1000" class="inp" required placeholder="VD: 50000 hoặc -20000"></div>
+    <div class="field"><label for="dc-l-{{ d.gia_su.pk }}">Lý do <span class="req">*</span></label><input id="dc-l-{{ d.gia_su.pk }}" name="ly_do" class="inp" required maxlength="500" placeholder="VD: Đi muộn 15 phút buổi 03/11"></div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn pri" data-dang-gui="Đang lưu…">Thêm điều chỉnh</button></div>
+  </form>
+</div>
+{% endif %}{% endfor %}
+{% if chot_duoc %}
+<div class="overlay" id="hop-chot" hidden>
+  <form class="dialog" method="post" action="{% url 'doi_soat_chot_thang' %}" role="alertdialog">{% csrf_token %}<input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-lock"></i></span><div><h2>Chốt thù lao tháng {{ thang|date:"m/Y" }}?</h2><p>{{ so_gs }} gia sư · {{ tong_ca_thang|tien }}. Sau khi chốt, thù lao chuyển "Đã đối soát" và gia sư nhận email. Buổi phát sinh sau đó được dồn sang tháng kế tiếp.</p></div></div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn pri" data-dang-gui="Đang chốt…">Chốt tháng</button></div>
+  </form>
+</div>
+{% endif %}
+{% if chi_tra_duoc %}
+<div class="overlay" id="hop-chi-tra" hidden>
+  <form class="dialog" method="post" action="{% url 'doi_soat_chi_tra' %}">{% csrf_token %}<input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#E6FAF7;color:#0F766E"><i class="bi bi-cash-coin"></i></span><div><h2>Đánh dấu đã chi trả</h2><p>Ghi lại sau khi đã chuyển khoản {{ tong_ca_thang|tien }} cho {{ so_gs }} gia sư.</p></div></div>
+    <div class="field"><label for="ct">Số chứng từ / mã giao dịch <span class="req">*</span></label><input id="ct" name="chung_tu" class="inp" required maxlength="200" placeholder="VD: UNC-2026-11-001"></div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn pri" data-dang-gui="Đang lưu…">Đã chi trả</button></div>
+  </form>
+</div>
+{% endif %}
 {% endblock %}

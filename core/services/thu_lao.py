@@ -165,6 +165,57 @@ def chot(admin, gia_su, thang):
     return d
 
 
+def chot_thang(admin, thang):
+    """SD-31: chốt mọi gia sư đã kiểm tra. → (danh sách đã chốt, [(gia sư, lý do bỏ qua)])."""
+    thang = dau_thang(thang)
+    bang = tong_hop(thang)
+    if not bang:
+        raise ValidationError("Tháng này không có thù lao.")
+    chua = [d for d in bang if d.trang_thai in ("CHUA_KIEM_TRA", "CAN_KIEM_TRA_LAI")]
+    if chua:
+        raise ValidationError(f"Cần Tuyển sinh kiểm tra hết gia sư trước khi chốt (còn {len(chua)} gia sư).")
+    da, bo = [], []
+    for d in bang:
+        if d.trang_thai != "DA_KIEM_TRA":
+            continue
+        try:
+            da.append(chot(admin, d.gia_su, thang))
+        except ValidationError as e:
+            bo.append((d.gia_su, " ".join(e.messages)))
+    return da, bo
+
+
+def danh_dau_chi_tra(admin, thang, chung_tu=""):
+    """SD-31: sau khi chuyển khoản → DA_CHOT chuyển DA_CHI_TRA (cả tháng)."""
+    thang = dau_thang(thang)
+    chung_tu = (chung_tu or "").strip()[:200]
+    if not chung_tu:
+        raise ValidationError({"chung_tu": "Ghi số chứng từ / mã giao dịch chuyển khoản."})
+    if DoiSoatThang.objects.filter(thang=thang, trang_thai=DS.DA_KIEM_TRA).exists() or not DoiSoatThang.objects.filter(
+            thang=thang, trang_thai=DS.DA_CHOT).exists():
+        raise ValidationError("Chỉ đánh dấu chi trả khi cả tháng đã chốt.")
+    n = DoiSoatThang.objects.filter(thang=thang, trang_thai=DS.DA_CHOT).update(
+        trang_thai=DS.DA_CHI_TRA, chi_tra_boi=admin, chi_tra_luc=timezone.now(), chung_tu=chung_tu)
+    ghi_nhat_ky(admin, "Đánh dấu đã chi trả thù lao", f"Tháng {thang:%m/%Y}", f"{n} gia sư · chứng từ {chung_tu}",
+                loai="THU_LAO")
+    return n
+
+
+def trang_thai_ca_thang(thang):
+    """DANG_MO / DA_KIEM_TRA (hết) / DA_CHOT / DA_CHI_TRA cho cả tháng."""
+    bang = tong_hop(thang)
+    if not bang:
+        return "DANG_MO"
+    tt = {d.trang_thai for d in bang}
+    if tt == {"DA_CHI_TRA"}:
+        return "DA_CHI_TRA"
+    if tt <= {"DA_CHOT", "DA_CHI_TRA"}:
+        return "DA_CHOT"
+    if tt <= {"DA_KIEM_TRA", "DA_CHOT", "DA_CHI_TRA"}:
+        return "DA_KIEM_TRA"
+    return "DANG_MO"
+
+
 # =============================================================================
 # Trang Thu nhập của gia sư (SD-29)
 # =============================================================================

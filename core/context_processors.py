@@ -6,7 +6,7 @@ from django.utils import timezone
 def thong_tin_chung(request):
     """Biến dùng chung cho mọi template (menu, huy hiệu, chuông thông báo)."""
     # Tăng PHIEN_BAN_CSS mỗi khi sửa static/css/*.css hoặc static/js/gso.js để trình duyệt tải bản mới.
-    data = {"TEN_HE_THONG": "Gia Sư Online", "PHIEN_BAN_CSS": "3.5",
+    data = {"TEN_HE_THONG": "Gia Sư Online", "PHIEN_BAN_CSS": "3.6",
             "THOI_LUONG_BUOI_DEMO": settings.NGHIEP_VU.get("THOI_LUONG_BUOI_DEMO", 0),
             "GIAY_HOAN_TAC": settings.NGHIEP_VU.get("GIAY_HOAN_TAC", 6)}
     user = getattr(request, "user", None)

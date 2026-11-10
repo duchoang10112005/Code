@@ -484,3 +484,9 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .chip-chon input{position:absolute;opacity:0;pointer-events:none}
 .chip-chon:has(input:checked){border-color:#F59E0B;background:#FFF4E5;color:#B45309}
 .chip-chon:has(input:focus-visible){outline:2px solid #6366F1;outline-offset:2px}
+
+/* Đối soát: dòng gia sư mở rộng */
+.dong-ds>summary::-webkit-details-marker{display:none}
+.dong-ds .mui-ds{transition:transform .15s}
+.dong-ds[open] .mui-ds{transform:rotate(90deg)}
+.gt-r .r,.gt-h .r{text-align:right;justify-content:flex-end}

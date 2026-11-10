@@ -137,11 +137,13 @@ def tong_quan_trang_chu(now=None):
     now = now or timezone.now()
     ds = tat_ca(now)
     cho_lau = list(ds_cho_lau(24))
-    chot = (DoiSoatThang.objects.filter(trang_thai=DoiSoatThang.TrangThai.DA_KIEM_TRA)
-            .select_related("gia_su").order_by("thang"))
+    from core.services.thu_lao import tong_hop
     thang_chot = {}
-    for d in chot:
-        thang_chot.setdefault(d.thang, []).append(d)
+    for t in sorted(set(DoiSoatThang.objects.filter(trang_thai=DoiSoatThang.TrangThai.DA_KIEM_TRA)
+                        .values_list("thang", flat=True))):
+        ok = [d for d in tong_hop(t) if d.trang_thai == "DA_KIEM_TRA"]  # tổng không đổi kể từ lúc kiểm tra
+        if ok:
+            thang_chot[t] = ok
     return {
         "cho_lau": cho_lau,
         "mo_lai_loi": [x for x in ds if x["tab"] in ("mo_lai", "loi")],
