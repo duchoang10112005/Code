@@ -167,3 +167,15 @@ class TimKiemTest(DuLieu):
     def test_chi_qtv_tim_duoc_tai_khoan(self):
         self.assertTrue(any(n["ten"] == "Tài khoản" for n in tim(self.ad, "thu trang")))
         self.assertFalse(any(n["ten"] == "Tài khoản" for n in tim(self.ts, "thu trang")))
+
+
+class ChiSoTrangChuTest(DuLieu):
+    def test_api_chi_so_tu_cap_nhat(self):
+        self.dn(self.gs)
+        j = self.client.get(reverse("api_chi_so_trang_chu")).json()
+        self.assertTrue(j["ok"])
+        self.assertEqual((j["data"]["so_buoi_thang"], j["data"]["muc_tieu"]), (0, 20))
+        self.assertEqual(j["data"]["vong_offset"], 113.1)
+        self.assertIn("đ", j["data"]["tam_tinh_chu"])
+        self.dn(self.ts)  # chỉ gia sư
+        self.assertEqual(self.client.get(reverse("api_chi_so_trang_chu")).status_code, 403)

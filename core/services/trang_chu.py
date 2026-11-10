@@ -108,6 +108,31 @@ def _lich_thang(gia_su, thang, hom_nay, mau_cua):
     return {"o": o, "tieu_de": f"Tháng {th}/{nam}", "truoc": f"{truoc:%Y-%m}", "sau": f"{sau:%Y-%m}"}
 
 
+def chi_so_gia_su(user, now=None):
+    """4 chỉ số tháng trên trang chủ gia sư (dùng cho lần tải trang và API tự cập nhật)."""
+    now = now or timezone.now()
+    hom_nay = timezone.localdate(now)
+    dau_t = hom_nay.replace(day=1)
+    ho_so = getattr(user, "ho_so_gia_su", None)
+    muc_tieu = getattr(ho_so, "muc_tieu_buoi_thang", 20) or 20
+    so_buoi_thang = BuoiHoc.objects.filter(gia_su=user, trang_thai__in=DA_DAY, loai=BuoiHoc.Loai.CHINH_THUC,
+                                           bat_dau__date__gte=dau_t).count()
+    thu_lao = ThuLao.objects.filter(gia_su=user, thang=dau_t).exclude(trang_thai=ThuLao.TrangThai.HUY)
+    tam_tinh = thu_lao.aggregate(t=Sum("so_tien"))["t"] or 0
+    tuan = [0] * 5  # đường nhỏ thu nhập theo tuần trong tháng
+    for tl in thu_lao.select_related("buoi_hoc"):
+        tuan[min((timezone.localtime(tl.buoi_hoc.bat_dau).day - 1) // 7, 4)] += tl.so_tien
+    cao = max(tuan) or 1
+    chuoi, cot_tuan = _tuan_lien_tuc(user, hom_nay)
+    return {
+        "so_buoi_thang": so_buoi_thang, "muc_tieu": muc_tieu,
+        "vong_offset": round(113.1 * (1 - min(so_buoi_thang / muc_tieu, 1)), 1),
+        "tam_tinh": tam_tinh, "duong_thu_nhap": " ".join(f"{i * 14},{22 - round(v * 18 / cao)}" for i, v in enumerate(tuan)),
+        "so_lop": KhoaHoc.objects.filter(gia_su=user, trang_thai=KhoaHoc.TrangThai.DANG_HOC).count(),
+        "chuoi_tuan": chuoi, "cot_tuan": cot_tuan,
+    }
+
+
 def gia_su(user, thang=None, now=None):
     from core.services.buoi_hoc import nhan_buoi, quet_han
 
@@ -126,19 +151,8 @@ def gia_su(user, thang=None, now=None):
     def mau_cua(b):
         return mau_khoa.get(b.khoa_hoc_id, ("#9AA1B8",))[0] if b.khoa_hoc_id else "#FF7A59"
 
-    buoi_thang = BuoiHoc.objects.filter(gia_su=user, trang_thai__in=DA_DAY, loai=BuoiHoc.Loai.CHINH_THUC,
-                                        bat_dau__date__gte=dau_t)
-    so_buoi_thang = buoi_thang.count()
-    tam_tinh = ThuLao.objects.filter(gia_su=user, thang=dau_t).exclude(trang_thai=ThuLao.TrangThai.HUY) \
-        .aggregate(t=Sum("so_tien"))["t"] or 0
-    # Đường nhỏ thu nhập theo tuần trong tháng
-    tuan = [0] * 5
-    for tl in ThuLao.objects.filter(gia_su=user, thang=dau_t).exclude(trang_thai=ThuLao.TrangThai.HUY) \
-            .select_related("buoi_hoc"):
-        tuan[min((timezone.localtime(tl.buoi_hoc.bat_dau).day - 1) // 7, 4)] += tl.so_tien
-    cao = max(tuan) or 1
-    duong = " ".join(f"{i * 14},{22 - round(v * 18 / cao)}" for i, v in enumerate(tuan))
-    chuoi, cot_tuan = _tuan_lien_tuc(user, hom_nay)
+    cs = chi_so_gia_su(user, now)
+    so_buoi_thang, chuoi = cs["so_buoi_thang"], cs["chuoi_tuan"]
     so_buoi_tong = BuoiHoc.objects.filter(gia_su=user, trang_thai__in=DA_DAY).count()
 
     qs = BuoiHoc.objects.filter(gia_su=user).select_related("hoc_vien", "yeu_cau__mon_hoc", "khoa_hoc")
@@ -232,9 +246,7 @@ def gia_su(user, thang=None, now=None):
     canh_bao = next((b for b in cho_xn if b.han_xac_nhan - now <= timedelta(hours=nhac_gio)), None)
     return {
         "loi_chao": _loi_chao(now, user.ho_ten), "cheer": cheer, "chip": chip,
-        "so_buoi_thang": so_buoi_thang, "muc_tieu": muc_tieu,
-        "vong_offset": round(113.1 * (1 - min(so_buoi_thang / muc_tieu, 1)), 1),
-        "tam_tinh": tam_tinh, "duong_thu_nhap": duong, "so_lop": len(khoa), "chuoi_tuan": chuoi, "cot_tuan": cot_tuan,
+        **cs,
         "avatar_lop": tien_do[:4],
         "tiep": tiep, "tiep_nhan": nhan_buoi(tiep) if tiep else "",
         "tiep_mo_phong_luc": (tiep.bat_dau - timedelta(minutes=settings.NGHIEP_VU.get("MO_PHONG_TRUOC_PHUT", 10)))

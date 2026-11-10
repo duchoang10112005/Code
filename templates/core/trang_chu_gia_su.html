@@ -15,17 +15,17 @@
     </div>
   </section>
 
-  <section class="card chi-so" aria-label="Chỉ số tháng {{ HOM_NAY.month }}">
-    <div style="flex-direction:row;align-items:center;gap:10px">
-      <svg width="40" height="40" viewBox="0 0 44 44" style="flex:none;transform:rotate(-90deg)" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="#EEF0FF" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="{{ vong_offset|unlocalize }}"/></svg>
-      <div><div class="v">{{ so_buoi_thang }}<span style="color:#9AA1B8;font-weight:500;font-size:14px">/{{ muc_tieu }}</span></div><div class="l">buổi dạy T{{ HOM_NAY.month }}</div></div>
+  <section class="card chi-so" aria-label="Chỉ số tháng {{ HOM_NAY.month }}" data-chi-so="{% url 'api_chi_so_trang_chu' %}">
+    <div style="flex-direction:row;align-items:center;gap:10px" title="Tự cập nhật mỗi phút">
+      <svg width="40" height="40" viewBox="0 0 44 44" style="flex:none;transform:rotate(-90deg)" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="#EEF0FF" stroke-width="5"/><circle class="vong" cx="22" cy="22" r="18" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1" data-dich="{{ vong_offset|unlocalize }}" data-cs="vong"/></svg>
+      <div><div class="v"><span data-cs="so_buoi_thang">{{ so_buoi_thang }}</span><span style="color:#9AA1B8;font-weight:500;font-size:14px">/<span data-cs="muc_tieu">{{ muc_tieu }}</span></span></div><div class="l">buổi dạy T{{ HOM_NAY.month }}</div></div>
     </div>
-    <div><div class="v">{{ tam_tinh|tien }}</div>
-      <div class="row"><span class="l">tạm tính</span><svg width="44" height="16" viewBox="0 0 56 24" preserveAspectRatio="none" style="margin-left:auto" aria-hidden="true"><polyline points="{{ duong_thu_nhap }}" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
-    <div><div class="v">{{ so_lop }}</div>
+    <div><div class="v" data-cs="tam_tinh_chu">{{ tam_tinh|tien }}</div>
+      <div class="row"><span class="l">tạm tính</span><svg width="44" height="16" viewBox="0 0 56 24" preserveAspectRatio="none" style="margin-left:auto" aria-hidden="true"><polyline data-cs="duong_thu_nhap" points="{{ duong_thu_nhap }}" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    <div><div class="v" data-cs="so_lop">{{ so_lop }}</div>
       <div class="row"><span class="l">lớp đang dạy</span><span style="display:flex;margin-left:auto;padding-left:6px">{% for c in avatar_lop %}<span style="width:20px;height:20px;border-radius:50%;margin-left:-6px;border:2px solid #fff;background:{{ c.nen }};color:{{ c.mau }};font-size:8px;font-weight:600;display:grid;place-items:center">{{ c.chu_tat }}</span>{% endfor %}</span></div></div>
-    <div><div class="v">{{ chuoi_tuan }} <span style="font-size:14px;font-weight:500;color:#646B85">tuần</span></div>
-      <div class="row"><span class="l">dạy liên tục</span><span aria-hidden="true" style="display:flex;gap:3px;margin-left:auto;align-items:flex-end">{% for w in cot_tuan %}<span style="width:5px;height:{{ w.h }}px;border-radius:2px;background:{{ w.bg }}"></span>{% endfor %}</span></div></div>
+    <div><div class="v"><span data-cs="chuoi_tuan">{{ chuoi_tuan }}</span> <span style="font-size:14px;font-weight:500;color:#646B85">tuần</span></div>
+      <div class="row"><span class="l">dạy liên tục</span><span aria-hidden="true" data-cs="cot_tuan" style="display:flex;gap:3px;margin-left:auto;align-items:flex-end">{% for w in cot_tuan %}<span style="width:5px;height:{{ w.h }}px;border-radius:2px;background:{{ w.bg }}"></span>{% endfor %}</span></div></div>
   </section>
 
   {% if canh_bao %}
@@ -159,6 +159,33 @@
 {% block scripts %}
 <script>
 (function () {
+  /* Tự cập nhật 4 chỉ số tháng: hỏi lại mỗi 60 giây và khi quay lại tab; vòng tiến độ chạy mượt. */
+  var khung = document.querySelector("[data-chi-so]");
+  if (khung) {
+    var vong = khung.querySelector("[data-cs=vong]");
+    requestAnimationFrame(function () { vong.style.strokeDashoffset = vong.dataset.dich; });  // chạy từ 0 khi mở trang
+    var dat = function (ten, gt) {
+      var el = khung.querySelector('[data-cs="' + ten + '"]');
+      if (!el || String(el.textContent) === String(gt)) { return; }
+      el.textContent = gt;
+      el.classList.remove("vua-doi"); void el.offsetWidth; el.classList.add("vua-doi");
+    };
+    var lay = function () {
+      if (document.visibilityState !== "visible") { return; }
+      GSO.get(khung.dataset.chiSo).then(function (j) {
+        if (!j.ok) { return; }
+        var d = j.data;
+        ["so_buoi_thang", "muc_tieu", "tam_tinh_chu", "so_lop", "chuoi_tuan"].forEach(function (k) { dat(k, d[k]); });
+        vong.style.strokeDashoffset = d.vong_offset;
+        khung.querySelector("[data-cs=duong_thu_nhap]").setAttribute("points", d.duong_thu_nhap);
+        khung.querySelector("[data-cs=cot_tuan]").innerHTML = d.cot_tuan.map(function (w) {
+          return '<span style="width:5px;height:' + w.h + 'px;border-radius:2px;background:' + w.bg + '"></span>'; }).join("");
+        khung.title = "Cập nhật lúc " + d.cap_nhat_luc;
+      });
+    };
+    setInterval(lay, 60000);
+    document.addEventListener("visibilitychange", lay);
+  }
   /* Phím tắt N / G (không khi đang gõ) */
   document.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { return; }

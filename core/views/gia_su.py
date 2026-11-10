@@ -168,7 +168,7 @@ def them_lich(request):
         except ValidationError as e:
             messages.error(request, _loi(e))
             return _trang_ho_so(request, ho_so, status=400)
-    messages.error(request, "Giờ rảnh chưa hợp lệ.")
+    messages.error(request, " ".join(m for v in form.errors.values() for m in v) or "Giờ rảnh chưa hợp lệ.")
     return _trang_ho_so(request, ho_so, status=400)
 
 

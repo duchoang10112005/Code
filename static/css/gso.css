@@ -440,3 +440,6 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .chon-mon input,.chon-cap input{accent-color:#6366F1}
 .chon-cap{display:flex;flex-wrap:wrap;gap:8px}.chon-cap label{padding:6px 12px;border-radius:18px;font-size:13px}
 .dong-mc{display:grid;grid-template-columns:150px 90px minmax(0,1fr) 32px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #EEF0F5}
+.chi-so .vong{transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes gso-nhay{0%{color:#4F46E5;transform:translateY(-2px)}100%{color:inherit;transform:none}}
+.vua-doi{display:inline-block;animation:gso-nhay .8s ease}

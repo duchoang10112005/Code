@@ -94,6 +94,7 @@ urlpatterns = [
     path("api/thong-bao/", api_chung.thong_bao, name="api_thong_bao"),
     path("api/thong-bao/da-doc/", api_chung.thong_bao_da_doc, name="api_thong_bao_da_doc"),
     path("api/tim-kiem/", api_chung.tim_kiem, name="api_tim_kiem"),
+    path("api/trang-chu/chi-so/", api_chung.chi_so_trang_chu, name="api_chi_so_trang_chu"),
     path("api/buoi-hoc/kiem-tra-lich/", api_buoi.kiem_tra_lich, name="api_kiem_tra_lich"),
     path("api/buoi-hoc/<int:pk>/tin-nhan-lop/", api_buoi.tin_nhan_lop, name="api_tin_nhan_lop"),
     path("api/buoi-hoc/<int:pk>/nhap/", api_buoi.luu_nhap, name="api_luu_nhap"),

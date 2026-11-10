@@ -27,3 +27,14 @@ def thong_bao_da_doc(request):
 @api()
 def tim_kiem(request):
     return tra_ve(data={"nhom": tim(request.user, request.GET.get("q", ""))})
+
+
+@api(vai_tro=("GIA_SU",))
+def chi_so_trang_chu(request):
+    """4 chỉ số tháng trên trang chủ gia sư – trang hỏi lại định kỳ để tự cập nhật."""
+    from core.services.trang_chu import chi_so_gia_su
+    from core.templatetags.gso import tien
+    cs = chi_so_gia_su(request.user)
+    cs["tam_tinh_chu"] = tien(cs["tam_tinh"])
+    cs["cap_nhat_luc"] = f"{timezone.localtime():%H:%M:%S}"
+    return tra_ve(data=cs)
