@@ -29,11 +29,15 @@ def tim_kiem(request):
     return tra_ve(data={"nhom": tim(request.user, request.GET.get("q", ""))})
 
 
-@api(vai_tro=("GIA_SU",))
+@api(vai_tro=("GIA_SU", "TUYEN_SINH"))
 def chi_so_trang_chu(request):
-    """4 chỉ số tháng trên trang chủ gia sư – trang hỏi lại định kỳ để tự cập nhật."""
-    from core.services.trang_chu import chi_so_gia_su
+    """4 chỉ số trên trang chủ gia sư / Tuyển sinh – trang hỏi lại định kỳ để tự cập nhật."""
+    from core.services.trang_chu import chi_so_gia_su, chi_so_tuyen_sinh
     from core.templatetags.gso import tien
+    if request.user.la_tuyen_sinh:
+        cs = chi_so_tuyen_sinh()
+        cs["cap_nhat_luc"] = f"{timezone.localtime():%H:%M:%S}"
+        return tra_ve(data=cs)
     cs = chi_so_gia_su(request.user)
     cs["tam_tinh_chu"] = tien(cs["tam_tinh"])
     cs["cap_nhat_luc"] = f"{timezone.localtime():%H:%M:%S}"

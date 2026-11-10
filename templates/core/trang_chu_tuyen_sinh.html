@@ -1,117 +1,103 @@
-{% extends "base.html" %}
-{% load giao_dien %}
-{% block title %}Việc cần làm hôm nay · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso l10n %}
+{% block title %}Việc cần làm hôm nay{% endblock %}
+{% block tieu_de_trang %}Việc cần làm hôm nay{% endblock %}
 {% block content %}
-{% url 'yeu_cau_danh_sach' as ds %}{% url 'khoa_hoc_danh_sach' as dskh %}
-<div class="dau-trang">
-  <div>
-    <h1>Việc cần làm hôm nay</h1>
-    <p class="mo-ta">{% ten_thu thu_hom_nay %}, {{ hom_nay|date:"d/m/Y" }} · Xin chào, {{ user.ho_ten }}</p>
-  </div>
-  <a href="{% url 'yeu_cau_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tiếp nhận yêu cầu</a>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:24px;align-items:start">
+<div class="stack" style="gap:24px">
+  <section class="chao" aria-label="Lời chào" style="background:radial-gradient(120% 140% at 0% 0%,#E3E5FF 0%,rgba(227,229,255,0) 55%),radial-gradient(80% 120% at 100% 100%,#D5F5EF 0%,rgba(213,245,239,0) 65%),#F7F7FF;border-color:#E1E4F5">
+    <div class="trang-tri" aria-hidden="true" style="background:radial-gradient(circle at 30% 30%,#C7CBF9,#A5B4FC 40%,rgba(94,234,212,.5) 70%,transparent 72%)"></div>
+    <div style="position:relative"><h2>{{ loi_chao }}</h2><p>{{ cheer }}</p>
+      {% if chip %}<div class="chips">{% for c in chip %}<span style="color:{{ c.mau }}"><i class="bi {{ c.icon }}" aria-hidden="true"></i>{{ c.chu }}</span>{% endfor %}</div>{% endif %}</div>
+  </section>
+
+  <section class="card chi-so" aria-label="Chỉ số" data-chi-so="{% url 'api_chi_so_trang_chu' %}">
+    <div><div class="v" data-cs="so_mo">{{ so_mo }}</div><div class="row"><span class="l">yêu cầu đang mở</span><svg width="56" height="16" viewBox="0 0 56 24" preserveAspectRatio="none" style="margin-left:auto" aria-hidden="true"><polyline data-cs="duong_yc" points="{{ duong_yc }}" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+    <div><div class="v"><span data-cs="so_cho">{{ so_cho }}</span> <span class="l" style="display:inline">lời mời đang chờ</span></div>
+      <div class="tien-do" style="margin-top:6px;background:#E1E4F5"><span data-cs="w_sap_het_han" style="width:{{ w_sap_het_han }}%;background:#FF7A59"></span></div>
+      <div class="sm" style="color:#C2410C;margin-top:4px"><span data-cs="sap_het_han">{{ sap_het_han }}</span> sắp hết hạn &lt; 6 giờ</div></div>
+    <div><div class="v" data-cs="so_sap_het">{{ so_sap_het }}</div><div class="l">khóa sắp hết buổi</div></div>
+    <div style="flex-direction:row;align-items:center;gap:10px">
+      <svg width="40" height="40" viewBox="0 0 44 44" style="flex:none;transform:rotate(-90deg)" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="#E6FAF7" stroke-width="5"/><circle class="vong" cx="22" cy="22" r="18" fill="none" stroke="#14B8A6" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1" data-dich="{{ vong_ty_le|unlocalize }}" data-cs="vong"/></svg>
+      <div><div class="v"><span data-cs="ty_le_co_gs">{{ ty_le_co_gs }}</span>%</div><div class="l">có gia sư · T{{ thang_cs }}</div></div></div>
+  </section>
+
+  <section aria-labelledby="vcl">
+    <div class="row" style="margin-bottom:12px"><h2 id="vcl" style="margin:0;font-size:16px;font-weight:600">Việc cần làm</h2><span style="font-size:13px;color:#9AA1B8">{{ so_viec }}</span>
+      <div class="tabs" style="margin-left:auto" role="tablist" data-tab-viec>
+        <button type="button" role="tab" aria-selected="true" data-loc="">Tất cả</button>
+        <button type="button" role="tab" aria-selected="false" data-loc="gap">Gấp</button>
+        <button type="button" role="tab" aria-selected="false" data-loc="hom_nay">Hôm nay</button>
+        <button type="button" role="tab" aria-selected="false" data-loc="tuan">Trong tuần</button>
+      </div></div>
+    <div class="card" style="overflow:hidden">
+      {% if nhom_viec %}
+      <div class="gt-h" style="--cols:96px minmax(0,1fr) 160px 120px"><span>Mã</span><span>Học viên · việc cần làm</span><span>Trạng thái · hạn</span><span class="r">Hành động</span></div>
+      {% for g in nhom_viec %}<div data-nhom="{{ g.ma }}">
+        <div class="nhom-viec" style="--cham:{{ g.cham }};background:{{ g.nen }};border-color:{{ g.vien }};color:{{ g.mau }}"><i class="bi {{ g.icon }}" style="font-size:15px"></i>{{ g.ten }}<span class="so">{{ g.muc|length }}</span>{% if g.goi_y %}<span style="font-weight:400;font-size:12px;color:#646B85">{{ g.goi_y }}</span>{% endif %}</div>
+        {% for t in g.muc %}
+        <div class="gt-r" style="--cols:96px minmax(0,1fr) 160px 120px">
+          <span class="sm b5" style="color:#4A5068">{{ t.ma }}</span>
+          <div style="min-width:0"><div class="b5 ell">{{ t.ten }}</div><div class="muted" style="font-size:13px">{{ t.mo_ta }}</div></div>
+          <span style="display:flex;flex-direction:column;align-items:flex-start;gap:4px"><span class="chip {{ t.mau_chip }}"><span class="d"></span>{{ t.chip }}</span><span class="sm" style="color:{% if t.han_do %}#C2410C{% else %}#646B85{% endif %}"><i class="bi bi-clock"></i> {{ t.han }}</span></span>
+          <span class="r" style="display:flex"><a class="btn nhe" href="{{ t.url }}">{{ t.nut }}</a></span>
+        </div>
+        {% endfor %}
+      </div>{% endfor %}
+      {% else %}<div class="empty"><span class="ring"><i class="bi bi-check2"></i></span>Không có việc nào cần xử lý. Bấm Tạo yêu cầu mới khi phụ huynh liên hệ.</div>{% endif %}
+    </div>
+    <p class="sm muted row" style="margin-top:10px"><i class="bi bi-info-circle"></i>Lời mời hết hạn sau 24 giờ. Người nhận hợp lệ đầu tiên được lớp.</p>
+  </section>
 </div>
 
-{% if not so_can_moi_them and not so_yeu_cau_moi and not so_cho_chot and not so_sap_het and not ds_loi_moi_cho %}
-  <div class="trang-giay trang-rong"><i class="bi bi-check2-circle" aria-hidden="true"></i>Hôm nay chưa có việc nào cần bạn xử lý.</div>
-{% endif %}
-
-{% if so_can_moi_them %}
-<section class="nhom gap" aria-labelledby="n-moi-them">
-  <div class="nhom-dau">
-    <h2 id="n-moi-them"><i class="bi bi-person-plus" aria-hidden="true"></i>Cần mời thêm gia sư <span class="dem-nhom">{{ so_can_moi_them }}</span></h2>
-    <a href="{{ ds }}?can_moi_them=on">Xem tất cả</a>
+<aside class="stack sticky" style="gap:24px">
+  <div class="card lich-thang" style="padding:16px">
+    <div class="row" style="margin-bottom:10px"><span class="b6">{{ lich.tieu_de }}</span>
+      <a class="icon-btn sm" style="margin-left:auto" href="?thang={{ lich.truoc }}" aria-label="Tháng trước"><i class="bi bi-chevron-left"></i></a>
+      <a class="icon-btn sm" href="?thang={{ lich.sau }}" aria-label="Tháng sau"><i class="bi bi-chevron-right"></i></a></div>
+    <div class="luoi thu"><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span></div>
+    <div class="luoi">{% for d in lich.o %}<div class="o{% if not d.trong_thang %} ngoai{% endif %}{% if d.hom_nay %} nay{% endif %}"><b>{{ d.n }}</b><i>{% for m in d.cham %}<span style="background:{{ m }}"></span>{% endfor %}</i></div>{% endfor %}</div>
+    <div class="legend" style="margin-top:10px;padding-top:10px;border-top:1px solid #EEF0F5;font-size:11px"><span><i style="background:#6366F1;border-radius:50%"></i>Học thử</span><span><i style="background:#FF7A59;border-radius:50%"></i>Hạn lời mời</span><span><i style="background:#14B8A6;border-radius:50%"></i>Nhắc việc</span></div>
   </div>
-  <div class="trang-giay">
-    {% for y in ds_can_moi_them %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
-      <div class="noi-dung-dong">Đang mời gia sư<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
-      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Không còn lời mời nào đang chờ, cần mời thêm gia sư dạy {{ y.mon_hoc }}.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-person-plus" aria-hidden="true"></i>Mời thêm</a>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-{% if so_cho_chot %}
-<section class="nhom gap" aria-labelledby="n-cho-chot">
-  <div class="nhom-dau">
-    <h2 id="n-cho-chot"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Chờ chốt hình thức học <span class="dem-nhom">{{ so_cho_chot }}</span></h2>
-    <a href="{{ ds }}?cho_chot=on">Xem tất cả</a>
-  </div>
-  <div class="trang-giay">
-    {% for y in ds_cho_chot %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
-      <div class="noi-dung-dong">{{ y.get_trang_thai_display }}<small>Gia sư {{ y.gia_su.ho_ten|default:"—" }}{% if y.phan_cong_luc %} · nhận lớp {{ y.phan_cong_luc|da_qua }} trước{% endif %}</small></div>
-      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>{% if y.trang_thai == "HOC_THU_XONG" %}Đã học thử, tạo khóa chính thức.{% else %}Gọi phụ huynh chốt: học thử hay đăng ký chính thức luôn.{% endif %}</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-flag" aria-hidden="true"></i>Chốt</a>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-{% if so_sap_het %}
-<section class="nhom gap" aria-labelledby="n-sap-het">
-  <div class="nhom-dau">
-    <h2 id="n-sap-het"><i class="bi bi-battery-half" aria-hidden="true"></i>Khóa sắp hết buổi <span class="dem-nhom">{{ so_sap_het }}</span></h2>
-    <a href="{{ dskh }}?sap_het=on">Xem tất cả</a>
-  </div>
-  <div class="trang-giay">
-    {% for k in ds_sap_het %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'khoa_hoc_chi_tiet' k.pk %}"><span class="ma">{{ k.ma }}</span><br><b>{{ k.hoc_vien.ho_ten }}</b> · {{ k.yeu_cau.mon_hoc }}</a>
-      <div class="noi-dung-dong">{% include "partials/tien_do_khoa.html" with khoa=k %}<small>Gia sư {{ k.gia_su.ho_ten }}</small></div>
-      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ k.so_buoi_con_lai }} buổi, hỏi phụ huynh về việc gia hạn.</p>
-      <a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Xem khóa</a>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-{% if so_yeu_cau_moi %}
-<section class="nhom" aria-labelledby="n-moi">
-  <div class="nhom-dau">
-    <h2 id="n-moi"><i class="bi bi-inbox" aria-hidden="true"></i>Yêu cầu mới, chưa gửi lời mời <span class="dem-nhom">{{ so_yeu_cau_moi }}</span></h2>
-    <a href="{{ ds }}?trang_thai=MOI">Xem tất cả</a>
-  </div>
-  <div class="trang-giay">
-    {% for y in ds_yeu_cau_moi %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
-      <div class="noi-dung-dong">Mới tiếp nhận<small>{{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
-      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Chọn gia sư phù hợp và gửi lời mời.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-person-check" aria-hidden="true"></i>Chọn gia sư</a>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-{% if ds_loi_moi_cho %}
-<section class="nhom" aria-labelledby="n-cho-phan-hoi">
-  <div class="nhom-dau">
-    <h2 id="n-cho-phan-hoi"><i class="bi bi-send" aria-hidden="true"></i>Lời mời đang chờ gia sư phản hồi</h2>
-  </div>
-  <div class="trang-giay">
-    {% for lm in ds_loi_moi_cho %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' lm.yeu_cau.pk %}"><span class="ma">{{ lm.yeu_cau.ma }}</span><br><b>{{ lm.yeu_cau.hoc_vien.ho_ten }}</b> · {{ lm.yeu_cau.mon_hoc }}</a>
-      <div class="noi-dung-dong">Đã mời {{ lm.gia_su.ho_ten }}<small>Còn {{ lm.het_han_luc|con_lai }} để phản hồi</small></div>
-      <p class="loi-phe yen"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Chưa cần làm gì, chờ gia sư phản hồi.</p>
-      <span></span>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-<p class="chan-trang">
-  <a href="{{ ds }}?trang_thai=DANG_TIM">Đang mời gia sư: <b class="so">{{ so_dang_tim }}</b></a>
-  <span aria-hidden="true">·</span>
-  <a href="{{ dskh }}?trang_thai=DANG_HOC">Khóa đang học: <b class="so">{{ so_khoa_dang_hoc }}</b></a>
-</p>
+  <div><h2 style="margin:0 0 10px;font-size:15px;font-weight:600">Thao tác nhanh</h2>
+    <a class="btn pri" style="width:100%;height:40px;justify-content:flex-start" href="{% url 'yeu_cau_tao' %}" data-phim-tat="n"><i class="bi bi-plus-lg"></i>Tạo yêu cầu mới<kbd style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)">N</kbd></a></div>
+  <div><div class="row" style="margin-bottom:6px"><h2 style="margin:0;font-size:15px;font-weight:600">Sắp tới</h2><a href="{% url 'yeu_cau_danh_sach' %}" style="margin-left:auto;font-size:13px">Tất cả</a></div>
+    {% for u in sap_toi %}<div class="row" style="gap:12px;padding:10px 0;border-bottom:1px solid #EEF0F5">
+      <div class="ngay-nho" style="{% if forloop.first %}background:#EEF0FF;color:#4F46E5{% endif %}"><small>{{ u.luc|thu_ngan }}</small><b>{{ u.luc|date:"d" }}</b></div>
+      <div style="min-width:0;flex:1"><div class="row b5" style="font-size:13px;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:{{ u.mau }}"></span>{{ u.ten }}</div><div class="sm muted ell">{{ u.luc|time:"H:i" }} · {{ u.phu }}</div></div></div>
+    {% empty %}<div class="muted" style="font-size:13px;padding:8px 0">Chưa có lịch sắp tới.</div>{% endfor %}</div>
+</aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  document.querySelectorAll("[data-tab-viec] button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("[data-tab-viec] button").forEach(function (x) { x.setAttribute("aria-selected", String(x === b)); });
+      document.querySelectorAll("[data-nhom]").forEach(function (g) { g.hidden = !!b.dataset.loc && g.dataset.nhom !== b.dataset.loc; });
+    });
+  });
+  var khung = document.querySelector("[data-chi-so]"), vong = khung.querySelector("[data-cs=vong]");
+  requestAnimationFrame(function () { vong.style.strokeDashoffset = vong.dataset.dich; });
+  var lay = function () {
+    if (document.visibilityState !== "visible") { return; }
+    GSO.get(khung.dataset.chiSo).then(function (j) {
+      if (!j.ok) { return; }
+      var d = j.data;
+      ["so_mo", "so_cho", "sap_het_han", "so_sap_het", "ty_le_co_gs"].forEach(function (k) {
+        var el = khung.querySelector('[data-cs="' + k + '"]');
+        if (el && el.textContent !== String(d[k])) { el.textContent = d[k]; el.classList.remove("vua-doi"); void el.offsetWidth; el.classList.add("vua-doi"); }
+      });
+      khung.querySelector("[data-cs=w_sap_het_han]").style.width = d.w_sap_het_han + "%";
+      khung.querySelector("[data-cs=duong_yc]").setAttribute("points", d.duong_yc);
+      vong.style.strokeDashoffset = d.vong_ty_le;
+    });
+  };
+  setInterval(lay, 60000); document.addEventListener("visibilitychange", lay);
+  document.addEventListener("keydown", function (e) {
+    if (e.key.toLowerCase() === "n" && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { location.href = "{% url 'yeu_cau_tao' %}"; }
+  });
+})();
+</script>
 {% endblock %}

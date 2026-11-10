@@ -177,5 +177,5 @@ class ChiSoTrangChuTest(DuLieu):
         self.assertEqual((j["data"]["so_buoi_thang"], j["data"]["muc_tieu"]), (0, 20))
         self.assertEqual(j["data"]["vong_offset"], 113.1)
         self.assertIn("đ", j["data"]["tam_tinh_chu"])
-        self.dn(self.ts)  # chỉ gia sư
+        self.dn(self.ad)  # Quản trị viên không có 4 chỉ số này
         self.assertEqual(self.client.get(reverse("api_chi_so_trang_chu")).status_code, 403)

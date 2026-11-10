@@ -259,3 +259,163 @@ def gia_su(user, thang=None, now=None):
         "sap_toi": [{"b": b, "mau": mau_cua(b)} for b in sap_toi],
         "che_do_mo_phong": settings.ZOOM_MODE == "fake",
     }
+
+
+# =============================================================================
+# Trang chủ Tuyển sinh – bảng điều phối
+# =============================================================================
+def chi_so_tuyen_sinh(now=None):
+    """4 chỉ số: yêu cầu đang mở, lời mời đang chờ (sắp hết hạn), khóa sắp hết buổi, % yêu cầu có gia sư tháng này."""
+    from django.db.models import F
+    now = now or timezone.now()
+    dau_t = timezone.localdate(now).replace(day=1)
+    YC = YeuCauHocTap.TrangThai
+    mo = YeuCauHocTap.objects.filter(trang_thai__in=[YC.MOI, YC.DANG_TIM, YC.DA_PHAN_CONG, YC.HOC_THU_XONG])
+    cho = LoiMoi.objects.filter(trang_thai=LoiMoi.TrangThai.CHO, het_han_luc__gt=now)
+    sap_het_han = cho.filter(het_han_luc__lte=now + timedelta(hours=6)).count()
+    so_cho = cho.count()
+    sap_het = KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).annotate(
+        con=F("so_buoi_dang_ky") - F("so_buoi_da_dung")).filter(
+        con__lte=settings.NGHIEP_VU.get("NGUONG_SAP_HET_BUOI", 2)).count()
+    trong_thang = YeuCauHocTap.objects.filter(tao_luc__date__gte=dau_t).exclude(trang_thai=YC.DONG)
+    tong = trong_thang.count()
+    co_gs = trong_thang.filter(trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG, YC.CHINH_THUC]).count()
+    ty_le = round(co_gs * 100 / tong) if tong else 0
+    ngay = [timezone.localdate(now) - timedelta(days=i) for i in range(6, -1, -1)]
+    dem = [YeuCauHocTap.objects.filter(tao_luc__date=d).count() for d in ngay]
+    cao = max(dem) or 1
+    return {"so_mo": mo.count(), "so_cho": so_cho, "sap_het_han": sap_het_han,
+            "w_sap_het_han": round(sap_het_han * 100 / so_cho) if so_cho else 0, "so_sap_het": sap_het,
+            "ty_le_co_gs": ty_le, "vong_ty_le": round(113.1 * (1 - ty_le / 100), 1), "thang_cs": dau_t.month,
+            "duong_yc": " ".join(f"{i * 9},{22 - round(v * 18 / cao)}" for i, v in enumerate(dem))}
+
+
+def _dong(ma, ten, mo_ta, chip, mau_chip, han, han_do, nut, url):
+    return {"ma": ma, "ten": ten, "mo_ta": mo_ta, "chip": chip, "mau_chip": mau_chip, "han": han,
+            "han_do": han_do, "nut": nut, "url": url}
+
+
+def _viec_tuyen_sinh(now):
+    from django.db.models import F
+    from django.urls import reverse
+    from core.models import DoiGiaSu
+    from core.services import yeu_cau as dv_yc
+    from core.services.thu_lao import tong_hop
+    YC = YeuCauHocTap.TrangThai
+    yc_qs = YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su").prefetch_related("loi_moi", "buoi_hoc")
+    gap, hom_nay, tuan = [], [], []
+    for y in yc_qs.filter(trang_thai__in=[YC.MOI, YC.DANG_TIM, YC.DA_PHAN_CONG]).order_by("tao_luc"):
+        b = dv_yc.buoc_tiep_theo(y, now)
+        ten = f"{y.hoc_vien.ho_ten} · {y.mon_hoc} {y.trinh_do}"
+        url = reverse("yeu_cau_chi_tiet", args=[y.pk])
+        if y.trang_thai == YC.MOI:
+            gap.append(_dong(y.ma, ten, b["chu"], "Mới", "xanh", f"tạo {_con_lai(now - y.tao_luc)} trước", False,
+                             "Tìm gia sư", url))
+        elif y.trang_thai == YC.DANG_TIM and b["mau"] == "do":
+            gap.append(_dong(y.ma, ten, b["chu"], "Chưa có gia sư", "do", "cần mời lại", True, "Mời lại", url))
+        elif y.trang_thai == YC.DANG_TIM:
+            (gap if b["mau"] == "cam" else hom_nay).append(_dong(
+                y.ma, ten, "Đã mời gia sư, chưa ai nhận", "Đang mời gia sư", "cam", b["chu"].split(" · ")[-1],
+                b["mau"] == "cam", "Mời thêm", url))
+        elif "Ghi kết quả" in b["chu"]:
+            gap.append(_dong(y.ma, ten, "Học thử xong · gọi phụ huynh lấy kết quả", "Học thử", "tim", "đã dạy xong",
+                             False, "Ghi kết quả", url))
+        elif "Gọi lại" in b["chu"]:
+            (gap if b["mau"] == "do" else tuan).append(_dong(
+                y.ma, ten, "Phụ huynh cần thêm thời gian", "Đã có gia sư", "xanh_la", b["chu"].split(" · ")[-1],
+                b["mau"] == "do", "Gọi lại", url))
+        elif "Mở khóa" in b["chu"]:
+            hom_nay.append(_dong(y.ma, ten, "Phụ huynh đăng ký chính thức", "Đã có gia sư", "xanh_la", "chờ mở khóa",
+                                 False, "Mở khóa", url))
+    for y in yc_qs.filter(trang_thai=YC.HOC_THU_XONG):
+        hom_nay.append(_dong(y.ma, f"{y.hoc_vien.ho_ten} · {y.mon_hoc} {y.trinh_do}", "Phụ huynh đồng ý đăng ký",
+                             "Học thử", "tim", "chờ mở khóa", False, "Mở khóa",
+                             reverse("yeu_cau_chi_tiet", args=[y.pk]) + "?mo=khoa"))
+    for k in KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).annotate(
+            con=F("so_buoi_dang_ky") - F("so_buoi_da_dung")).filter(
+            con__lte=settings.NGHIEP_VU.get("NGUONG_SAP_HET_BUOI", 2)).select_related("hoc_vien", "yeu_cau__mon_hoc"):
+        hom_nay.append(_dong(k.ma, f"{k.hoc_vien.ho_ten} · {k.yeu_cau.mon_hoc}",
+                             f"Còn {k.con}/{k.so_buoi_dang_ky} buổi · gọi phụ huynh gia hạn", "Đang học", "xanh_la",
+                             f"còn {k.con} buổi", False, "Xem khóa", reverse("khoa_hoc_chi_tiet", args=[k.pk])))
+    for d in DoiGiaSu.objects.filter(trang_thai=DoiGiaSu.TrangThai.CHO_DUYET).select_related(
+            "khoa_hoc__hoc_vien", "khoa_hoc__yeu_cau__mon_hoc"):
+        hom_nay.append(_dong(d.khoa_hoc.ma, f"{d.khoa_hoc.hoc_vien.ho_ten} · {d.khoa_hoc.yeu_cau.mon_hoc}",
+                             "Đổi gia sư lần 2 · chờ Quản trị viên duyệt", "Chờ duyệt", "xanh",
+                             f"{_con_lai(now - d.tao_luc)} trước", False, "Xem",
+                             reverse("khoa_hoc_chi_tiet", args=[d.khoa_hoc_id])))
+    hom = timezone.localdate(now)
+    thang_truoc = (hom.replace(day=1) - timedelta(days=1)).replace(day=1)
+    bang = tong_hop(thang_truoc)
+    chua = [d for d in bang if d.trang_thai in ("CHUA_KIEM_TRA", "CAN_KIEM_TRA_LAI")]
+    if chua:
+        tuan.append(_dong(f"T{thang_truoc:%m/%Y}", f"Thù lao tháng {thang_truoc:%m/%Y} cần kiểm tra",
+                          f"{len(bang)} gia sư · {len(bang) - len(chua)} đã kiểm tra, {len(chua)} chưa", "Đang mở",
+                          "cam", "trước khi chốt", False, "Đối soát", reverse("doi_soat") + f"?thang={thang_truoc:%Y-%m}"))
+    return gap, hom_nay, tuan
+
+
+def tuyen_sinh(user, thang=None, now=None):
+    from core.models import NhacViec
+    from core.services import yeu_cau as dv_yc
+    from core.services.buoi_hoc import quet_han
+
+    dv_yc.quet_loi_moi_het_han()
+    quet_han()
+    now = now or timezone.now()
+    hom_nay = timezone.localdate(now)
+    thang = thang or hom_nay.replace(day=1)
+    cs = chi_so_tuyen_sinh(now)
+    gap, hom_nay_ds, tuan = _viec_tuyen_sinh(now)
+    nhom = [g for g in [
+        {"ma": "gap", "ten": "Gấp, cần xử lý ngay", "goi_y": "Phụ huynh đang chờ", "icon": "bi-lightning-charge",
+         "mau": "#C2410C", "nen": "#FFF4EF", "vien": "#FBD9C9", "cham": "#FF7A59", "muc": gap},
+        {"ma": "hom_nay", "ten": "Trong hôm nay", "goi_y": "", "icon": "bi-sun", "mau": "#4F46E5", "nen": "#F5F6FF",
+         "vien": "#DCDFFB", "cham": "#6366F1", "muc": hom_nay_ds},
+        {"ma": "tuan", "ten": "Trong tuần", "goi_y": "", "icon": "bi-calendar-week", "mau": "#4A5068",
+         "nen": "#F7F8FC", "vien": "#E6E9F2", "cham": "#9AA1B8", "muc": tuan}] if g["muc"]]
+
+    cham, sap_toi = {}, []
+
+    def them(d, m):
+        if m not in cham.setdefault(d, []):
+            cham[d].append(m)
+    for b in BuoiHoc.objects.filter(loai=BuoiHoc.Loai.HOC_THU, trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO + [TT.HOAN_TAT],
+                                    bat_dau__gte=now - timedelta(days=40)).select_related("yeu_cau__mon_hoc", "gia_su"):
+        them(timezone.localtime(b.bat_dau).date(), "#6366F1")
+        if b.bat_dau >= now:
+            sap_toi.append({"luc": b.bat_dau, "mau": "#6366F1", "ten": f"Học thử · {b.yeu_cau.ma}",
+                            "phu": f"{b.yeu_cau.mon_hoc} · gia sư {b.gia_su.ho_ten}"})
+    for lm in LoiMoi.objects.filter(trang_thai=LoiMoi.TrangThai.CHO, het_han_luc__gt=now).select_related(
+            "yeu_cau__mon_hoc", "yeu_cau__hoc_vien"):
+        them(timezone.localtime(lm.het_han_luc).date(), "#FF7A59")
+        sap_toi.append({"luc": lm.het_han_luc, "mau": "#FF7A59", "ten": f"Hạn lời mời · {lm.yeu_cau.ma}",
+                        "phu": f"{lm.yeu_cau.mon_hoc} · {lm.yeu_cau.hoc_vien.ho_ten}"})
+    for nv in NhacViec.objects.filter(nguoi_phu_trach=user, xong_luc__isnull=True):
+        them(timezone.localtime(nv.han_luc).date(), "#14B8A6")
+        sap_toi.append({"luc": nv.han_luc, "mau": "#14B8A6", "ten": nv.get_loai_display(), "phu": nv.noi_dung[:60]})
+    sap_toi.sort(key=lambda x: x["luc"])
+    chip = []
+    if gap:
+        chip.append({"icon": "bi-lightning-charge", "mau": "#C2410C", "chu": f"{len(gap)} việc gấp hôm nay"})
+    if cs["sap_het_han"]:
+        chip.append({"icon": "bi-stopwatch", "mau": "#1E2235", "chu": f"{cs['sap_het_han']} lời mời sắp hết hạn"})
+    so_kq = sum(1 for g in gap if g["nut"] == "Ghi kết quả")
+    if so_kq:
+        chip.append({"icon": "bi-clipboard-check", "mau": "#1E2235", "chu": f"{so_kq} kết quả học thử chưa ghi"})
+    return {**cs, "loi_chao": _loi_chao(now, user.ho_ten),
+            "cheer": (f"Tháng này {cs['ty_le_co_gs']}% yêu cầu đã có gia sư. " if cs["ty_le_co_gs"] else "")
+            + (f"Còn {len(gap)} việc gấp đang chờ bạn." if gap else "Không có việc gấp nào."),
+            "chip": chip, "nhom_viec": nhom, "so_viec": len(gap) + len(hom_nay_ds) + len(tuan),
+            "lich": _lich_thang_tu_cham(thang, hom_nay, cham), "sap_toi": sap_toi[:5]}
+
+
+def _lich_thang_tu_cham(thang, hom_nay, cham):
+    nam, th = thang.year, thang.month
+    dau = date(nam, th, 1)
+    cuoi = date(nam, th, calendar.monthrange(nam, th)[1])
+    d, kt, o = dau - timedelta(days=dau.weekday()), cuoi + timedelta(days=6 - cuoi.weekday()), []
+    while d <= kt:
+        o.append({"n": d.day, "trong_thang": d.month == th, "hom_nay": d == hom_nay, "cham": cham.get(d, [])[:3]})
+        d += timedelta(days=1)
+    truoc = (dau - timedelta(days=1)).replace(day=1)
+    return {"o": o, "tieu_de": f"Tháng {th}/{nam}", "truoc": f"{truoc:%Y-%m}", "sau": f"{cuoi + timedelta(days=1):%Y-%m}"}

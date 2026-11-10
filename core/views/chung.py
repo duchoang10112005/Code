@@ -108,37 +108,13 @@ def trang_chu(request):
         }
         return render(request, "core/trang_chu_admin.html", ctx)
     if u.la_tuyen_sinh:
-        quet_loi_moi_het_han()
-        YC = YeuCauHocTap.TrangThai
-        ctx = {
-            "so_yeu_cau_moi": YeuCauHocTap.objects.filter(trang_thai=YC.MOI).count(),
-            "so_dang_tim": YeuCauHocTap.objects.filter(trang_thai=YC.DANG_TIM).count(),
-            # Đang tìm nhưng không còn lời mời nào đang chờ → cần NVTS mời thêm gia sư.
-            "so_can_moi_them": YeuCauHocTap.objects.filter(trang_thai=YC.DANG_TIM)
-                                .exclude(loi_moi__trang_thai="CHO").count(),
-            "so_cho_chot": YeuCauHocTap.objects.filter(trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG]).count(),
-            "so_sap_het": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC)
-                           .annotate(con_lai=F("so_buoi_dang_ky") - F("so_buoi_da_dung"))
-                           .filter(con_lai__lte=2).count(),
-            "so_khoa_dang_hoc": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).count(),
-        }
-        # Hàng việc theo nhóm (mỗi nhóm tối đa 5 dòng, xem hết ở trang danh sách).
-        yc = YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su")
-        ctx.update({
-            "ds_can_moi_them": yc.filter(trang_thai=YC.DANG_TIM).exclude(loi_moi__trang_thai="CHO")
-                               .order_by("tao_luc")[:5],
-            "ds_yeu_cau_moi": yc.filter(trang_thai=YC.MOI).order_by("tao_luc")[:5],
-            "ds_cho_chot": yc.filter(trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG]).order_by("phan_cong_luc")[:5],
-            "ds_sap_het": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC)
-                          .annotate(con_lai=F("so_buoi_dang_ky") - F("so_buoi_da_dung"))
-                          .filter(con_lai__lte=2).select_related("hoc_vien", "gia_su", "yeu_cau__mon_hoc")
-                          .order_by("con_lai")[:5],
-            "ds_loi_moi_cho": LoiMoi.objects.filter(trang_thai=LoiMoi.TrangThai.CHO)
-                              .select_related("yeu_cau__hoc_vien", "yeu_cau__mon_hoc", "gia_su")
-                              .order_by("het_han_luc")[:5],
-            **chung,
-        })
-        return render(request, "core/trang_chu_tuyen_sinh.html", ctx)
+        from datetime import datetime
+        from core.services import trang_chu as tc
+        try:
+            thang = datetime.strptime(request.GET.get("thang", ""), "%Y-%m").date()
+        except ValueError:
+            thang = None
+        return render(request, "core/trang_chu_tuyen_sinh.html", tc.tuyen_sinh(u, thang))
     # Gia sư: chỉ thấy dữ liệu của chính mình (BRULE-23)
     from datetime import datetime
     from core.services import trang_chu as tc
