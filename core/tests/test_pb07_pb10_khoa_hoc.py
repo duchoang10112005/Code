@@ -141,7 +141,7 @@ class NhanhBTest(DuLieu):
         self.tao_buoi_thu()
         self.dang_nhap(self.nvts)
         r = self.client.post(reverse("yeu_cau_ket_qua_hoc_thu", args=[self.yc.pk]), {"ket_qua": "DONG_Y"})
-        self.assertRedirects(r, reverse("khoa_hoc_tao", args=[self.yc.pk]))
+        self.assertRedirects(r, reverse("yeu_cau_chi_tiet", args=[self.yc.pk]) + "?mo=khoa")
 
 
 # ------------------------------------------------------------ PB-10 / trạng thái khóa
@@ -211,7 +211,7 @@ class SuaLoiCodeReviewPhan4Test(DuLieu):
         self.dang_nhap(self.nvts)
         r = self.client.get(reverse("yeu_cau_chi_tiet", args=[self.yc.pk]))
         self.assertIsNone(r.context["buoi_thu"])
-        self.assertContains(r, "Đăng ký chính thức ngay")
+        self.assertContains(r, "Đăng ký chính thức luôn")
         self.assertTrue(dv.co_the_tao_khoa(self.yc))
 
     def test_BRULE11_khoa_gia_su_sau_khi_nhan_lop_thi_go_phan_cong(self):
@@ -238,3 +238,25 @@ class SuaLoiCodeReviewPhan4Test(DuLieu):
         self.dang_nhap(self.nvts)
         r = self.client.get(reverse("yeu_cau_danh_sach"), {"cho_chot": "on"})
         self.assertEqual([y.pk for y in r.context["trang"]], [self.yc.pk])
+
+
+class DangKyThangTest(DuLieu):
+    """SD-10 / KH-01: đăng ký chính thức luôn; SD-12: mở khóa có lịch cố định, thông báo gia sư."""
+
+    def test_KH01_dang_ky_thang_bi_chan_khi_da_co_buoi_thu(self):
+        self.tao_buoi_thu(trang_thai=BuoiHoc.TrangThai.DA_LEN_LICH)
+        with self.assertRaisesMessage(ValidationError, "đã có buổi học thử"):
+            dv.danh_dau_dang_ky_thang(self.nvts, self.yc)
+
+    def test_dang_ky_thang_roi_mo_khoa_co_lich_co_dinh(self):
+        self.dang_nhap(self.nvts)
+        r = self.client.post(reverse("yeu_cau_dang_ky_thang", args=[self.yc.pk]))
+        self.assertRedirects(r, reverse("yeu_cau_chi_tiet", args=[self.yc.pk]) + "?mo=khoa")
+        self.yc.refresh_from_db()
+        self.assertTrue(self.yc.dang_ky_thang)
+        r = self.client.post(reverse("khoa_hoc_tao", args=[self.yc.pk]),
+                             {**KHOA, "lich_thu_1": "1", "lich_gio_1": "19:30", "zalo_nhom": "Toán 9 – HV"})
+        khoa = KhoaHoc.objects.get(yeu_cau=self.yc)
+        self.assertEqual(khoa.lich_co_dinh, [{"thu": 1, "gio": "19:30"}])
+        self.assertEqual((khoa.zalo_nhom, khoa.tuyen_sinh_phu_trach), ("Toán 9 – HV", self.nvts))
+        self.assertTrue(self.gs.thong_bao.filter(tieu_de__contains=khoa.ma).exists())

@@ -336,3 +336,11 @@ class DiemKhopTest(DuLieu):
         self.assertEqual(yc.thu_mong_muon, [1, 3, 5])
         self.assertEqual(yc.lich_mong_muon, "T7 08:00–11:00 · T3, T5 19:00–21:00")
         self.assertEqual(yc.trinh_do, "Lớp 8–9")
+
+
+class GuiLoiMoiDiemKhopTest(DiemKhopTest):
+    def test_gui_loi_moi_luu_diem_khop_va_bao_chuong(self):
+        moi, _ = dv.gui_loi_moi(self.nvts, self.yc, [self.gs_b.pk])
+        self.assertEqual(moi[0].diem_khop, 100)
+        self.assertEqual(moi[0].chi_tiet_khop["trung_gio"], "3/3")
+        self.assertTrue(self.gs_b.thong_bao.filter(loai="LOI_MOI").exists())

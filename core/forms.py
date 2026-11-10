@@ -370,7 +370,7 @@ class LocYeuCauForm(BootstrapMixin, forms.Form):
 # ---------------------------------------------------------------------------
 # Phần 4 – Khóa học (PB-07..PB-10)
 # ---------------------------------------------------------------------------
-class KetQuaHocThuForm(BootstrapMixin, forms.Form):
+class KetQuaHocThuForm(GsoMixin, forms.Form):
     ket_qua = forms.ChoiceField(label="Phụ huynh quyết định", choices=YeuCauHocTap.KetQuaHocThu.choices,
                                 widget=forms.RadioSelect)
     ghi_chu = forms.CharField(label="Ghi chú", required=False, max_length=300,
@@ -384,16 +384,26 @@ class KetQuaHocThuForm(BootstrapMixin, forms.Form):
         return d
 
 
-class KhoaHocForm(BootstrapMixin, forms.ModelForm):
-    """Tạo khóa: NV tuyển sinh nhập số buổi, thời lượng, học phí và thù lao mỗi buổi.
-    (Bảng giá tự tính đang tạm gỡ chờ nhóm nghiên cứu – xem tag Git luu-bang-gia.)"""
+THU_CHOICES = [("", "—"), ("0", "T2"), ("1", "T3"), ("2", "T4"), ("3", "T5"), ("4", "T6"), ("5", "T7"), ("6", "CN")]
+
+
+class KhoaHocForm(GsoMixin, forms.ModelForm):
+    """Mở khóa (SD-12): số buổi, thời lượng, học phí, thù lao, lịch cố định (tối đa 3 buổi/tuần), nhóm Zalo."""
+
+    lich_thu_1 = forms.ChoiceField(choices=THU_CHOICES, required=False)
+    lich_gio_1 = forms.TimeField(required=False, input_formats=["%H:%M"])
+    lich_thu_2 = forms.ChoiceField(choices=THU_CHOICES, required=False)
+    lich_gio_2 = forms.TimeField(required=False, input_formats=["%H:%M"])
+    lich_thu_3 = forms.ChoiceField(choices=THU_CHOICES, required=False)
+    lich_gio_3 = forms.TimeField(required=False, input_formats=["%H:%M"])
 
     class Meta:
         model = KhoaHoc
-        fields = ["so_buoi_dang_ky", "thoi_luong_phut", "hoc_phi_moi_buoi", "thu_lao_moi_buoi"]
-        widgets = {"thoi_luong_phut": forms.RadioSelect}
+        fields = ["so_buoi_dang_ky", "thoi_luong_phut", "hoc_phi_moi_buoi", "thu_lao_moi_buoi", "zalo_nhom",
+                  "ghi_chu_phu_huynh"]
+        widgets = {"thoi_luong_phut": forms.RadioSelect, "ghi_chu_phu_huynh": forms.Textarea(attrs={"rows": 2})}
         help_texts = {
-            "hoc_phi_moi_buoi": "Số tiền phụ huynh đóng cho mỗi buổi (đồng).",
+            "hoc_phi_moi_buoi": "Số tiền phụ huynh đóng cho mỗi buổi (đồng). Gia sư không thấy.",
             "thu_lao_moi_buoi": "Số tiền trả gia sư cho mỗi buổi hợp lệ, không vượt học phí.",
         }
 
@@ -412,6 +422,19 @@ class KhoaHocForm(BootstrapMixin, forms.ModelForm):
         hp, tl = d.get("hoc_phi_moi_buoi"), d.get("thu_lao_moi_buoi")
         if hp is not None and tl is not None and tl > hp:
             self.add_error("thu_lao_moi_buoi", "Thù lao gia sư mỗi buổi không được lớn hơn học phí mỗi buổi.")
+        lich = []
+        for i in (1, 2, 3):
+            thu, gio = d.get(f"lich_thu_{i}"), d.get(f"lich_gio_{i}")
+            if thu not in (None, "") and gio:
+                lich.append({"thu": int(thu), "gio": f"{gio:%H:%M}"})
+            elif (thu not in (None, "")) != bool(gio):
+                self.add_error(f"lich_gio_{i}", "Chọn đủ thứ và giờ cho buổi cố định này.")
+        d["lich_co_dinh"] = lich
+        return d
+
+    def du_lieu_khoa(self):
+        d = {k: self.cleaned_data[k] for k in self.Meta.fields}
+        d["lich_co_dinh"] = self.cleaned_data.get("lich_co_dinh", [])
         return d
 
 

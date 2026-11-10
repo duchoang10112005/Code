@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import F, Prefetch, Q
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -37,9 +38,11 @@ def ghi_ket_qua_hoc_thu(request, pk):
     try:
         yc = dv.ghi_ket_qua_hoc_thu(request.user, yc, form.cleaned_data["ket_qua"], form.cleaned_data["ghi_chu"])
         if yc.trang_thai == YC.HOC_THU_XONG:
-            messages.success(request, "Đã ghi kết quả: tiếp tục học. Điền thông tin để tạo khóa chính thức.")
-            return redirect("khoa_hoc_tao", pk=pk)
-        if yc.trang_thai == YC.DANG_TIM:
+            messages.success(request, "Đã ghi: phụ huynh đồng ý đăng ký. Bước tiếp theo: Mở khóa học.")
+            return redirect(reverse("yeu_cau_chi_tiet", args=[pk]) + "?mo=khoa")
+        if yc.ket_qua_hoc_thu == "CAN_THEM_THOI_GIAN":
+            messages.success(request, "Đã ghi: cần thêm thời gian. Hệ thống nhắc bạn gọi lại phụ huynh sau 2 ngày.")
+        elif yc.trang_thai == YC.DANG_TIM:
             messages.success(request, "Đã ghi kết quả. Yêu cầu quay về Đang mời gia sư — chọn gia sư khác bên dưới.")
         else:
             messages.success(request, "Đã ghi kết quả. Yêu cầu đã đóng.")
@@ -54,17 +57,18 @@ def tao(request, pk):
     if not dv.co_the_tao_khoa(yc):
         messages.error(request, "Yêu cầu này chưa đủ điều kiện tạo khóa (đã học thử thì cần kết quả Đồng ý đăng ký).")
         return redirect("yeu_cau_chi_tiet", pk=pk)
-    form = KhoaHocForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
+    if request.method != "POST":
+        return redirect(reverse("yeu_cau_chi_tiet", args=[pk]) + "?mo=khoa")
+    form = KhoaHocForm(request.POST)
+    if form.is_valid():
         try:
-            khoa = dv.tao_khoa_hoc(request.user, yc, form.cleaned_data)
-            messages.success(request, f"Đã mở {khoa}. Gia sư được báo qua email để bắt đầu tạo buổi học.")
+            khoa = dv.tao_khoa_hoc(request.user, yc, form.du_lieu_khoa())
+            messages.success(request, f"Đã mở {khoa.ma}. Gia sư được báo để bắt đầu tạo buổi học.")
             return redirect("khoa_hoc_chi_tiet", pk=khoa.pk)
         except ValidationError as e:
             form.add_error(None, _loi(e))
-    return render(request, "core/khoa_hoc/tao.html", {
-        "yc": yc, "form": form, "nhanh_a": yc.trang_thai == YC.DA_PHAN_CONG,
-    })
+    from core.views.yeu_cau import trang_chi_tiet_yc
+    return trang_chi_tiet_yc(request, yc, form_khoa=form)
 
 
 # =============================================================================

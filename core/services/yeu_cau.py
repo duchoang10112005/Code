@@ -113,7 +113,7 @@ def cham_diem(hs, mon_hoc_id, cap_do_id, khung_can, thu_can):
         trung, can = len(set(thu_can) & thu_ranh), len(set(thu_can))
     con_cho = hs.so_khoa < (hs.so_lop_toi_da or 4)
     diem = 40 + (20 if dung_cap_do else 0) + (round(30 * trung / can) if can else 0) + (10 if con_cho else 0)
-    return {"mon": mon, "diem": diem, "trung": trung, "can": can, "dung_cap_do": dung_cap_do, "con_cho": con_cho,
+    return {"mon": mon, "diem": diem, "vong": round(88 * (1 - diem / 100), 1), "trung": trung, "can": can, "dung_cap_do": dung_cap_do, "con_cho": con_cho,
             "thu_trung": sorted(thu_ranh & set(thu_can)), "tam_nghi": hs.dang_tam_nghi,
             "chi_tiet": {"dung_mon": True, "dung_cap_do": dung_cap_do, "trung_gio": f"{trung}/{can}",
                          "dang_nhan_lop": con_cho}}
@@ -151,7 +151,7 @@ def gui_loi_moi(nvts, yeu_cau, ds_user_id):
         raise ValidationError("Hãy chọn ít nhất một gia sư.")
     quet_loi_moi_het_han()
 
-    hop_le = gia_su_du_dieu_kien(yeu_cau.mon_hoc).filter(user_id__in=ds_user_id)
+    hop_le = [hs for hs in _ds_ung_vien(yeu_cau.mon_hoc).filter(user_id__in=ds_user_id) if not hs.dang_tam_nghi]
     moi = []
     with transaction.atomic():
         # Kiểm tra lại trạng thái NGAY trong transaction (đối tượng truyền vào có thể đã cũ:
@@ -164,7 +164,10 @@ def gui_loi_moi(nvts, yeu_cau, ds_user_id):
                 continue
             try:
                 with transaction.atomic():  # savepoint: hai NVTS gửi cùng lúc → ràng buộc DB chặn bản thứ hai
-                    moi.append(LoiMoi.objects.create(yeu_cau=yeu_cau, gia_su=hs.user, gui_boi=nvts))
+                    d = cham_diem(hs, yeu_cau.mon_hoc_id, yeu_cau.cap_do_id, yeu_cau.khung_mong_muon,
+                                  yeu_cau.thu_mong_muon or [])
+                    moi.append(LoiMoi.objects.create(yeu_cau=yeu_cau, gia_su=hs.user, gui_boi=nvts,
+                                                     diem_khop=d["diem"], chi_tiet_khop=d["chi_tiet"]))
             except IntegrityError:
                 continue
         if moi:
@@ -172,7 +175,11 @@ def gui_loi_moi(nvts, yeu_cau, ds_user_id):
                 trang_thai=YC.DANG_TIM, cap_nhat_luc=timezone.now())
             ghi_nhat_ky(nvts, "Gửi lời mời nhận lớp", str(yeu_cau),
                         "Gửi tới: " + ", ".join(lm.gia_su.ho_ten for lm in moi))
+    from core.services.thong_bao import thong_bao
     for lm in moi:
+        thong_bao(lm.gia_su, f"Lời mời mới: {yeu_cau.mon_hoc} {yeu_cau.trinh_do}",
+                  f"{yeu_cau.hoc_vien.ho_ten} · hết hạn sau {settings.NGHIEP_VU['HAN_LOI_MOI_GIO']} giờ",
+                  reverse("loi_moi_cua_toi") + f"?chon={lm.pk}", "LOI_MOI")
         gui_email(lm.gia_su, f"Lời mời nhận lớp {yeu_cau.mon_hoc} – {yeu_cau.trinh_do}",
                   f"Chào {lm.gia_su.ho_ten},\n\nTrung tâm mời bạn nhận lớp {yeu_cau.mon_hoc} ({yeu_cau.trinh_do}).\n"
                   f"Mục tiêu: {yeu_cau.muc_tieu}\nThời gian mong muốn: {yeu_cau.ten_thu_mong_muon} – {yeu_cau.lich_mong_muon}\n\n"

@@ -115,29 +115,66 @@ def _luoi_khung():
             for k in ("SANG", "CHIEU", "TOI_SOM", "TOI")]
 
 
-@vai_tro_required(ADMIN, TUYEN_SINH)
-def chi_tiet(request, pk):
+BUOC_YC = [("MOI", "Mới"), ("DANG_TIM", "Đang mời gia sư"), ("DA_PHAN_CONG", "Đã có gia sư"),
+           ("HOC_THU_XONG", "Học thử"), ("CHINH_THUC", "Đã mở khóa")]
+
+
+def trang_chi_tiet_yc(request, yc, form_khoa=None, status=None):
+    """Tuyển sinh – Chi tiết yêu cầu (SD-06..SD-12)."""
+    from core.forms import KhoaHocForm
+    from core.models import NhatKy
+    from core.services.yeu_cau import luoi_khop
     dv.quet_loi_moi_het_han()
-    yc = get_object_or_404(YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su", "tao_boi"), pk=pk)
+    yc.refresh_from_db()
     de_xuat = dv.de_xuat_gia_su(yc) if _co_the_sua(yc) else []
+    thu_tu = [k for k, _ in BUOC_YC]
+    hien = 2 if (yc.trang_thai == YC.DA_PHAN_CONG and dv_kh.buoi_hoc_thu_gan_nhat(yc)) else (
+        thu_tu.index(yc.trang_thai) if yc.trang_thai in thu_tu else -1)
+    buoc = [{"ten": n, "lop": "xong" if i < hien else ("dang" if i == hien else "")} for i, (_, n) in enumerate(BUOC_YC)]
+    hang, _, _, _ = luoi_khop(None, yc.khung_mong_muon)
+    dong_tg = [{"luc": x.thoi_diem, "ai": x.nguoi_thuc_hien.ho_ten if x.nguoi_thuc_hien else "Hệ thống",
+                "chu": x.hanh_dong[:1].lower() + x.hanh_dong[1:], "phu": x.chi_tiet[:120]}
+               for x in NhatKy.objects.filter(ma_doi_tuong=yc.ma).select_related("nguoi_thuc_hien").order_by("-thoi_diem")[:12]]
+    for lm in yc.loi_moi.select_related("gia_su").exclude(phan_hoi_luc=None).exclude(trang_thai="VOIDED"):
+        dong_tg.append({"luc": lm.phan_hoi_luc, "ai": lm.gia_su.ho_ten, "phu": lm.ly_do_tu_choi or lm.ghi_chu_gia_su,
+                        "chu": {"ACCEPTED": "nhận lớp", "REJECTED": "từ chối lời mời"}.get(lm.trang_thai, "để lời mời hết hạn")})
+    dong_tg.sort(key=lambda x: x["luc"], reverse=True)
     ctx = {
-        "yc": yc,
-        "ds_loi_moi": yc.loi_moi.select_related("gia_su").order_by("-gui_luc"),
-        "de_xuat": de_xuat,
-        "co_the_sua": _co_the_sua(yc),
-        "thu_can": set(yc.thu_mong_muon or []),
+        "yc": yc, "de_xuat": de_xuat, "co_the_sua": _co_the_sua(yc), "buoc": buoc, "luoi": hang,
+        "ds_loi_moi": yc.loi_moi.select_related("gia_su").order_by("-gui_luc"), "dong_tg": dong_tg[:12],
+        "mau_tt": dv.MAU_TRANG_THAI_YC.get(yc.trang_thai, "xam"), "buoc_tiep": dv.buoc_tiep_theo(yc),
+        "ly_do_dong": dv.LY_DO_DONG, "form_khoa": form_khoa or KhoaHocForm(initial={"thoi_luong_phut": 90}),
+        "mo": "khoa" if form_khoa is not None else request.GET.get("mo", ""), "KQ": YeuCauHocTap.KetQuaHocThu,
     }
-    # Phần 4 – "Bước tiếp theo" sau khi đã có gia sư nhận lớp
     if yc.trang_thai in (YC.DA_PHAN_CONG, YC.HOC_THU_XONG):
-        ctx.update(
-            buoi_thu=dv_kh.buoi_hoc_thu_gan_nhat(yc),
-            buoi_thu_hoan_tat=dv_kh.buoi_hoc_thu_hoan_tat(yc),
-            co_the_tao_khoa=dv_kh.co_the_tao_khoa(yc),
-            form_kq=KetQuaHocThuForm(),
-        )
+        ctx.update(buoi_thu=dv_kh.buoi_hoc_thu_gan_nhat(yc), buoi_thu_hoan_tat=dv_kh.buoi_hoc_thu_hoan_tat(yc),
+                   co_the_tao_khoa=dv_kh.co_the_tao_khoa(yc), co_the_dang_ky_thang=(
+                       yc.trang_thai == YC.DA_PHAN_CONG and not yc.dang_ky_thang and not dv_kh.co_buoi_hoc_thu(yc)),
+                   co_the_ghi_kq=bool(dv_kh.buoi_hoc_thu_hoan_tat(yc)) and yc.trang_thai == YC.DA_PHAN_CONG)
     if yc.trang_thai == YC.CHINH_THUC:
         ctx["khoa"] = getattr(yc, "khoa_hoc", None)
-    return render(request, "core/yeu_cau/chi_tiet.html", ctx)
+    if request.user.la_admin and yc.trang_thai in (YC.MOI, YC.DANG_TIM):
+        ctx["gs_gan_thang"] = [d["ho_so"].user for d in de_xuat if not d["tam_nghi"]]
+    return render(request, "core/yeu_cau/chi_tiet.html", ctx, status=status or 200)
+
+
+@vai_tro_required(ADMIN, TUYEN_SINH)
+def chi_tiet(request, pk):
+    yc = get_object_or_404(YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su", "tao_boi", "cap_do"), pk=pk)
+    return trang_chi_tiet_yc(request, yc)
+
+
+@vai_tro_required(TUYEN_SINH)
+@require_POST
+def dang_ky_thang(request, pk):
+    yc = get_object_or_404(YeuCauHocTap, pk=pk)
+    try:
+        dv_kh.danh_dau_dang_ky_thang(request.user, yc)
+        messages.success(request, "Đã ghi: phụ huynh đăng ký chính thức luôn. Bước tiếp theo: Mở khóa học.")
+        return redirect(reverse("yeu_cau_chi_tiet", args=[pk]) + "?mo=khoa")
+    except ValidationError as e:
+        messages.error(request, _loi(e))
+    return redirect("yeu_cau_chi_tiet", pk=pk)
 
 
 @vai_tro_required(ADMIN, TUYEN_SINH)

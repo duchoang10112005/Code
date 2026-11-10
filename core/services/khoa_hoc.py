@@ -125,6 +125,19 @@ def ghi_ket_qua_hoc_thu(nvts, yc, ket_qua, ghi_chu=""):
     return yc
 
 
+def danh_dau_dang_ky_thang(nvts, yc):
+    """SD-10: phụ huynh đăng ký chính thức luôn (bỏ học thử). Chặn gia sư tạo buổi học thử sau đó."""
+    yc.refresh_from_db()
+    if yc.trang_thai != YC.DA_PHAN_CONG:
+        raise ValidationError("Chỉ dùng khi yêu cầu đã có gia sư.")
+    if co_buoi_hoc_thu(yc):
+        raise ValidationError("Yêu cầu này đã có buổi học thử. Ghi kết quả học thử thay vì đăng ký thẳng.")
+    YeuCauHocTap.objects.filter(pk=yc.pk).update(dang_ky_thang=True, cap_nhat_luc=timezone.now())
+    ghi_nhat_ky(nvts, "Đăng ký chính thức không học thử", yc.ma)
+    yc.refresh_from_db()
+    return yc
+
+
 # =============================================================================
 # 4.2 Tạo khóa học chính thức
 # =============================================================================
@@ -147,7 +160,7 @@ def tao_khoa_hoc(nvts, yc, du_lieu):
             if n == 0:
                 raise ValidationError("Yêu cầu vừa được người khác cập nhật, vui lòng tải lại trang.")
             khoa = KhoaHoc.objects.create(yeu_cau=yc, hoc_vien=yc.hoc_vien, gia_su=yc.gia_su,
-                                          tao_boi=nvts, **du_lieu)
+                                          tao_boi=nvts, tuyen_sinh_phu_trach=nvts, **du_lieu)
             nhanh = "nhánh A – đăng ký thẳng" if trang_thai_cu == YC.DA_PHAN_CONG else "sau học thử"
             ghi_nhat_ky(nvts, "Tạo khóa học chính thức", str(khoa),
                         f"{nhanh}; {khoa.so_buoi_dang_ky} buổi × {khoa.get_thoi_luong_phut_display()}, "
@@ -155,6 +168,10 @@ def tao_khoa_hoc(nvts, yc, du_lieu):
                         f"thù lao {dinh_dang_tien(khoa.thu_lao_moi_buoi)}/buổi")
     except IntegrityError:
         raise ValidationError("Yêu cầu này đã có khóa học.")
+    from django.urls import reverse
+    from core.services.thong_bao import thong_bao
+    thong_bao(khoa.gia_su, f"Khóa học mới {khoa.ma}", f"{yc.mon_hoc} – {yc.hoc_vien}: {khoa.so_buoi_dang_ky} buổi",
+              reverse("khoa_cua_toi", args=[khoa.pk]), "KHOA_HOC")
     gui_email(khoa.gia_su, f"Khóa học mới: {khoa}",
               f"Trung tâm đã mở khóa {yc.mon_hoc} cho học viên {yc.hoc_vien}: {khoa.so_buoi_dang_ky} buổi, "
               f"{khoa.get_thoi_luong_phut_display()}/buổi, thù lao {dinh_dang_tien(khoa.thu_lao_moi_buoi)}/buổi.\n"

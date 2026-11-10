@@ -48,6 +48,7 @@ urlpatterns = [
     path("yeu-cau/<int:pk>/sua/", yeu_cau.sua, name="yeu_cau_sua"),
     path("yeu-cau/<int:pk>/gui-loi-moi/", yeu_cau.gui_loi_moi, name="yeu_cau_gui_loi_moi"),
     path("yeu-cau/<int:pk>/dong/", yeu_cau.dong, name="yeu_cau_dong"),
+    path("yeu-cau/<int:pk>/dang-ky-thang/", yeu_cau.dang_ky_thang, name="yeu_cau_dang_ky_thang"),
     path("hoc-vien/", yeu_cau.hoc_vien_danh_sach, name="hoc_vien_danh_sach"),
     path("hoc-vien/<int:pk>/", yeu_cau.hoc_vien_chi_tiet, name="hoc_vien_chi_tiet"),
     path("loi-moi/", yeu_cau.loi_moi_cua_toi, name="loi_moi_cua_toi"),

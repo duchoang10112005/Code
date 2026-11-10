@@ -47,3 +47,12 @@ def loai_toast(tags):
 def icon_toast(tags):
     return {"success": "bi-check-lg", "error": "bi-exclamation-circle", "warning": "bi-exclamation-triangle"}.get(
         tags or "", "bi-info-circle")
+
+
+@register.filter
+def sdt(so):
+    """84905111222 → 0905 111 222 (lưu dạng 84… để gửi Zalo, hiển thị dạng quen thuộc)."""
+    s = "".join(c for c in str(so or "") if c.isdigit())
+    if s.startswith("84"):
+        s = "0" + s[2:]
+    return f"{s[:4]} {s[4:7]} {s[7:]}".strip() if len(s) == 10 else (so or "")
