@@ -22,7 +22,7 @@
   <div class="col-lg-7">
     {% if buoi.trang_thai == TT.DA_LEN_LICH %}
     <div class="card mb-4">
-      <div class="card-header">Phòng Zoom</div>
+      <div class="card-header"><i class="bi bi-camera-video" aria-hidden="true"></i>Phòng Zoom</div>
       <div class="card-body">
         <div class="mb-3"><a class="btn btn-primary" href="{% url 'buoi_mo_phong' buoi.pk %}" target="_blank" rel="noopener"><i class="bi bi-camera-video" aria-hidden="true"></i>Mở phòng (gia sư)</a></div>
         <label class="form-label" for="link-hoc-vien">Link cho học viên</label>
@@ -37,7 +37,7 @@
 
     {% if form_xac_nhan %}
     <div class="card mb-4 the-buoc-tiep" id="xac-nhan">
-      <div class="card-header">Xác nhận sau buổi học</div>
+      <div class="card-header"><i class="bi bi-check2-square" aria-hidden="true"></i>Xác nhận sau buổi học</div>
       <div class="card-body">
         <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Hạn cuối {{ buoi.han_xac_nhan|date:"H:i d/m" }} (còn {{ buoi.han_xac_nhan|con_lai }}). Quá hạn buổi bị hủy và không tính thù lao.</p>
         <form method="post" action="{% url 'buoi_xac_nhan' buoi.pk %}" novalidate>{% csrf_token %}
@@ -52,7 +52,7 @@
 
     {% if buoi.xac_nhan_luc %}
     <div class="card mb-4">
-      <div class="card-header">Kết quả buổi học</div>
+      <div class="card-header"><i class="bi bi-clipboard-data" aria-hidden="true"></i>Kết quả buổi học</div>
       <div class="card-body small">
         <div class="text-muted">Nội dung</div><p>{{ buoi.noi_dung|linebreaksbr }}</p>
         <div class="text-muted">Đánh giá chung</div><p>{{ buoi.get_xep_loai_display }}</p>
@@ -69,7 +69,7 @@
 
   <div class="col-lg-5">
     <div class="card mb-4">
-      <div class="card-header">Thông tin</div>
+      <div class="card-header"><i class="bi bi-info-circle" aria-hidden="true"></i>Thông tin</div>
       <div class="card-body small">
         <div class="text-muted">Học viên</div><div class="mb-2">{{ buoi.hoc_vien.ho_ten }}{% if buoi.hoc_vien.lop %} · {{ buoi.hoc_vien.lop }}{% endif %}</div>
         <div class="text-muted">Lớp</div><div class="mb-2">{% if buoi.khoa_hoc %}<a href="{% url 'khoa_cua_toi' buoi.khoa_hoc.pk %}">{{ buoi.khoa_hoc.ma }}</a> · {{ buoi.khoa_hoc.so_buoi_da_dung }}/{{ buoi.khoa_hoc.so_buoi_dang_ky }} buổi{% else %}{{ buoi.yeu_cau.ma }} (học thử){% endif %}</div>
@@ -84,7 +84,7 @@
 
     {% if co_the_doi %}
     <div class="card">
-      <div class="card-header">Đổi lịch hoặc hủy</div>
+      <div class="card-header"><i class="bi bi-calendar2-x" aria-hidden="true"></i>Đổi lịch hoặc hủy</div>
       <div class="card-body">
         <form method="post" action="{% url 'buoi_doi_lich' buoi.pk %}" class="mb-4">{% csrf_token %}
           {% include "partials/form_fields.html" with form=form_doi_lich %}

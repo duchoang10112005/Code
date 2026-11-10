@@ -16,7 +16,7 @@
   <div class="d-flex align-items-center gap-2">
     {% nhan_trang_thai khoa "trang_thai" %}
     {% if user.la_tuyen_sinh and co_the_doi_trang_thai %}
-      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#khoi-trang-thai">Đổi trạng thái</button>
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#khoi-trang-thai"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Đổi trạng thái</button>
     {% endif %}
   </div>
 </div>
@@ -31,7 +31,7 @@
       </select></div>
     <div class="col-md-6"><label class="form-label" for="ly_do_kh">Lý do</label>
       <input id="ly_do_kh" name="ly_do" class="form-control" placeholder="Bắt buộc khi tạm dừng / hủy"></div>
-    <div class="col-md-3"><button class="btn btn-primary w-100">Xác nhận</button></div>
+    <div class="col-md-3"><button class="btn btn-primary w-100"><i class="bi bi-check2-circle" aria-hidden="true"></i>Xác nhận</button></div>
   </form>
 </div></div>
 {% endif %}
@@ -51,7 +51,7 @@
 
 <div class="row g-4">
   <div class="col-xl-4">
-    <div class="card"><div class="card-header">Thông tin khóa</div><div class="card-body small">
+    <div class="card"><div class="card-header"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Thông tin khóa</div><div class="card-body small">
       <div class="text-muted">Học viên</div><div class="mb-2">{{ khoa.hoc_vien.ho_ten }}{% if khoa.hoc_vien.lop %} · {{ khoa.hoc_vien.lop }}{% endif %}</div>
       {% if not la_gia_su %}
         <div class="text-muted">Phụ huynh</div><div class="mb-2">{{ khoa.hoc_vien.ten_phu_huynh }} · <span class="so">{{ khoa.hoc_vien.sdt_phu_huynh }}</span></div>
@@ -63,7 +63,7 @@
     </div></div>
 
     {% if not la_gia_su and lich_su_doi %}
-    <div class="card mt-4"><div class="card-header">Lịch sử đổi gia sư</div><div class="card-body small">
+    <div class="card mt-4"><div class="card-header"><i class="bi bi-clock-history" aria-hidden="true"></i>Lịch sử đổi gia sư</div><div class="card-body small">
       {% for d in lich_su_doi %}
         <div class="mb-2"><b>{{ d.gia_su_cu.ho_ten }}</b>{% if d.gia_su_moi %} → {{ d.gia_su_moi.ho_ten }}{% endif %} · {{ d.tao_luc|date:"d/m/Y" }}
           <div class="text-muted">{{ d.get_ly_do_display }}{% if d.ghi_chu %}: {{ d.ghi_chu }}{% endif %} · {{ d.get_trang_thai_display }}</div></div>
@@ -72,7 +72,7 @@
     {% endif %}
 
     {% if co_the_doi_gia_su %}
-    <div class="card mt-4"><div class="card-header">Đổi gia sư</div><div class="card-body">
+    <div class="card mt-4"><div class="card-header"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Đổi gia sư</div><div class="card-body">
       {% if de_nghi_cho_duyet %}
         <p class="loi-phe yen mb-0"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Đang chờ Admin duyệt đề nghị đổi gia sư ({{ de_nghi_cho_duyet.get_ly_do_display }}).</p>
       {% else %}
@@ -92,20 +92,20 @@
     {% endif %}
 
     {% if user.la_admin and khoa.trang_thai != "HUY" %}
-    <div class="card mt-4"><div class="card-header">Sửa số buổi đăng ký</div><div class="card-body">
+    <div class="card mt-4"><div class="card-header"><i class="bi bi-pencil-square" aria-hidden="true"></i>Sửa số buổi đăng ký</div><div class="card-body">
       <p class="small text-muted">Dùng khi nhập nhầm. Không thấp hơn số buổi đã học cộng số buổi đang lên lịch.</p>
       <form method="post" action="{% url 'khoa_hoc_sua_so_buoi' khoa.pk %}" class="row g-2 align-items-end">{% csrf_token %}
         <div class="col-4"><label class="form-label" for="sb_so">Số buổi</label>
           <input id="sb_so" type="number" name="so_buoi" min="1" value="{{ khoa.so_buoi_dang_ky }}" class="form-control" required></div>
         <div class="col-8"><label class="form-label" for="sb_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
           <input id="sb_ly_do" name="ly_do" class="form-control" required maxlength="300"></div>
-        <div class="col-12"><button class="btn btn-outline-primary">Lưu số buổi</button></div>
+        <div class="col-12"><button class="btn btn-outline-primary"><i class="bi bi-floppy" aria-hidden="true"></i>Lưu số buổi</button></div>
       </form>
     </div></div>
     {% endif %}
   </div>
   <div class="col-xl-8">
-    <div class="card"><div class="card-header">Buổi học</div>
+    <div class="card"><div class="card-header"><i class="bi bi-calendar-week" aria-hidden="true"></i>Buổi học</div>
       <div class="table-responsive"><table class="table">
         <thead><tr><th>Thời gian</th><th>Loại</th><th>Gia sư</th><th>Trạng thái</th><th>Nội dung</th></tr></thead>
         <tbody>

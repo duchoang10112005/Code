@@ -7,7 +7,7 @@
 </div>
 
 <section class="nhom{% if ds_buoi %} gap{% endif %}" aria-labelledby="n-buoi">
-  <div class="nhom-dau"><h2 id="n-buoi">Buổi học có vấn đề <span class="dem-nhom">{{ ds_buoi|length }}</span></h2></div>
+  <div class="nhom-dau"><h2 id="n-buoi"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Buổi học có vấn đề <span class="dem-nhom">{{ ds_buoi|length }}</span></h2></div>
   <div class="trang-giay">
     {% for b in ds_buoi %}
     <div class="dong-xem-xet">
@@ -28,11 +28,11 @@
           <input id="ld{{ b.pk }}" name="ly_do" class="form-control" required maxlength="300" placeholder="VD: đã gọi phụ huynh xác nhận em có học"></div>
         <div class="col-md-6 d-flex gap-2 flex-wrap">
           {% if b.trang_thai == "DANG_XEM_XET" %}
-            <button class="btn btn-primary" formaction="{% url 'xem_xet_buoi' b.pk 'hop_le' %}">Công nhận hợp lệ</button>
+            <button class="btn btn-primary" formaction="{% url 'xem_xet_buoi' b.pk 'hop_le' %}"><i class="bi bi-check2-circle" aria-hidden="true"></i>Công nhận hợp lệ</button>
             <button class="btn btn-outline-danger" formaction="{% url 'xem_xet_buoi' b.pk 'huy' %}"
-                    data-xac-nhan="Không công nhận {{ b.ma }}? Buổi bị hủy, không tính thù lao, trả lại 1 buổi cho khóa." data-nut="Không công nhận">Không công nhận</button>
+                    data-xac-nhan="Không công nhận {{ b.ma }}? Buổi bị hủy, không tính thù lao, trả lại 1 buổi cho khóa." data-nut="Không công nhận"><i class="bi bi-slash-circle" aria-hidden="true"></i>Không công nhận</button>
           {% else %}
-            <button class="btn btn-primary" formaction="{% url 'xem_xet_buoi' b.pk 'mo_lai' %}">Mở lại cho gia sư xác nhận</button>
+            <button class="btn btn-primary" formaction="{% url 'xem_xet_buoi' b.pk 'mo_lai' %}"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Mở lại cho gia sư xác nhận</button>
           {% endif %}
         </div>
       </form>
@@ -44,7 +44,7 @@
 </section>
 
 <section class="nhom{% if ds_doi %} gap{% endif %}" aria-labelledby="n-doi">
-  <div class="nhom-dau"><h2 id="n-doi">Đề nghị đổi gia sư chờ duyệt <span class="dem-nhom">{{ ds_doi|length }}</span></h2></div>
+  <div class="nhom-dau"><h2 id="n-doi"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Đề nghị đổi gia sư chờ duyệt <span class="dem-nhom">{{ ds_doi|length }}</span></h2></div>
   <div class="trang-giay">
     {% for d in ds_doi %}
     <div class="dong-xem-xet">
@@ -57,8 +57,8 @@
         <div class="col-md-6"><label class="form-label" for="dg{{ d.pk }}">Ghi chú (bắt buộc khi từ chối)</label>
           <input id="dg{{ d.pk }}" name="ghi_chu" class="form-control" maxlength="300"></div>
         <div class="col-md-6 d-flex gap-2">
-          <button class="btn btn-primary" name="dong_y" value="1">Đồng ý đổi</button>
-          <button class="btn btn-outline-secondary" name="dong_y" value="0">Từ chối</button>
+          <button class="btn btn-primary" name="dong_y" value="1"><i class="bi bi-check2" aria-hidden="true"></i>Đồng ý đổi</button>
+          <button class="btn btn-outline-secondary" name="dong_y" value="0"><i class="bi bi-x-circle" aria-hidden="true"></i>Từ chối</button>
         </div>
       </form>
     </div>
@@ -69,14 +69,14 @@
 </section>
 
 <section class="nhom" aria-labelledby="n-cho-lau">
-  <div class="nhom-dau"><h2 id="n-cho-lau">Yêu cầu chờ quá 24 giờ chưa có gia sư <span class="dem-nhom">{{ ds_cho_lau|length }}</span></h2></div>
+  <div class="nhom-dau"><h2 id="n-cho-lau"><i class="bi bi-hourglass-bottom" aria-hidden="true"></i>Yêu cầu chờ quá 24 giờ chưa có gia sư <span class="dem-nhom">{{ ds_cho_lau|length }}</span></h2></div>
   <div class="trang-giay">
     {% for y in ds_cho_lau %}
     <div class="dong-viec">
       <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
       <div class="noi-dung-dong">{{ y.get_trang_thai_display }}<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Kiểm tra lý do, sửa yêu cầu hoặc gán thẳng gia sư.</p>
-      <a class="btn btn-sm btn-outline-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Mở</a>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a>
     </div>
     {% empty %}
     <p class="trang-rong m-0">Không có yêu cầu nào chờ quá lâu.</p>

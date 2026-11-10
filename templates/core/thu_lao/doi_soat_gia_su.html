@@ -9,7 +9,7 @@
 
 {% if tong.trang_thai != "DA_CHOT" %}
 <div class="trang-giay p-4 mb-4">
-  <h2 class="fs-tieu-de mt-0">Thêm khoản điều chỉnh</h2>
+  <h2 class="fs-tieu-de mt-0"><i class="bi bi-plus-slash-minus" aria-hidden="true"></i>Thêm khoản điều chỉnh</h2>
   <p class="small text-muted">Dùng cho thưởng, phụ cấp hoặc khoản trừ (nhập số âm). Thêm điều chỉnh thì tháng phải được kiểm tra lại.</p>
   <form method="post" action="{% url 'doi_soat_dieu_chinh' gs.pk %}" class="row g-2 align-items-end">{% csrf_token %}
     <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
@@ -17,7 +17,7 @@
       <input id="dc_tien" name="so_tien" type="number" step="1000" class="form-control" required placeholder="VD: -50000"></div>
     <div class="col-md-6"><label class="form-label" for="dc_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
       <input id="dc_ly_do" name="ly_do" class="form-control" required maxlength="500"></div>
-    <div class="col-md-3"><button class="btn btn-outline-primary w-100">Thêm điều chỉnh</button></div>
+    <div class="col-md-3"><button class="btn btn-outline-primary w-100"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm điều chỉnh</button></div>
   </form>
 </div>
 {% endif %}

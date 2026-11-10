@@ -15,14 +15,14 @@
         {% include "partials/form_fields.html" %}
         <div class="d-flex gap-2">
           <button class="btn btn-primary" data-dang-gui="Đang tạo phòng Zoom…"><i class="bi bi-camera-video" aria-hidden="true"></i>Tạo buổi học</button>
-          <a href="{% url 'buoi_cua_toi' %}" class="btn btn-outline-secondary">Hủy bỏ</a>
+          <a href="{% url 'buoi_cua_toi' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Hủy bỏ</a>
         </div>
       </form>
     </div>
   </div>
   <div class="col-lg-5">
     <div class="trang-giay p-4">
-      <h2 class="fs-tieu-de mt-0">Lưu ý</h2>
+      <h2 class="fs-tieu-de mt-0"><i class="bi bi-lightbulb" aria-hidden="true"></i>Lưu ý</h2>
       <ul class="small mb-0 ps-3">
         <li>Trung tâm dùng chung một tài khoản Zoom, nên mỗi khung giờ chỉ có một buổi học. Nếu giờ bị trùng, hệ thống sẽ báo để bạn chọn giờ khác.</li>
         <li>Sau giờ kết thúc, bạn có <b>12 giờ</b> để xác nhận buổi học. Quá hạn, buổi bị hủy và không tính thù lao.</li>

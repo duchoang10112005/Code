@@ -22,7 +22,7 @@
       <td class="so">{{ hv.sdt_phu_huynh }}</td>
       <td>{% if hv.dong_y_ghi_hinh %}Đồng ý{% else %}<span class="text-muted">Không</span>{% endif %}</td>
       <td class="cot-so">{{ hv.so_yeu_cau }}</td>
-      <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'hoc_vien_chi_tiet' hv.pk %}">Mở</a></td>
+      <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'hoc_vien_chi_tiet' hv.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
     </tr>
   {% empty %}
     <tr><td colspan="7"><div class="trang-rong"><i class="bi bi-person-lines-fill" aria-hidden="true"></i>Chưa có học viên nào.</div></td></tr>

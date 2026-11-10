@@ -40,7 +40,7 @@
       </td>
       <td>{{ yc.gia_su.ho_ten|default:"—" }}</td>
       <td class="small text-muted so text-nowrap">{{ yc.tao_luc|date:"d/m/Y H:i" }}</td>
-      <td class="cot-thao-tac"><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-sm btn-outline-primary">Mở</a></td>
+      <td class="cot-thao-tac"><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
     </tr>
   {% empty %}
     <tr><td colspan="8"><div class="trang-rong"><i class="bi bi-inbox" aria-hidden="true"></i>Không có yêu cầu nào phù hợp.</div></td></tr>

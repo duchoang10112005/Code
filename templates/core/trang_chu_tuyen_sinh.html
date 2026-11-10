@@ -18,7 +18,7 @@
 {% if so_can_moi_them %}
 <section class="nhom gap" aria-labelledby="n-moi-them">
   <div class="nhom-dau">
-    <h2 id="n-moi-them">Cần mời thêm gia sư <span class="dem-nhom">{{ so_can_moi_them }}</span></h2>
+    <h2 id="n-moi-them"><i class="bi bi-person-plus" aria-hidden="true"></i>Cần mời thêm gia sư <span class="dem-nhom">{{ so_can_moi_them }}</span></h2>
     <a href="{{ ds }}?can_moi_them=on">Xem tất cả</a>
   </div>
   <div class="trang-giay">
@@ -27,7 +27,7 @@
       <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
       <div class="noi-dung-dong">Đang tìm gia sư<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Không còn lời mời nào đang chờ, cần mời thêm gia sư dạy {{ y.mon_hoc }}.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Mời thêm</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-person-plus" aria-hidden="true"></i>Mời thêm</a>
     </div>
     {% endfor %}
   </div>
@@ -37,7 +37,7 @@
 {% if so_cho_chot %}
 <section class="nhom gap" aria-labelledby="n-cho-chot">
   <div class="nhom-dau">
-    <h2 id="n-cho-chot">Chờ chốt hình thức học <span class="dem-nhom">{{ so_cho_chot }}</span></h2>
+    <h2 id="n-cho-chot"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Chờ chốt hình thức học <span class="dem-nhom">{{ so_cho_chot }}</span></h2>
     <a href="{{ ds }}?cho_chot=on">Xem tất cả</a>
   </div>
   <div class="trang-giay">
@@ -46,7 +46,7 @@
       <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
       <div class="noi-dung-dong">{{ y.get_trang_thai_display }}<small>Gia sư {{ y.gia_su.ho_ten|default:"—" }}{% if y.phan_cong_luc %} · nhận lớp {{ y.phan_cong_luc|da_qua }} trước{% endif %}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>{% if y.trang_thai == "HOC_THU_XONG" %}Đã học thử, tạo khóa chính thức.{% else %}Gọi phụ huynh chốt: học thử hay đăng ký chính thức luôn.{% endif %}</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Chốt</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-flag" aria-hidden="true"></i>Chốt</a>
     </div>
     {% endfor %}
   </div>
@@ -56,7 +56,7 @@
 {% if so_sap_het %}
 <section class="nhom gap" aria-labelledby="n-sap-het">
   <div class="nhom-dau">
-    <h2 id="n-sap-het">Khóa sắp hết buổi <span class="dem-nhom">{{ so_sap_het }}</span></h2>
+    <h2 id="n-sap-het"><i class="bi bi-battery-half" aria-hidden="true"></i>Khóa sắp hết buổi <span class="dem-nhom">{{ so_sap_het }}</span></h2>
     <a href="{{ dskh }}?sap_het=on">Xem tất cả</a>
   </div>
   <div class="trang-giay">
@@ -65,7 +65,7 @@
       <a class="nhan-vo" href="{% url 'khoa_hoc_chi_tiet' k.pk %}"><span class="ma">{{ k.ma }}</span><br><b>{{ k.hoc_vien.ho_ten }}</b> · {{ k.yeu_cau.mon_hoc }}</a>
       <div class="noi-dung-dong">{% include "partials/tien_do_khoa.html" with khoa=k %}<small>Gia sư {{ k.gia_su.ho_ten }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ k.so_buoi_con_lai }} buổi, hỏi phụ huynh về việc gia hạn.</p>
-      <a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}">Xem khóa</a>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Xem khóa</a>
     </div>
     {% endfor %}
   </div>
@@ -75,7 +75,7 @@
 {% if so_yeu_cau_moi %}
 <section class="nhom" aria-labelledby="n-moi">
   <div class="nhom-dau">
-    <h2 id="n-moi">Yêu cầu mới, chưa gửi lời mời <span class="dem-nhom">{{ so_yeu_cau_moi }}</span></h2>
+    <h2 id="n-moi"><i class="bi bi-inbox" aria-hidden="true"></i>Yêu cầu mới, chưa gửi lời mời <span class="dem-nhom">{{ so_yeu_cau_moi }}</span></h2>
     <a href="{{ ds }}?trang_thai=MOI">Xem tất cả</a>
   </div>
   <div class="trang-giay">
@@ -84,7 +84,7 @@
       <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
       <div class="noi-dung-dong">Mới tiếp nhận<small>{{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Chọn gia sư phù hợp và gửi lời mời.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}">Chọn gia sư</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-person-check" aria-hidden="true"></i>Chọn gia sư</a>
     </div>
     {% endfor %}
   </div>
@@ -94,7 +94,7 @@
 {% if ds_loi_moi_cho %}
 <section class="nhom" aria-labelledby="n-cho-phan-hoi">
   <div class="nhom-dau">
-    <h2 id="n-cho-phan-hoi">Lời mời đang chờ gia sư phản hồi</h2>
+    <h2 id="n-cho-phan-hoi"><i class="bi bi-send" aria-hidden="true"></i>Lời mời đang chờ gia sư phản hồi</h2>
   </div>
   <div class="trang-giay">
     {% for lm in ds_loi_moi_cho %}

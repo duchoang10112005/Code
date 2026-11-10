@@ -32,7 +32,7 @@
         {% if hs.so_cho_duyet %}<div class="small mt-1 loi-phe">{{ hs.so_cho_duyet }} môn chờ duyệt</div>{% endif %}</td>
       <td class="cot-thao-tac">
         <a class="btn btn-sm {% if user.la_admin and hs.so_cho_duyet %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'gia_su_chi_tiet' hs.pk %}">
-          {% if user.la_admin and hs.so_cho_duyet %}<i class="bi bi-patch-check" aria-hidden="true"></i>Duyệt{% else %}Xem hồ sơ{% endif %}</a>
+          {% if user.la_admin and hs.so_cho_duyet %}<i class="bi bi-patch-check" aria-hidden="true"></i>Duyệt{% else %}<i class="bi bi-person-vcard" aria-hidden="true"></i>Xem hồ sơ{% endif %}</a>
       </td>
     </tr>
   {% empty %}

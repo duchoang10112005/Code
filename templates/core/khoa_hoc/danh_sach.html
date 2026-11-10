@@ -29,7 +29,7 @@
       <td class="cot-so">{{ k.con_lai }}
         {% if k.trang_thai == "DANG_HOC" and k.con_lai <= sap_het %}<div>{% nhan_tuy_chinh "CHO_DUYET" "Sắp hết" %}</div>{% endif %}</td>
       <td>{% nhan_trang_thai k "trang_thai" %}</td>
-      <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}">Mở</a></td>
+      <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_hoc_chi_tiet' k.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
     </tr>
   {% empty %}
     <tr><td colspan="8"><div class="trang-rong"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Chưa có khóa học nào phù hợp.</div></td></tr>

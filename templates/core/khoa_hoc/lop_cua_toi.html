@@ -7,7 +7,7 @@
 </div>
 
 <div class="card mb-4">
-  <div class="card-header">Lớp đã nhận, chờ chốt hình thức học</div>
+  <div class="card-header"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Lớp đã nhận, chờ chốt hình thức học</div>
   <div class="table-responsive"><table class="table">
     <thead><tr><th>Lớp</th><th>Học viên</th><th>Thời gian mong muốn</th><th>Tình trạng</th></tr></thead>
     <tbody>
@@ -30,7 +30,7 @@
 </div>
 
 <div class="card">
-  <div class="card-header">Khóa học đang phụ trách</div>
+  <div class="card-header"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Khóa học đang phụ trách</div>
   <div class="table-responsive"><table class="table table-hover">
     <thead><tr><th>Mã</th><th>Môn · học viên</th><th>Tiến độ</th><th class="cot-so">Còn lại</th><th class="cot-so">Thù lao/buổi</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
     <tbody>
@@ -42,7 +42,7 @@
         <td class="cot-so">{{ k.so_buoi_con_lai }}</td>
         <td class="cot-so">{{ k.thu_lao_moi_buoi|tien }}</td>
         <td>{% nhan_trang_thai k "trang_thai" %}</td>
-        <td class="cot-thao-tac">{% if k.trang_thai == "DANG_HOC" and k.so_buoi_co_the_xep %}<a class="btn btn-sm btn-primary" href="{% url 'buoi_tao' %}?khoa={{ k.pk }}">Tạo buổi</a> {% endif %}<a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}">Mở</a></td>
+        <td class="cot-thao-tac">{% if k.trang_thai == "DANG_HOC" and k.so_buoi_co_the_xep %}<a class="btn btn-sm btn-primary" href="{% url 'buoi_tao' %}?khoa={{ k.pk }}"><i class="bi bi-calendar-plus" aria-hidden="true"></i>Tạo buổi</a> {% endif %}<a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
       </tr>
     {% empty %}
       <tr><td colspan="7"><div class="trang-rong py-3"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Bạn chưa phụ trách khóa học nào.</div></td></tr>

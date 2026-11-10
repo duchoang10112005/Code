@@ -12,7 +12,7 @@
 
 <section class="nhom{% if ds_can_xem_xet %} gap{% endif %}" aria-labelledby="n-xem-xet">
   <div class="nhom-dau">
-    <h2 id="n-xem-xet">Buổi học cần xem xét <span class="dem-nhom">{{ so_can_xem_xet_tong }}</span></h2>
+    <h2 id="n-xem-xet"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Buổi học cần xem xét <span class="dem-nhom">{{ so_can_xem_xet_tong }}</span></h2>
     <a href="{% url 'xem_xet' %}">Mở trang xem xét</a>
   </div>
   <div class="trang-giay">
@@ -21,7 +21,7 @@
       <span class="nhan-vo"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</span>
       <div class="noi-dung-dong">GS {{ b.gia_su.ho_ten }}<small>{{ b.bat_dau|date:"H:i d/m" }} · {{ b.get_trang_thai_display }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>{% if b.trang_thai == "DANG_XEM_XET" %}Không đạt kiểm tra Zoom, thù lao đang tạm giữ.{% else %}Bị tự hủy vì quá hạn xác nhận; mở lại nếu buổi đã diễn ra.{% endif %}</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'xem_xet' %}">Xử lý</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'xem_xet' %}"><i class="bi bi-tools" aria-hidden="true"></i>Xử lý</a>
     </div>
     {% empty %}
     <p class="trang-rong m-0">Không có buổi học nào cần xem xét.</p>
@@ -31,7 +31,7 @@
 
 {% if ds_doi_cho_duyet %}
 <section class="nhom gap" aria-labelledby="n-doi">
-  <div class="nhom-dau"><h2 id="n-doi">Đề nghị đổi gia sư chờ duyệt <span class="dem-nhom">{{ ds_doi_cho_duyet|length }}</span></h2>
+  <div class="nhom-dau"><h2 id="n-doi"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Đề nghị đổi gia sư chờ duyệt <span class="dem-nhom">{{ ds_doi_cho_duyet|length }}</span></h2>
     <a href="{% url 'xem_xet' %}">Duyệt</a></div>
   <div class="trang-giay">
     {% for d in ds_doi_cho_duyet %}
@@ -39,7 +39,7 @@
       <a class="nhan-vo" href="{% url 'khoa_hoc_chi_tiet' d.khoa_hoc.pk %}"><span class="ma">{{ d.khoa_hoc.ma }}</span><br><b>{{ d.khoa_hoc.hoc_vien.ho_ten }}</b> · {{ d.khoa_hoc.yeu_cau.mon_hoc }}</a>
       <div class="noi-dung-dong">Đổi khỏi GS {{ d.gia_su_cu.ho_ten }}<small>{{ d.get_ly_do_display }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Khóa đã đổi gia sư trước đây, cần bạn quyết định.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'xem_xet' %}">Duyệt</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'xem_xet' %}"><i class="bi bi-patch-check" aria-hidden="true"></i>Duyệt</a>
     </div>
     {% endfor %}
   </div>
@@ -48,7 +48,7 @@
 
 {% if ds_cho_chot %}
 <section class="nhom gap" aria-labelledby="n-chot">
-  <div class="nhom-dau"><h2 id="n-chot">Thù lao chờ chốt <span class="dem-nhom">{{ ds_cho_chot|length }}</span></h2>
+  <div class="nhom-dau"><h2 id="n-chot"><i class="bi bi-lock" aria-hidden="true"></i>Thù lao chờ chốt <span class="dem-nhom">{{ ds_cho_chot|length }}</span></h2>
     <a href="{% url 'doi_soat' %}">Đối soát thù lao</a></div>
   <div class="trang-giay">
     {% for x in ds_cho_chot %}
@@ -56,7 +56,7 @@
       <span class="nhan-vo"><span class="ma">Tháng {{ x.thang|date:"m/Y" }}</span><br><b>{{ x.gia_su.ho_ten }}</b></span>
       <div class="noi-dung-dong so">{{ x.tong_tien|tien }}<small>{{ x.kiem_tra_boi.ho_ten }} đã kiểm tra {{ x.kiem_tra_luc|date:"d/m" }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>NVTS đã kiểm tra, chờ bạn chốt.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'doi_soat' %}?thang={{ x.thang|date:'Y-m' }}">Chốt</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'doi_soat' %}?thang={{ x.thang|date:'Y-m' }}"><i class="bi bi-lock" aria-hidden="true"></i>Chốt</a>
     </div>
     {% endfor %}
   </div>
@@ -65,7 +65,7 @@
 
 <section class="nhom{% if ds_mon_cho_duyet %} gap{% endif %}" aria-labelledby="n-duyet">
   <div class="nhom-dau">
-    <h2 id="n-duyet">Môn dạy chờ duyệt <span class="dem-nhom">{{ so_mon_cho_duyet|default:0 }}</span></h2>
+    <h2 id="n-duyet"><i class="bi bi-patch-check" aria-hidden="true"></i>Môn dạy chờ duyệt <span class="dem-nhom">{{ so_mon_cho_duyet|default:0 }}</span></h2>
     <a href="{% url 'gia_su_danh_sach' %}?cho_duyet=on">Xem tất cả</a>
   </div>
   <div class="trang-giay">
@@ -74,7 +74,7 @@
       <a class="nhan-vo" href="{% url 'gia_su_chi_tiet' mg.ho_so.pk %}"><span class="ma">{{ mg.mon_hoc }}</span><br><b>{{ mg.ho_so.user.ho_ten }}</b>{% if mg.cap_do %} · {{ mg.cap_do }}{% endif %}</a>
       <div class="noi-dung-dong">Gia sư đăng ký dạy {{ mg.mon_hoc }}<small>{{ mg.ho_so.trinh_do|default:"Chưa ghi trình độ" }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Kiểm tra hồ sơ rồi duyệt hoặc từ chối (kèm lý do).</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'gia_su_chi_tiet' mg.ho_so.pk %}">Xét duyệt</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'gia_su_chi_tiet' mg.ho_so.pk %}"><i class="bi bi-patch-check" aria-hidden="true"></i>Xét duyệt</a>
     </div>
     {% empty %}
     <p class="trang-rong m-0">Không có môn nào chờ duyệt.</p>
@@ -84,7 +84,7 @@
 
 <section class="nhom" aria-labelledby="n-khoa-tk">
   <div class="nhom-dau">
-    <h2 id="n-khoa-tk">Tài khoản bị khóa <span class="dem-nhom">{{ so_bi_khoa }}</span></h2>
+    <h2 id="n-khoa-tk"><i class="bi bi-person-lock" aria-hidden="true"></i>Tài khoản bị khóa <span class="dem-nhom">{{ so_bi_khoa }}</span></h2>
     <a href="{% url 'tai_khoan_danh_sach' %}?trang_thai=khoa">Xem danh sách</a>
   </div>
   <div class="trang-giay">

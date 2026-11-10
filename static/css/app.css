@@ -296,3 +296,9 @@ body.trang-bia > main { min-height: 100vh; display: flex; flex-direction: column
 .tong-thang b { font-size: var(--gs-fs-h3); }
 .tong-thang .tong b { font-size: var(--gs-fs-stat); color: var(--gs-cover); }
 .chu-tru { color: var(--gs-red); }
+
+/* --- Biểu tượng ở tiêu đề thẻ, tiêu đề nhóm --------------------------- */
+.card-header > .bi, .card-header > span > .bi:first-child, .nhom-dau h2 > .bi:first-child, h2.fs-tieu-de > .bi {
+  margin-right: var(--gs-space-2); font-size: .95em; vertical-align: -.08em; }
+.card-header .bi.me-1 { margin-right: var(--gs-space-2) !important; }
+.btn > .bi { font-size: 1em; line-height: 1; }

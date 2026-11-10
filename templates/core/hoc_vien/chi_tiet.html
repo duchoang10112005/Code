@@ -12,7 +12,7 @@
 </div>
 <div class="row g-4">
   <div class="col-xl-5">
-    <div class="card"><div class="card-header">Thông tin</div><div class="card-body">
+    <div class="card"><div class="card-header"><i class="bi bi-info-circle" aria-hidden="true"></i>Thông tin</div><div class="card-body">
       {% if form %}
         <form method="post" novalidate>{% csrf_token %}
           {% include "partials/form_fields.html" %}
@@ -28,14 +28,14 @@
     </div></div>
   </div>
   <div class="col-xl-7">
-    <div class="card"><div class="card-header">Các yêu cầu học tập</div>
+    <div class="card"><div class="card-header"><i class="bi bi-inbox" aria-hidden="true"></i>Các yêu cầu học tập</div>
       <div class="table-responsive"><table class="table table-hover">
         <thead><tr><th>Mã</th><th>Môn</th><th>Trạng thái</th><th>Gia sư</th><th class="cot-thao-tac"></th></tr></thead>
         <tbody>
         {% for yc in ds_yeu_cau %}
           <tr><td class="so fw-semibold">{{ yc.ma }}</td><td>{{ yc.mon_hoc }} · {{ yc.trinh_do }}</td>
             <td>{% nhan_trang_thai yc "trang_thai" %}</td><td>{{ yc.gia_su.ho_ten|default:"—" }}</td>
-            <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'yeu_cau_chi_tiet' yc.pk %}">Mở</a></td></tr>
+            <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'yeu_cau_chi_tiet' yc.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td></tr>
         {% empty %}
           <tr><td colspan="5"><div class="trang-rong py-3"><i class="bi bi-inbox" aria-hidden="true"></i>Chưa có yêu cầu nào.</div></td></tr>
         {% endfor %}

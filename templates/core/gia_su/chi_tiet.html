@@ -31,7 +31,7 @@
 <div class="row g-4">
   <div class="col-xl-4">
     <div class="card mb-4">
-      <div class="card-header">Thông tin chuyên môn</div>
+      <div class="card-header"><i class="bi bi-mortarboard" aria-hidden="true"></i>Thông tin chuyên môn</div>
       <div class="card-body small">
         <div class="text-muted">Trình độ / bằng cấp</div><div class="mb-3">{{ ho_so.trinh_do|default:"—" }}</div>
         <div class="text-muted">Kinh nghiệm</div><div class="mb-3">{{ ho_so.kinh_nghiem|default:"—"|linebreaksbr }}</div>
@@ -39,7 +39,7 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-header">Lịch rảnh</div>
+      <div class="card-header"><i class="bi bi-calendar3-week" aria-hidden="true"></i>Lịch rảnh</div>
       <div class="card-body">
         {% for l in ds_lich %}<div class="small so mb-1"><i class="bi bi-clock me-1 text-muted" aria-hidden="true"></i>{{ l }}</div>
         {% empty %}<div class="small text-muted">Gia sư chưa khai báo lịch rảnh.</div>{% endfor %}
@@ -49,7 +49,7 @@
 
   <div class="col-xl-8">
     <div class="card">
-      <div class="card-header">Môn dạy</div>
+      <div class="card-header"><i class="bi bi-book" aria-hidden="true"></i>Môn dạy</div>
       <div class="table-responsive">
       <table class="table">
         <thead><tr><th>Môn</th><th>Cấp độ</th><th>Trạng thái</th>{% if user.la_admin %}<th>Xử lý</th>{% endif %}</tr></thead>
@@ -68,11 +68,11 @@
                 <input id="ly_do_{{ mg.pk }}" name="ly_do" class="form-control form-control-sm" placeholder="{% if mg.trang_thai == 'DA_DUYET' %}Lý do thu hồi{% else %}Ghi chú / lý do từ chối{% endif %}">
                 {% if mg.trang_thai == "CHO_DUYET" %}
                   <button name="hanh_dong" value="duyet" class="btn btn-sm btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Duyệt</button>
-                  <button name="hanh_dong" value="tu_choi" class="btn btn-sm btn-outline-danger">Từ chối</button>
+                  <button name="hanh_dong" value="tu_choi" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle" aria-hidden="true"></i>Từ chối</button>
                 {% elif mg.trang_thai == "DA_DUYET" %}
-                  <button name="hanh_dong" value="thu_hoi" class="btn btn-sm btn-outline-danger" data-xac-nhan="Thu hồi môn {{ mg.mon_hoc }} đã duyệt? Gia sư sẽ không được đề xuất cho môn này nữa." data-nut="Thu hồi">Thu hồi</button>
+                  <button name="hanh_dong" value="thu_hoi" class="btn btn-sm btn-outline-danger" data-xac-nhan="Thu hồi môn {{ mg.mon_hoc }} đã duyệt? Gia sư sẽ không được đề xuất cho môn này nữa." data-nut="Thu hồi"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Thu hồi</button>
                 {% else %}
-                  <button name="hanh_dong" value="duyet" class="btn btn-sm btn-outline-primary">Duyệt lại</button>
+                  <button name="hanh_dong" value="duyet" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Duyệt lại</button>
                 {% endif %}
               </form>
             </td>

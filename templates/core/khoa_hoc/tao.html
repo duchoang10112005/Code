@@ -38,13 +38,13 @@
           <div>Tổng học phí: <b class="so" id="tong-hoc-phi">—</b>. Khi tạo, số buổi đã dùng = 0 và số buổi còn lại = số buổi đăng ký.</div></div>
         <div class="d-flex gap-2">
           <button class="btn btn-primary"><i class="bi bi-journal-plus" aria-hidden="true"></i>Tạo khóa học</button>
-          <a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-outline-secondary">Hủy</a>
+          <a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Hủy</a>
         </div>
       </form>
     </div></div>
   </div>
   <div class="col-xl-5">
-    <div class="card"><div class="card-header">Thông tin kế thừa từ yêu cầu</div><div class="card-body small">
+    <div class="card"><div class="card-header"><i class="bi bi-link-45deg" aria-hidden="true"></i>Thông tin kế thừa từ yêu cầu</div><div class="card-body small">
       <div class="text-muted">Học viên</div><div class="mb-2">{{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %} · {{ yc.hoc_vien.lop }}{% endif %}</div>
       <div class="text-muted">Môn · trình độ</div><div class="mb-2">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
       <div class="text-muted">Gia sư phụ trách</div><div class="mb-2">{{ yc.gia_su.ho_ten }}</div>

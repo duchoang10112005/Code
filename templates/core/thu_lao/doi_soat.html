@@ -33,14 +33,14 @@
         {% if user.la_tuyen_sinh and d.trang_thai != "DA_CHOT" and d.trang_thai != "DA_KIEM_TRA" %}
           <form method="post" action="{% url 'doi_soat_kiem_tra' d.gia_su.pk %}" class="d-inline">{% csrf_token %}
             <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
-            <button class="btn btn-sm btn-primary"{% if d.so_tam_giu %} disabled title="Còn buổi tạm giữ"{% endif %}>Kiểm tra</button></form>
+            <button class="btn btn-sm btn-primary"{% if d.so_tam_giu %} disabled title="Còn buổi tạm giữ"{% endif %}><i class="bi bi-clipboard-check" aria-hidden="true"></i>Kiểm tra</button></form>
         {% elif user.la_admin and d.trang_thai == "DA_KIEM_TRA" %}
           <form method="post" action="{% url 'doi_soat_chot' d.gia_su.pk %}" class="d-inline"
                 data-xac-nhan="Chốt thù lao tháng {{ thang|date:'m/Y' }} của {{ d.gia_su.ho_ten }}: {{ d.tong|tien }}? Sau khi chốt không sửa được, chỉ điều chỉnh ở tháng sau." data-nut="Chốt tháng">{% csrf_token %}
             <input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
-            <button class="btn btn-sm btn-primary">Chốt</button></form>
+            <button class="btn btn-sm btn-primary"><i class="bi bi-lock" aria-hidden="true"></i>Chốt</button></form>
         {% endif %}
-        <a class="btn btn-sm btn-outline-primary" href="{% url 'doi_soat_gia_su' d.gia_su.pk %}?thang={{ thang|date:'Y-m' }}">Chi tiết</a>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'doi_soat_gia_su' d.gia_su.pk %}?thang={{ thang|date:'Y-m' }}"><i class="bi bi-eye" aria-hidden="true"></i>Chi tiết</a>
       </td>
     </tr>
   {% empty %}

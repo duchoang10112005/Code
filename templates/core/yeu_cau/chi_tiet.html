@@ -18,7 +18,7 @@
       <a href="{% url 'yeu_cau_sua' yc.pk %}" class="btn btn-outline-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</a>
     {% endif %}
     {% if co_the_sua and user.la_tuyen_sinh %}
-      <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#khoi-dong">Đóng yêu cầu</button>
+      <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#khoi-dong"><i class="bi bi-x-octagon" aria-hidden="true"></i>Đóng yêu cầu</button>
     {% endif %}
   </div>
 </div>
@@ -28,7 +28,7 @@
   <form method="post" action="{% url 'yeu_cau_dong' yc.pk %}" class="row g-2 align-items-end">{% csrf_token %}
     <div class="col-md-9"><label class="form-label" for="ly_do_dong">Lý do đóng <span class="bat-buoc">*</span></label>
       <input id="ly_do_dong" name="ly_do" class="form-control" required placeholder="VD: Phụ huynh không còn nhu cầu"></div>
-    <div class="col-md-3"><button class="btn btn-danger w-100">Xác nhận đóng</button></div>
+    <div class="col-md-3"><button class="btn btn-danger w-100"><i class="bi bi-x-octagon" aria-hidden="true"></i>Xác nhận đóng</button></div>
   </form>
   <div class="form-text">Các lời mời đang chờ sẽ bị hủy. Không thể mở lại yêu cầu đã đóng.</div>
 </div></div>
@@ -89,7 +89,7 @@
 <div class="row g-4">
   <div class="col-xl-4">
     <div class="card mb-4">
-      <div class="card-header">Nhu cầu học</div>
+      <div class="card-header"><i class="bi bi-bullseye" aria-hidden="true"></i>Nhu cầu học</div>
       <div class="card-body small">
         <div class="text-muted">Môn · trình độ</div><div class="mb-2">{{ yc.mon_hoc }} · {{ yc.trinh_do }}</div>
         <div class="text-muted">Mục tiêu</div><div class="mb-2">{{ yc.muc_tieu|linebreaksbr }}</div>
@@ -97,7 +97,7 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-header d-flex justify-content-between"><span>Học viên & phụ huynh</span>
+      <div class="card-header d-flex justify-content-between"><span><i class="bi bi-people" aria-hidden="true"></i>Học viên & phụ huynh</span>
         <a class="small fw-normal" href="{% url 'hoc_vien_chi_tiet' yc.hoc_vien.pk %}">Xem hồ sơ</a></div>
       <div class="card-body small">
         <div class="text-muted">Học viên</div><div class="mb-2">{{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %} · {{ yc.hoc_vien.lop }}{% endif %}</div>
@@ -147,7 +147,7 @@
     </div>
     {% if de_xuat and user.la_admin %}
     <div class="card mb-4 the-buoc-tiep">
-      <div class="card-header">Gán thẳng gia sư (vận hành)</div>
+      <div class="card-header"><i class="bi bi-person-check-fill" aria-hidden="true"></i>Gán thẳng gia sư (vận hành)</div>
       <div class="card-body">
         <p class="small text-muted">Chỉ dùng khi yêu cầu chờ quá lâu hoặc đã thỏa thuận trực tiếp với gia sư. Hệ thống ghi "Vận hành chốt" vào nhật ký và báo cho gia sư.</p>
         <form method="post" action="{% url 'yeu_cau_gan_thang' yc.pk %}" class="row g-2 align-items-end"
@@ -158,7 +158,7 @@
             </select></div>
           <div class="col-md-5"><label class="form-label" for="gt_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>
             <input id="gt_ly_do" name="ly_do" class="form-control" required maxlength="300"></div>
-          <div class="col-md-3"><button class="btn btn-outline-primary w-100">Gán thẳng</button></div>
+          <div class="col-md-3"><button class="btn btn-outline-primary w-100"><i class="bi bi-person-check-fill" aria-hidden="true"></i>Gán thẳng</button></div>
         </form>
       </div>
     </div>
@@ -166,7 +166,7 @@
     {% endif %}
 
     <div class="card">
-      <div class="card-header">Lịch sử lời mời</div>
+      <div class="card-header"><i class="bi bi-clock-history" aria-hidden="true"></i>Lịch sử lời mời</div>
       <div class="table-responsive">
       <table class="table">
         <thead><tr><th>Gia sư</th><th>Trạng thái</th><th>Gửi lúc</th><th>Phản hồi / hết hạn</th><th>Ghi chú</th></tr></thead>

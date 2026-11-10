@@ -9,14 +9,14 @@
 
 {% if cho_xac_nhan %}
 <section class="nhom gap" aria-labelledby="n-cho-xn">
-  <div class="nhom-dau"><h2 id="n-cho-xn">Chờ bạn xác nhận <span class="dem-nhom">{{ cho_xac_nhan|length }}</span></h2></div>
+  <div class="nhom-dau"><h2 id="n-cho-xn"><i class="bi bi-check2-circle" aria-hidden="true"></i>Chờ bạn xác nhận <span class="dem-nhom">{{ cho_xac_nhan|length }}</span></h2></div>
   <div class="trang-giay">
     {% for b in cho_xac_nhan %}
     <div class="dong-viec">
       <a class="nhan-vo" href="{% url 'buoi_chi_tiet' b.pk %}"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</a>
       <div class="noi-dung-dong">{{ b.bat_dau|date:"H:i d/m" }} · {{ b.thoi_luong_phut }} phút<small>{{ b.get_loai_display }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ b.han_xac_nhan|con_lai }} để xác nhận, quá hạn buổi sẽ bị hủy và không tính thù lao.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'buoi_chi_tiet' b.pk %}#xac-nhan">Xác nhận</a>
+      <a class="btn btn-sm btn-primary" href="{% url 'buoi_chi_tiet' b.pk %}#xac-nhan"><i class="bi bi-check2-circle" aria-hidden="true"></i>Xác nhận</a>
     </div>
     {% endfor %}
   </div>
@@ -24,7 +24,7 @@
 {% endif %}
 
 <section class="nhom" aria-labelledby="n-sap-toi">
-  <div class="nhom-dau"><h2 id="n-sap-toi">Buổi sắp tới <span class="dem-nhom">{{ sap_toi|length }}</span></h2></div>
+  <div class="nhom-dau"><h2 id="n-sap-toi"><i class="bi bi-calendar-event" aria-hidden="true"></i>Buổi sắp tới <span class="dem-nhom">{{ sap_toi|length }}</span></h2></div>
   <div class="trang-giay">
     {% for b in sap_toi %}
     <div class="dong-viec">
@@ -32,7 +32,7 @@
       <div class="noi-dung-dong">{{ b.bat_dau|date:"H:i" }} · {{ b.bat_dau|date:"d/m/Y" }}<small>{{ b.get_loai_display }} · {{ b.thoi_luong_phut }} phút</small></div>
       {% if b.trang_thai == "LOI_ZOOM" %}<p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Chưa có phòng Zoom, mở buổi và bấm Thử lại.</p>
       {% else %}<p class="loi-phe yen">{% nhan_trang_thai b "trang_thai" %}</p>{% endif %}
-      <a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}">Mở</a>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a>
     </div>
     {% empty %}
     <p class="trang-rong m-0">Chưa có buổi nào sắp tới.{% if co_lop %} <a href="{% url 'buoi_tao' %}">Tạo buổi học</a>{% endif %}</p>
@@ -41,7 +41,7 @@
 </section>
 
 <section class="nhom" aria-labelledby="n-thang">
-  <div class="nhom-dau"><h2 id="n-thang">Trong tháng {{ thang|date:"m/Y" }} <span class="dem-nhom">{{ ds|length }}</span></h2></div>
+  <div class="nhom-dau"><h2 id="n-thang"><i class="bi bi-calendar3" aria-hidden="true"></i>Trong tháng {{ thang|date:"m/Y" }} <span class="dem-nhom">{{ ds|length }}</span></h2></div>
   <form class="row g-2 mb-3 align-items-end" method="get" role="search">
     <div class="col-md-3"><label class="form-label" for="{{ form.thang.id_for_label }}">Tháng</label>{{ form.thang }}</div>
     <div class="col-md-3"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
@@ -59,7 +59,7 @@
         <td class="cot-so">{{ b.so_thu_tu|default:"—" }}</td>
         <td>{% nhan_trang_thai b "trang_thai" %}{% if b.trang_thai == "DA_HUY" %}<div class="small text-muted">{{ b.get_ly_do_huy_display }}</div>{% endif %}</td>
         <td class="cot-so">{% if b.thu_lao_du_kien %}{{ b.thu_lao_du_kien|tien }}{% else %}—{% endif %}</td>
-        <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}">Mở</a></td>
+        <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
       </tr>
     {% empty %}
       <tr><td colspan="8"><div class="trang-rong py-3"><i class="bi bi-calendar-x" aria-hidden="true"></i>Không có buổi học nào trong tháng này.</div></td></tr>
