@@ -18,7 +18,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q as models_Q
 from django.utils import timezone
 
 from core.integrations.zalo import lay_zalo_client
@@ -653,44 +653,52 @@ def danh_gia_tham_gia(buoi, ds):
 
 
 def hau_kiem(now=None):
-    """Kiểm tra các buổi đã xác nhận: lấy người tham gia + bản ghi từ Zoom. Trả về số buổi đã xử lý."""
+    """SD-20: chấm 5 tiêu chí cho buổi đã xác nhận (lấy người tham gia từ Zoom) + lấy bản ghi.
+    KHÔNG đổi trạng thái buổi, KHÔNG tạm giữ thù lao: Tuyển sinh người mời gia sư kết luận (SD-21)."""
+    from core.services import hau_kiem as dv_hk
+    from core.services.thong_bao import thong_bao
     now = now or timezone.now()
     zoom = lay_zoom_client()
     da_xu_ly = 0
-    ds = BuoiHoc.objects.filter(trang_thai=TT.HOAN_TAT, kiem_tra=BuoiHoc.KiemTra.CHUA_KIEM_TRA,
-                                bat_dau__gte=now - timedelta(days=NV["NGAY_MO_LAI_TOI_DA"])).exclude(zoom_meeting_id="")
-    for b in ds.select_related("gia_su", "hoc_vien", "yeu_cau__mon_hoc"):
+    gom = {}  # tuyển sinh → [số buổi, số có cảnh báo]
+    ds = (BuoiHoc.objects.filter(trang_thai=TT.HOAN_TAT, bat_dau__gte=now - timedelta(days=NV["NGAY_MO_LAI_TOI_DA"]))
+          .filter(models_Q(hau_kiem__isnull=True) | models_Q(hau_kiem__da_cham=False,
+                                                              hau_kiem__ket_luan=HauKiemBuoi.KetLuan.CHUA_KIEM_TRA)))
+    for b in ds.select_related("gia_su__ho_so_gia_su", "hoc_vien", "yeu_cau__mon_hoc"):
         if b.ket_thuc + _cho_zoom_tong_hop() > now:
             continue  # Zoom cần thời gian tổng hợp báo cáo
-        try:
-            nguoi = zoom.lay_nguoi_tham_gia(b.zoom_meeting_id)
-        except ZoomError as exc:
-            logger.info("Hậu kiểm %s chưa lấy được dữ liệu: %s", b.ma, exc)
-            continue
+        hk, _ = HauKiemBuoi.objects.get_or_create(buoi_hoc=b, defaults={
+            "nguoi_phu_trach_id": getattr(getattr(b.gia_su, "ho_so_gia_su", None), "nguoi_moi_id", None)})
+        hk.buoi_hoc = b
+        if not b.zoom_meeting_id:
+            dv_hk.cham(hk, None, co_du_lieu=False)
+        else:
+            try:
+                nguoi = zoom.lay_nguoi_tham_gia(b.zoom_meeting_id)
+            except ZoomError as exc:
+                logger.info("Hậu kiểm %s chưa lấy được dữ liệu: %s", b.ma, exc)
+                continue
+            if nguoi is None:
+                BuoiHoc.objects.filter(pk=b.pk).update(
+                    kiem_tra=BuoiHoc.KiemTra.KHONG_DU_LIEU,
+                    kiem_tra_ghi_chu="Gói Zoom không cung cấp danh sách người tham gia, buổi được giữ như gia sư xác nhận.")
+                dv_hk.cham(hk, None, co_du_lieu=False)
+            else:
+                _, chung, thuc_te = danh_gia_tham_gia(b, nguoi)
+                BuoiHoc.objects.filter(pk=b.pk).update(phut_tham_gia_chung=chung, thoi_luong_thuc_te=thuc_te)
+                dv_hk.cham(hk, nguoi)
         da_xu_ly += 1
-        if nguoi is None:
-            BuoiHoc.objects.filter(pk=b.pk).update(
-                kiem_tra=BuoiHoc.KiemTra.KHONG_DU_LIEU,
-                kiem_tra_ghi_chu="Gói Zoom không cung cấp danh sách người tham gia, buổi được giữ như gia sư xác nhận.")
-            continue
-        dat, chung, thuc_te = danh_gia_tham_gia(b, nguoi)
-        if dat:
-            BuoiHoc.objects.filter(pk=b.pk).update(kiem_tra=BuoiHoc.KiemTra.HOP_LE, phut_tham_gia_chung=chung,
-                                                   thoi_luong_thuc_te=thuc_te)
-            continue
-        ghi_chu = (f"Gia sư và học viên cùng có mặt {chung}/{b.thoi_luong_phut} phút "
-                   f"(cần ≥ {round(NV['NGUONG_THAM_GIA'] * 100)}%).")
-        with transaction.atomic():
-            BuoiHoc.objects.filter(pk=b.pk).update(
-                trang_thai=TT.DANG_XEM_XET, kiem_tra=BuoiHoc.KiemTra.CO_VAN_DE, kiem_tra_ghi_chu=ghi_chu,
-                phut_tham_gia_chung=chung, thoi_luong_thuc_te=thuc_te)
-            ThuLao.objects.filter(buoi_hoc=b, trang_thai=ThuLao.TrangThai.TAM_TINH).update(
-                trang_thai=ThuLao.TrangThai.TAM_GIU)
-            ghi_nhat_ky(None, "Hậu kiểm: buổi có vấn đề", b.ma, ghi_chu)
-        gui_email(b.gia_su, f"Buổi học {b.ma} đang được xem xét",
-                  f"Buổi {b.yeu_cau.mon_hoc} với {b.hoc_vien.ho_ten} lúc {timezone.localtime(b.bat_dau):%H:%M %d/%m} "
-                  f"chưa đạt kiểm tra tham gia Zoom: {ghi_chu}\nThù lao buổi này tạm giữ cho tới khi Admin xem xét. "
-                  "Nếu có lý do (mất mạng, đổi thiết bị…), hãy phản hồi email này cho trung tâm.", buoi_hoc=b)
+        if hk.nguoi_phu_trach_id:
+            x = gom.setdefault(hk.nguoi_phu_trach_id, [0, 0])
+            x[0] += 1
+            x[1] += hk.so_canh_bao > 0
+    if gom:
+        from django.urls import reverse
+        from core.models import User
+        for u in User.objects.filter(pk__in=gom):
+            n, m = gom[u.pk]
+            thong_bao(u, f"{n} buổi chờ hậu kiểm" + (f", {m} buổi có cảnh báo" if m else ""),
+                      "Hệ thống đã đối chiếu dữ liệu Zoom và phiếu đánh giá.", reverse("hau_kiem"), "XEM_XET")
 
     # Bản ghi (chỉ buổi phụ huynh đồng ý ghi hình).
     cho = BuoiHoc.objects.filter(trang_thai__in=[TT.HOAN_TAT, TT.DANG_XEM_XET],

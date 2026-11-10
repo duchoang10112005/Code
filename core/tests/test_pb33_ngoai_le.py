@@ -36,6 +36,9 @@ class NgoaiLe(DuLieu):
             NguoiThamGia("GS", "", b.bat_dau, b.bat_dau + timedelta(minutes=60), la_host=True)]
         dv_buoi.hau_kiem()
         b.refresh_from_db()
+        from core.services import hau_kiem as dv_hk
+        dv_hk.ket_luan(self.nvts, b.hau_kiem, "CO_VAN_DE", "THIEU_GIO", "Học viên không vào lớp")
+        b.refresh_from_db()
         self.assertEqual(b.trang_thai, TT.DANG_XEM_XET)
         return b
 

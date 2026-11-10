@@ -263,13 +263,24 @@ class HanVaHauKiemTest(DuLieu):
         self._kich_ban(b, 55)
         dv.hau_kiem()
         b.refresh_from_db()
-        self.assertEqual((b.kiem_tra, b.phut_tham_gia_chung), (BuoiHoc.KiemTra.HOP_LE, 55))
+        # SD-20: hệ thống chỉ chấm 5 tiêu chí, Tuyển sinh kết luận sau (Q1).
+        self.assertEqual((b.trang_thai, b.phut_tham_gia_chung), (TT.HOAN_TAT, 55))
+        hk = b.hau_kiem
+        self.assertEqual((hk.da_cham, hk.tre_phut, hk.ty_le_gia_su, hk.ty_le_hoc_vien, hk.so_canh_bao), (True, 0, 100, 92, 0))
         self.assertEqual(b.ban_ghi_trang_thai, BuoiHoc.BanGhi.SAN_SANG)
 
     def test_PB32_hau_kiem_khong_dat_tam_giu_thu_lao(self):
         b = self._xac_nhan_xong()
         self._kich_ban(b, 10)
         dv.hau_kiem()
+        b.refresh_from_db()
+        # Chấm xong: có cảnh báo nhưng chưa đổi trạng thái, thù lao vẫn Tạm tính.
+        self.assertEqual(b.trang_thai, TT.HOAN_TAT)
+        self.assertEqual(b.hau_kiem.so_canh_bao, 1)
+        self.assertEqual(ThuLao.objects.get(buoi_hoc=b).trang_thai, ThuLao.TrangThai.TAM_TINH)
+        # Tuyển sinh kết luận Có vấn đề → Đang xem xét + tạm giữ + email gia sư.
+        from core.services import hau_kiem as dv_hk
+        dv_hk.ket_luan(self.nvts, b.hau_kiem, "CO_VAN_DE", "THIEU_GIO", "Học viên chỉ vào 10 phút")
         b.refresh_from_db()
         self.assertEqual((b.trang_thai, b.kiem_tra), (TT.DANG_XEM_XET, BuoiHoc.KiemTra.CO_VAN_DE))
         self.assertEqual(ThuLao.objects.get(buoi_hoc=b).trang_thai, ThuLao.TrangThai.TAM_GIU)

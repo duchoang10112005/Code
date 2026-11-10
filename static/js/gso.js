@@ -274,5 +274,19 @@
   /* Lỗi form: đưa con trỏ tới hộp tóm tắt lỗi */
   var tomTat = $(".tom-tat-loi"); if (tomTat) { tomTat.focus(); }
 
-  window.GSO = { post: post, get: get, toast: toast, xacNhan: xacNhan, saoChep: saoChep, $: $, $$: $$ };
+  /* Tải lại trang (giữ query, đổi tham số nếu có) và hiện toast sau khi tải: GSO.taiLai("Đã lưu", {chon: 5}) */
+  function taiLai(noiDung, thamSo) {
+    try { sessionStorage.setItem("gso-toast", noiDung || ""); } catch (err) { /* bỏ qua */ }
+    var u = new URL(location.href);
+    Object.keys(thamSo || {}).forEach(function (k) {
+      if (thamSo[k] === null) { u.searchParams.delete(k); } else { u.searchParams.set(k, thamSo[k]); }
+    });
+    location.href = u.toString();
+  }
+  try {
+    var tc = sessionStorage.getItem("gso-toast");
+    if (tc) { sessionStorage.removeItem("gso-toast"); toast(tc, "ok"); }
+  } catch (err) { /* bỏ qua */ }
+
+  window.GSO = { post: post, get: get, toast: toast, xacNhan: xacNhan, saoChep: saoChep, taiLai: taiLai, $: $, $$: $$ };
 })();

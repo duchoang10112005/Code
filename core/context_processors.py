@@ -6,7 +6,7 @@ from django.utils import timezone
 def thong_tin_chung(request):
     """Biến dùng chung cho mọi template (menu, huy hiệu, chuông thông báo)."""
     # Tăng PHIEN_BAN_CSS mỗi khi sửa static/css/*.css hoặc static/js/gso.js để trình duyệt tải bản mới.
-    data = {"TEN_HE_THONG": "Gia Sư Online", "PHIEN_BAN_CSS": "3.4",
+    data = {"TEN_HE_THONG": "Gia Sư Online", "PHIEN_BAN_CSS": "3.5",
             "THOI_LUONG_BUOI_DEMO": settings.NGHIEP_VU.get("THOI_LUONG_BUOI_DEMO", 0),
             "GIAY_HOAN_TAC": settings.NGHIEP_VU.get("GIAY_HOAN_TAC", 6)}
     user = getattr(request, "user", None)
@@ -28,6 +28,8 @@ def thong_tin_chung(request):
             YeuCauHocTap.objects.filter(trang_thai=YC.MOI).count()
             + YeuCauHocTap.objects.filter(trang_thai=YC.DANG_TIM).exclude(
                 loi_moi__trang_thai=LoiMoi.TrangThai.CHO).count())
+        from core.services.hau_kiem import so_cho
+        hh["so_hau_kiem_cho"] = so_cho(user)
         hh["so_khoa_sap_het"] = KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).annotate(
             con_lai=F("so_buoi_dang_ky") - F("so_buoi_da_dung")).filter(
             con_lai__lte=settings.NGHIEP_VU.get("NGUONG_SAP_HET_BUOI", 2)).count()

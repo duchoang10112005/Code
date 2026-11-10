@@ -4,7 +4,9 @@ from django.urls import path
 from core.api import buoi_hoc as api_buoi
 from core.api import chung as api_chung
 from core.api import gia_su as api_gs
+from core.api import hau_kiem as api_hk
 from core.api import yeu_cau as api_yc
+from core.views import hau_kiem
 from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
@@ -32,6 +34,10 @@ urlpatterns = [
     path("ho-so/tep/<str:loai>/<int:pk>/", gia_su.xem_tep, name="ho_so_xem_tep"),
     path("api/ho-so/gio-ranh/", api_gs.gio_ranh, name="api_gio_ranh"),
     path("api/ma-moi/", api_gs.ma_moi, name="api_ma_moi"),
+    path("api/hau-kiem/hang-loat/", api_hk.hang_loat, name="api_hau_kiem_hang_loat"),
+    path("api/hau-kiem/<int:pk>/", api_hk.ket_luan, name="api_hau_kiem_ket_luan"),
+    path("api/hau-kiem/<int:pk>/xu-ly/", api_hk.xu_ly, name="api_hau_kiem_xu_ly"),
+    path("hau-kiem/", hau_kiem.danh_sach, name="hau_kiem"),
     path("dang-ky-gia-su/<str:ma>/", gia_su.dang_ky_qua_ma, name="dang_ky_gia_su"),
     path("api/hoc-vien/", api_yc.tim_hoc_vien, name="api_tim_hoc_vien"),
     path("api/yeu-cau/dem-gia-su/", api_yc.dem_gia_su, name="api_dem_gia_su"),

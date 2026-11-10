@@ -34,6 +34,9 @@ class ThuLaoTest(DuLieu):
         zoom._fake_singleton.kich_ban_tham_gia[self.b.zoom_meeting_id] = [
             NguoiThamGia("GS", "", self.b.bat_dau, self.b.bat_dau + timedelta(minutes=60), la_host=True)]
         dv_buoi.hau_kiem()
+        from core.services import hau_kiem as dv_hk
+        self.b.refresh_from_db()
+        dv_hk.ket_luan(self.nvts, self.b.hau_kiem, "CO_VAN_DE", "THIEU_GIO", "Học viên không vào lớp")
         (d,) = dv.tong_hop(self.thang)
         self.assertEqual((d.tong, d.tam_giu, d.so_tam_giu), (0, 120_000, 1))
         with self.assertRaisesMessage(ValidationError, "tạm giữ"):
