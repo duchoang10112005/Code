@@ -58,35 +58,182 @@
 </div>
 
 <div class="overlay" id="hop-dang-ky" hidden>
-  <form class="dialog" method="post" action="{% url 'ho_so_dang_ky_mon' %}" enctype="multipart/form-data" style="width:640px;max-height:calc(100vh - 48px);overflow:auto" data-form-mon>{% csrf_token %}
-    <input type="hidden" name="v2" value="1"><input type="hidden" name="mc_so" value="1" data-mc-so>
-    <div><h2>Đăng ký môn dạy</h2><p>Quản trị viên duyệt trong 1–2 ngày làm việc. Sau khi duyệt, bạn nhận lời mời các lớp môn này khớp giờ rảnh.</p></div>
-    <div class="field"><label>1. Môn <span class="req">*</span></label><select name="mon_hoc" class="inp" required data-chon-mon-sel><option value="">Chọn môn</option></select></div>
-    <div class="field"><label>Cấp độ dạy được <span class="req">*</span></label><div class="chon-cap" data-cap-do><span class="sm muted">Chọn môn trước.</span></div></div>
-    <div class="field"><label>2. Bài test năng lực</label><div class="sm muted" data-bai-test>Chọn môn để xem bài test.</div>
-      <div class="row"><input name="diem_test" class="inp" style="width:120px" placeholder="Điểm /10" required><input type="file" name="anh_ket_qua_test" accept=".pdf,.jpg,.jpeg,.png" class="inp" style="padding-top:6px"></div>
-      <input name="link_ket_qua_test" class="inp" type="url" placeholder="hoặc link ảnh kết quả https://…"></div>
-    <div class="field"><label>3. Minh chứng <span class="req">*</span></label>
-      <div class="dong-mc"><select name="mc-0-loai" class="inp">{% for v, n in loai_minh_chung %}<option value="{{ v }}">{{ n }}</option>{% endfor %}</select><span class="sm muted">Tệp hoặc link</span><span class="stack" style="gap:4px"><input type="file" name="mc-0-tep" accept=".pdf,.jpg,.jpeg,.png"><input name="mc-0-url" class="inp" type="url" placeholder="https://…"></span><span></span></div></div>
-    <div class="field"><label>4. Kinh nghiệm dạy môn này <span class="req">*</span></label><textarea name="ly_do_dang_ky" class="inp" rows="3" minlength="15" required></textarea></div>
-    <label class="row" style="gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" name="cam_ket" value="1" required style="margin-top:3px">Tôi cam kết bài test do chính tôi làm, thông tin và minh chứng là đúng sự thật.</label>
-    <div class="actions"><button type="button" class="btn" data-dong-hop>Hủy</button><button class="btn pri" data-dang-gui="Đang gửi…">Gửi đăng ký</button></div>
+  <form class="wizard" method="post" action="{% url 'ho_so_dang_ky_mon' %}" enctype="multipart/form-data" novalidate data-form-mon role="dialog" aria-modal="true" aria-labelledby="wz-t">{% csrf_token %}
+    <input type="hidden" name="v2" value="1"><input type="hidden" name="mc_so" value="0" data-mc-so>
+    <div class="wz-dau">
+      <span class="tile" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-journal-plus" aria-hidden="true"></i></span>
+      <div style="flex:1"><h2 id="wz-t" style="margin:0;font-size:17px;font-weight:600" data-wz-tieu-de>Đăng ký môn dạy</h2>
+        <p class="sm muted" style="margin:2px 0 0">Quản trị viên duyệt trong 1–2 ngày làm việc. Sau khi duyệt, bạn nhận lời mời các lớp môn này khớp giờ rảnh.</p></div>
+      <button type="button" class="icon-btn" data-dong-hop aria-label="Đóng"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="wz-trai">
+      {% for ten, phu in buoc_wizard %}<div class="wz-buoc" data-wz-buoc="{{ forloop.counter }}"><span class="c">{{ forloop.counter }}</span><div><b>{{ ten }}</b><small>{{ phu }}</small></div></div>{% endfor %}
+      <div style="margin-top:auto;padding:12px;border:1px dashed #D5D9E6;border-radius:10px;font-size:12px;line-height:18px;color:#4A5068">
+        <div class="b6" style="color:#1E2235;margin-bottom:4px">Bạn đang đăng ký</div><div data-tom-tat>Chưa chọn môn.</div></div>
+    </div>
+    <div class="wz-than">
+      <div role="alert" class="banner" style="background:#FDECEC;border-color:#F8C9CA;margin-bottom:14px" data-wz-loi hidden><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle"></i></span><span data-wz-loi-chu></span></div>
+
+      <section data-wz="1" class="stack-16">
+        <div><h3 style="margin:0;font-size:15px">Chọn môn muốn dạy</h3><p class="sm muted" style="margin:4px 0 0">Chỉ hiện các môn trung tâm đang tuyển mà bạn chưa đăng ký.</p></div>
+        <div class="chon-mon" data-ds-mon></div>
+        <div class="field" data-o-cap-do hidden><span class="lbl">Cấp độ dạy được <span class="req">*</span></span><span class="sm muted">Chọn một hoặc nhiều cấp độ trung tâm đang mở cho môn này.</span><div class="chon-cap" data-cap-do></div></div>
+      </section>
+
+      <section data-wz="2" class="stack-16" hidden>
+        <div><h3 style="margin:0;font-size:15px">Làm bài test năng lực <span data-ten-mon></span></h3><p class="sm muted" style="margin:4px 0 0">Mỗi môn có bài test riêng. Làm xong, chụp màn hình trang kết quả và nộp ở bên dưới.</p></div>
+        <div class="card" style="padding:14px 16px;box-shadow:none;background:#F7F8FC" data-bai-test></div>
+        <ol class="sm" style="margin:0;padding-left:18px;line-height:22px;color:#4A5068"><li>Mở bài test, làm trong thời gian quy định.</li><li>Chụp màn hình trang kết quả, thấy rõ họ tên và điểm.</li><li>Nhập điểm và tải ảnh kết quả bên dưới.</li></ol>
+        <div class="field"><label for="wz-diem">Điểm của bạn <span class="req">*</span></label><div class="row"><input id="wz-diem" name="diem_test" class="inp" style="width:120px" inputmode="decimal" placeholder="VD: 8,5"><span class="muted">/ 10</span><span class="sm" data-diem-msg></span></div></div>
+        <div class="field"><span class="lbl">Ảnh chụp kết quả <span class="req">*</span></span>
+          <div class="row"><input type="file" name="anh_ket_qua_test" accept=".pdf,.jpg,.jpeg,.png" aria-label="Tải ảnh kết quả"><span class="sm muted">hoặc</span><input name="link_ket_qua_test" class="inp" type="url" placeholder="Link ảnh kết quả https://…" style="flex:1"></div>
+          <span class="sm muted">PDF hoặc ảnh, tối đa 5 MB.</span></div>
+      </section>
+
+      <section data-wz="3" class="stack-16" hidden>
+        <div><h3 style="margin:0;font-size:15px">Bằng cấp, chứng chỉ</h3><p class="sm muted" style="margin:4px 0 0">VD: thẻ sinh viên, bảng điểm, bằng tốt nghiệp, chứng chỉ IELTS, giấy khen. Thêm được nhiều mục, tải tệp hoặc dán link https.</p></div>
+        <div class="banner" style="background:#FFF4E5;border-color:#FDE2BF" data-tu-choi-cu hidden><span class="ic" style="color:#B45309"><i class="bi bi-info-circle"></i></span><span class="sm" data-tu-choi-chu></span></div>
+        <div data-ds-mc></div>
+        <button type="button" class="btn" style="align-self:flex-start" data-them-mc><i class="bi bi-plus-lg"></i>Thêm minh chứng</button>
+      </section>
+
+      <section data-wz="4" class="stack-16" hidden>
+        <div><h3 style="margin:0;font-size:15px">Xem lại và gửi</h3><p class="sm muted" style="margin:4px 0 0">Kiểm tra lại thông tin. Quản trị viên sẽ xem đúng những nội dung này để duyệt.</p></div>
+        <div style="border:1px solid #EEF0F5;border-radius:10px;padding:2px 14px" data-xem-lai></div>
+        <div class="field"><label for="wz-kn">Kinh nghiệm dạy môn này <span class="req">*</span><span class="dem-ky-tu" data-dem-kn>0 ký tự</span></label><textarea id="wz-kn" name="ly_do_dang_ky" class="inp" rows="3" placeholder="Mô tả ngắn kinh nghiệm, tối thiểu 15 ký tự."></textarea></div>
+        <label class="row" style="gap:8px;align-items:flex-start;font-size:13px;cursor:pointer"><input type="checkbox" name="cam_ket" value="1" style="width:16px;height:16px;margin:2px 0 0;accent-color:#6366F1">Tôi cam kết bài test do chính tôi làm, thông tin và minh chứng là đúng sự thật. Trung tâm có thể hủy duyệt nếu phát hiện sai lệch.</label>
+      </section>
+    </div>
+    <div class="wz-chan">
+      <span class="sm muted" data-wz-buoc-chu>Bước 1/4</span>
+      <button type="button" class="btn" style="margin-left:auto" data-wz-lui>Hủy</button>
+      <button type="button" class="btn pri" data-wz-toi>Tiếp tục</button>
+    </div>
   </form>
 </div>
+<template id="mau-mc">
+  <div class="dong-mc">
+    <select class="inp" data-f="loai" aria-label="Loại minh chứng">{% for v, n in loai_minh_chung %}<option value="{{ v }}">{{ n }}</option>{% endfor %}</select>
+    <select class="inp" data-f="kieu" aria-label="Dạng"><option value="tep">Tệp</option><option value="link">Link</option></select>
+    <span class="stack" style="gap:4px"><input type="file" data-f="tep" accept=".pdf,.jpg,.jpeg,.png"><input class="inp" type="url" data-f="url" placeholder="https://drive.google.com/…" hidden><input class="inp" data-f="mo_ta" placeholder="Mô tả (VD: IELTS 8.0 còn hạn 03/2027)"></span>
+    <button type="button" class="icon-btn sm" data-xoa-mc aria-label="Xóa minh chứng"><i class="bi bi-trash"></i></button>
+  </div>
+</template>
 {{ du_lieu_mon|json_script:"du-lieu-mon" }}
 {% endblock %}
 {% block scripts %}
 <script>
 (function () {
   var MON = JSON.parse(JSON.parse(document.getElementById("du-lieu-mon").textContent));
-  var f = document.querySelector("[data-form-mon]"), sel = f.querySelector("[data-chon-mon-sel]");
-  MON.forEach(function (m) { var o = document.createElement("option"); o.value = m.pk; o.textContent = m.ten; sel.appendChild(o); });
-  sel.onchange = function () {
-    var m = MON.filter(function (x) { return String(x.pk) === sel.value; })[0];
-    f.querySelector("[data-cap-do]").innerHTML = m && m.cap_do.length ? m.cap_do.map(function (c) { return '<label><input type="checkbox" name="cap_do_ids" value="' + c.pk + '">' + c.ten + "</label>"; }).join("") : '<input name="cap_do" class="inp" placeholder="VD: Lớp 6–9">';
-    f.querySelector("[data-bai-test]").innerHTML = !m ? "" : (m.bai_test_url ? '<a href="' + m.bai_test_url + '" target="_blank" rel="noopener">Mở bài test ' + m.ten + "</a>" + (m.diem_dat ? " · điểm đạt " + m.diem_dat : "") : "Nhận đề bài test từ Tuyển sinh/Quản trị viên, làm xong nhập điểm và nộp ảnh kết quả.") + (m.ly_do_tu_choi ? '<div style="color:#C2292E">Lần trước bị từ chối: ' + m.ly_do_tu_choi + "</div>" : "");
+  var f = document.querySelector("[data-form-mon]"), buoc = 1;
+  var TEN = ["Chọn môn và cấp độ", "Làm bài test", "Minh chứng", "Xem lại và gửi"];
+  var $ = function (s) { return f.querySelector(s); }, $$ = function (s) { return [].slice.call(f.querySelectorAll(s)); };
+  var mon = function () { var r = $("input[name=mon_hoc]:checked"); return r ? MON.filter(function (m) { return String(m.pk) === r.value; })[0] : null; };
+  var esc = function (x) { var d = document.createElement("div"); d.textContent = x == null ? "" : x; return d.innerHTML; };
+
+  /* Bước 1: danh sách môn */
+  $("[data-ds-mon]").innerHTML = MON.length ? MON.map(function (m) {
+    return '<label><input type="radio" name="mon_hoc" value="' + m.pk + '"><span class="av" style="width:32px;height:32px;font-size:11px;border-radius:8px;background:#EEF0FF;color:#4F46E5">' + esc(m.ma.slice(0, 3)) + '</span><span><b class="b5">' + esc(m.ten) + '</b>' + (m.ly_do_tu_choi ? '<span class="sm" style="display:block;color:#C2292E">Gửi lại</span>' : "") + "</span></label>";
+  }).join("") : '<div class="sm muted">Bạn đã đăng ký tất cả các môn trung tâm đang tuyển.</div>';
+  f.addEventListener("change", function (e) {
+    if (e.target.name === "mon_hoc") { chonMon(); }
+    if (e.target.dataset.f === "kieu") { var d = e.target.closest(".dong-mc"); d.querySelector("[data-f=tep]").hidden = e.target.value !== "tep"; d.querySelector("[data-f=url]").hidden = e.target.value === "tep"; }
+    tomTat();
+  });
+  function chonMon() {
+    var m = mon(); if (!m) { return; }
+    $("[data-o-cap-do]").hidden = false;
+    $("[data-cap-do]").innerHTML = m.cap_do.length ? m.cap_do.map(function (c) { return '<label><input type="checkbox" name="cap_do_ids" value="' + c.pk + '">' + esc(c.ten) + "</label>"; }).join("") : '<input name="cap_do" class="inp" placeholder="VD: Lớp 6–9">';
+    $("[data-ten-mon]").textContent = m.ten;
+    var bt = '<div class="row" style="gap:10px"><b class="b6">Bài test · ' + esc(m.ma) + "</b>" + (m.so_cau ? '<span class="chip xam">' + m.so_cau + " câu</span>" : "") + (m.phut ? '<span class="chip xam">' + m.phut + " phút</span>" : "") + (m.diem_dat != null ? '<span class="chip tim">Điểm đạt ' + m.diem_dat + "</span>" : "") + "</div>";
+    bt += m.bai_test_url ? '<a class="btn pri sm" style="margin-top:10px" href="' + esc(m.bai_test_url) + '" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i>Mở bài test ' + esc(m.ten) + "</a>" : '<p class="sm muted" style="margin:8px 0 0">Trung tâm chưa gắn link bài test cho môn này. Nhận đề từ Tuyển sinh hoặc Quản trị viên, làm xong nhập điểm và nộp ảnh kết quả.</p>';
+    $("[data-bai-test]").innerHTML = bt;
+    $("[data-tu-choi-cu]").hidden = !m.ly_do_tu_choi;
+    $("[data-tu-choi-chu]").textContent = m.ly_do_tu_choi ? "Lần trước bị từ chối: " + m.ly_do_tu_choi + ". Bổ sung minh chứng rõ ràng hơn." : "";
+  }
+
+  /* Bước 3: minh chứng nhiều dòng */
+  var soMc = 0;
+  function themMc() {
+    var n = document.getElementById("mau-mc").content.firstElementChild.cloneNode(true);
+    n.querySelectorAll("[data-f]").forEach(function (x) { x.name = "mc-" + soMc + "-" + x.dataset.f; });
+    $("[data-ds-mc]").appendChild(n); soMc++; $("[data-mc-so]").value = soMc;
+  }
+  $("[data-them-mc]").onclick = themMc;
+  f.addEventListener("click", function (e) { var x = e.target.closest("[data-xoa-mc]"); if (x) { x.closest(".dong-mc").remove(); tomTat(); } });
+  themMc();
+
+  /* Điểm so với ngưỡng đạt */
+  $("#wz-diem").addEventListener("input", function () {
+    var m = mon(), d = parseFloat(this.value.replace(",", ".")), el = $("[data-diem-msg]");
+    if (isNaN(d)) { el.textContent = ""; return; }
+    if (d < 0 || d > 10) { el.textContent = "Nhập điểm từ 0 đến 10."; el.style.color = "#C2292E"; return; }
+    if (m && m.diem_dat != null && d < m.diem_dat) { el.textContent = "Chưa đạt ngưỡng " + m.diem_dat + " – vẫn gửi được, Quản trị viên sẽ cân nhắc."; el.style.color = "#B45309"; }
+    else { el.textContent = m && m.diem_dat != null ? "Đạt ngưỡng " + m.diem_dat : ""; el.style.color = "#0F766E"; }
+  });
+  $("#wz-kn").addEventListener("input", function () { $("[data-dem-kn]").textContent = this.value.trim().length + " ký tự"; });
+
+  function soMcHopLe() { return $$(".dong-mc").filter(function (d) { var k = d.querySelector("[data-f=kieu]").value; return k === "tep" ? d.querySelector("[data-f=tep]").files.length : d.querySelector("[data-f=url]").value.trim(); }).length; }
+  function capDo() { return $$("input[name=cap_do_ids]:checked").map(function (x) { return x.parentNode.textContent; }).concat($("input[name=cap_do]") && $("input[name=cap_do]").value.trim() ? [$("input[name=cap_do]").value.trim()] : []); }
+  function tomTat() {
+    var m = mon();
+    $("[data-tom-tat]").innerHTML = !m ? "Chưa chọn môn." : "<b>" + esc(m.ten) + "</b><br>" + (esc(capDo().join(", ")) || "Chưa chọn cấp độ") + "<br>Bài test: " + (esc($("#wz-diem").value) || "—") + "/10<br>Minh chứng: " + soMcHopLe() + " mục";
+  }
+  /* Kiểm tra từng bước phía client (máy chủ kiểm tra lại) */
+  function loiBuoc(n) {
+    if (n === 1) { if (!mon()) { return "Chọn môn muốn dạy."; } if (!capDo().length) { return "Chọn ít nhất 1 cấp độ."; } }
+    if (n === 2) {
+      var d = parseFloat($("#wz-diem").value.replace(",", "."));
+      if (isNaN(d) || d < 0 || d > 10) { return "Nhập điểm từ 0 đến 10."; }
+      if (!$("input[name=anh_ket_qua_test]").files.length && !$("input[name=link_ket_qua_test]").value.trim()) { return "Nộp ảnh chụp kết quả bài test (tệp hoặc link)."; }
+      var l = $("input[name=link_ket_qua_test]").value.trim(); if (l && l.indexOf("https://") !== 0) { return "Link phải bắt đầu bằng https://"; }
+    }
+    if (n === 3) {
+      if (!soMcHopLe()) { return "Thêm ít nhất 1 bằng cấp hoặc chứng chỉ."; }
+      var sai = $$(".dong-mc [data-f=url]").filter(function (u) { return !u.hidden && u.value.trim() && u.value.trim().indexOf("https://") !== 0; });
+      if (sai.length) { return "Link minh chứng phải bắt đầu bằng https://"; }
+      var lon = $$(".dong-mc [data-f=tep], input[name=anh_ket_qua_test]").filter(function (x) { return x.files.length && x.files[0].size > 5 * 1048576; });
+      if (lon.length) { return "Tệp tối đa 5 MB."; }
+    }
+    if (n === 4) { if ($("#wz-kn").value.trim().length < 15) { return "Mô tả kinh nghiệm dạy môn này, tối thiểu 15 ký tự."; } if (!$("input[name=cam_ket]").checked) { return "Đánh dấu cam kết trước khi gửi."; } }
+    return "";
+  }
+  function baoLoi(msg) { $("[data-wz-loi]").hidden = !msg; $("[data-wz-loi-chu]").textContent = msg || ""; }
+  function veBuoc() {
+    $$("[data-wz]").forEach(function (s) { s.hidden = Number(s.dataset.wz) !== buoc; });
+    $$("[data-wz-buoc]").forEach(function (s) { var n = Number(s.dataset.wzBuoc); s.className = "wz-buoc" + (n === buoc ? " dang" : n < buoc ? " xong" : ""); s.querySelector(".c").innerHTML = n < buoc ? '<i class="bi bi-check2"></i>' : n; });
+    $("[data-wz-buoc-chu]").textContent = "Bước " + buoc + "/4 · " + TEN[buoc - 1];
+    $("[data-wz-lui]").textContent = buoc === 1 ? "Hủy" : "Quay lại";
+    $("[data-wz-toi]").textContent = buoc === 4 ? "Gửi đăng ký" : "Tiếp tục";
+    if (buoc === 4) {
+      var m = mon(), mc = $$(".dong-mc").map(function (d) { var k = d.querySelector("[data-f=kieu]").value; return d.querySelector("[data-f=loai]").selectedOptions[0].text + (k === "tep" ? (d.querySelector("[data-f=tep]").files[0] ? " (" + d.querySelector("[data-f=tep]").files[0].name + ")" : "") : " (link)"); });
+      var anh = $("input[name=anh_ket_qua_test]").files[0];
+      $("[data-xem-lai]").innerHTML = [["Môn", m ? m.ten : "—"], ["Cấp độ", capDo().join(", ")], ["Bài test", $("#wz-diem").value + "/10"], ["Ảnh kết quả", anh ? anh.name : $("input[name=link_ket_qua_test]").value], ["Minh chứng", mc.join(" · ")], ["Giờ rảnh", "{{ so_ranh }} khung/tuần"]].map(function (r) { return '<div class="dong-hang"><span>' + r[0] + "</span><span>" + esc(r[1]) + "</span></div>"; }).join("");
+    }
+    baoLoi("");
+  }
+  $("[data-wz-lui]").onclick = function () { if (buoc === 1) { f.closest(".overlay").hidden = true; } else { buoc--; veBuoc(); } };
+  $("[data-wz-toi]").onclick = function () {
+    var loi = loiBuoc(buoc); if (loi) { baoLoi(loi); return; }
+    if (buoc < 4) { buoc++; veBuoc(); return; }
+    var nut = this; nut.disabled = true; nut.textContent = "Đang gửi…";
+    GSO.post(f.action, new FormData(f)).then(function (j) {
+      if (j.ok) { location.reload(); return; }
+      nut.disabled = false; nut.textContent = "Gửi đăng ký";
+      var k = Object.keys(j.errors || {})[0] || "";
+      buoc = /mon_hoc|cap_do/.test(k) ? 1 : /diem|ket_qua/.test(k) ? 2 : /minh_chung/.test(k) ? 3 : 4;
+      veBuoc(); baoLoi(j.message);
+    });
   };
-  document.querySelectorAll("[data-chon-mon]").forEach(function (b) { b.addEventListener("click", function () { sel.value = b.dataset.chonMon; sel.onchange(); }); });
+  /* Mở popup: "Đăng ký môn mới" hoặc "Gửi lại" (chọn sẵn môn) */
+  document.querySelectorAll("[data-mo-hop=hop-dang-ky]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      buoc = 1; veBuoc();
+      if (b.dataset.chonMon) { var r = $('input[name=mon_hoc][value="' + b.dataset.chonMon + '"]'); if (r) { r.checked = true; chonMon(); tomTat(); } }
+    });
+  });
+  veBuoc();
+
   /* Lưới giờ rảnh */
   document.querySelectorAll("button.o[data-khung]").forEach(function (b) {
     if (b.classList.contains("lop")) { return; }

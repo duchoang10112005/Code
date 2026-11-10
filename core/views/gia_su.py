@@ -51,6 +51,8 @@ def _trang_ho_so(request, ho_so, form_ho_so=None, loi_mon=None, status=200):
         "form_ho_so": form_ho_so or HoSoGiaSuForm(instance=ho_so), "loi_mon": loi_mon,
         "hoan_thien": round(sum(muc) * 100 / len(muc)), "loai_minh_chung": MinhChung.Loai.choices,
         "du_lieu_mon": json.dumps(mon_mo), "gui_lai": request.GET.get("gui_lai", ""),
+        "buoc_wizard": [("Chọn môn", "Môn và cấp độ"), ("Bài test", "Điểm và ảnh kết quả"),
+                        ("Minh chứng", "Bằng cấp, chứng chỉ"), ("Xem lại", "Cam kết và gửi")],
     }, status=status)
 
 
