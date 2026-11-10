@@ -3,6 +3,10 @@
 Quyền: chỉ gia sư, và chỉ buổi học của chính mình (buổi của người khác → 404).
 """
 
+from datetime import timedelta
+
+from django.conf import settings
+
 from datetime import date
 
 from django.contrib import messages
@@ -176,3 +180,13 @@ def xac_nhan(request, pk):
         "buoi": buoi, "TT": TT, "form_xac_nhan": form, "form_huy": HuyBuoiForm(), "form_doi_lich": DoiLichForm(),
         "co_the_doi": False, "noi_dung_phu_huynh": "",
     }, status=400)
+
+
+def vao_lop(request, ma_lop):
+    """Link lớp cố định gửi trong nhóm Zalo (SD-14, công khai): trong cửa sổ giờ học → chuyển vào Zoom."""
+    from django.http import HttpResponseRedirect
+    dang, sap = dv.buoi_dang_mo(ma_lop)
+    if dang:
+        return HttpResponseRedirect(dang.zoom_join_url)
+    mo_luc = (sap.bat_dau - timedelta(minutes=settings.NGHIEP_VU.get("MO_PHONG_TRUOC_PHUT", 10))) if sap else None
+    return render(request, "core/buoi_hoc/vao_lop.html", {"ma_lop": ma_lop.upper(), "sap": sap, "mo_luc": mo_luc})

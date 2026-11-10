@@ -69,7 +69,7 @@ class PB01PhanQuyenTest(TestCase):
         self.assertTrue(self.gs.is_active)
 
     def test_PB01_moi_vai_tro_thay_trang_chu_rieng(self):
-        for username, chu in [("ad", "Tài khoản bị khóa"), ("ts", "Đang mời gia sư"), ("gs", "Lời mời đang chờ")]:
+        for username, chu in [("ad", "Tài khoản bị khóa"), ("ts", "Đang mời gia sư"), ("gs", "Việc cần làm")]:
             self.client.login(username=username, password=MK)
             self.assertContains(self.client.get(reverse("trang_chu")), chu)
             self.client.logout()

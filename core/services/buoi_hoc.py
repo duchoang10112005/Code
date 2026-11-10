@@ -23,7 +23,8 @@ from django.utils import timezone
 
 from core.integrations.zalo import lay_zalo_client
 from core.integrations.zoom import ZoomError, lay_zoom_client
-from core.models import BuoiHoc, KhoaHoc, NhatKyGuiTin, ThuLao, YeuCauHocTap
+from core.models import (BanNhapDanhGia, BuoiHoc, HauKiemBuoi, KhoaHoc, NhatKyGuiTin, TaiKhoanZoom, ThuLao,
+                         YeuCauHocTap)
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
 
@@ -55,11 +56,22 @@ def _cho_zoom_tong_hop():
 # =============================================================================
 def _buoi_trung_gio(bat_dau, ket_thuc, bo_qua_pk=None):
     """Các buổi đang giữ chỗ có khoảng thời gian giao với [bat_dau, ket_thuc)."""
-    qs = BuoiHoc.objects.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__lt=ket_thuc)
+    qs = BuoiHoc.objects.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__lt=ket_thuc,
+                                ket_thuc_luc__gt=bat_dau)
     if bo_qua_pk:
         qs = qs.exclude(pk=bo_qua_pk)
-    # ket_thuc của buổi khác = bat_dau + thoi_luong → lọc tiếp bằng Python (dữ liệu nhỏ, tránh hàm ngày của SQLite).
-    return [b for b in qs.select_related("gia_su") if b.ket_thuc > bat_dau]
+    return list(qs.select_related("gia_su"))
+
+
+def so_phong_zoom():
+    """Số phòng chạy cùng lúc = số tài khoản host Zoom đang bật; chưa khai báo thì dùng tham số cũ."""
+    n = TaiKhoanZoom.objects.filter(dang_bat=True).count()
+    return n or NV["SO_PHONG_ZOOM_DONG_THOI"]
+
+
+def _gio_muon_nhat():
+    h, m = (settings.NGHIEP_VU.get("GIO_KET_THUC_MUON_NHAT") or "22:00").split(":")
+    return int(h) * 60 + int(m)
 
 
 def kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=None):
@@ -69,14 +81,28 @@ def kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=None):
     if bat_dau > now + timedelta(days=60):
         raise ValidationError({"bat_dau": "Chỉ xếp lịch trước tối đa 60 ngày."})
     ket_thuc = bat_dau + timedelta(minutes=thoi_luong)
+    bd, kt = timezone.localtime(bat_dau), timezone.localtime(ket_thuc)
+    if kt.date() != bd.date() or kt.hour * 60 + kt.minute > _gio_muon_nhat():
+        raise ValidationError({"bat_dau": f"Buổi học phải kết thúc trước {NV.get('GIO_KET_THUC_MUON_NHAT', '22:00')} "
+                                          f"(buổi này kết thúc {kt:%H:%M})."})
     trung = _buoi_trung_gio(bat_dau, ket_thuc, bo_qua_pk)
     cua_minh = [b for b in trung if b.gia_su_id == gia_su.pk]
     if cua_minh:
         b = cua_minh[0]
         raise ValidationError({"bat_dau": f"Bạn đã có buổi học {timezone.localtime(b.bat_dau):%H:%M %d/%m} trùng khung giờ này."})
-    if len(trung) >= NV["SO_PHONG_ZOOM_DONG_THOI"]:
+    if len(trung) >= so_phong_zoom():
         raise ValidationError({"bat_dau": "Khung giờ này đã có buổi học khác dùng phòng Zoom của trung tâm. "
                                           "Vui lòng chọn giờ khác."})
+
+
+def ngoai_gio_ranh(gia_su, bat_dau, thoi_luong):
+    """True nếu buổi không nằm trọn trong một khung giờ rảnh đã đăng ký (chỉ cảnh báo, không chặn)."""
+    ho_so = getattr(gia_su, "ho_so_gia_su", None)
+    if ho_so is None:
+        return False
+    bd = timezone.localtime(bat_dau)
+    kt = bd + timedelta(minutes=thoi_luong)
+    return not ho_so.lich_ranh.filter(thu=bd.weekday(), tu_gio__lte=bd.time(), den_gio__gte=kt.time()).exists()
 
 
 # =============================================================================
@@ -87,11 +113,31 @@ def _chu_de(buoi):
     return f"{loai} {buoi.yeu_cau.mon_hoc} – {buoi.hoc_vien.ho_ten} – GS {buoi.gia_su.ho_ten}"
 
 
-def _gan_zoom(buoi):
+def chon_host(buoi, tru=None):
+    """Tài khoản Zoom đang bật, không có buổi giao giờ. None = chưa khai báo nhóm host (dùng host mặc định);
+    False = có nhóm host nhưng không còn host trống."""
+    ds = TaiKhoanZoom.objects.filter(dang_bat=True)
+    if tru:
+        ds = ds.exclude(pk=tru.pk)
+    if not ds.exists():
+        return None
+    ban = set(BuoiHoc.objects.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__lt=buoi.ket_thuc,
+                                     ket_thuc_luc__gt=buoi.bat_dau, tai_khoan_zoom__isnull=False)
+              .exclude(pk=buoi.pk).values_list("tai_khoan_zoom_id", flat=True))
+    return ds.exclude(pk__in=ban).order_by("pk").first() or False
+
+
+def _gan_zoom(buoi, host=None):
     """Gọi Zoom tạo phòng. Thành công → DA_LEN_LICH; lỗi → LOI_ZOOM + lưu lỗi (không ném lỗi ra ngoài)."""
+    host = host if host is not None else chon_host(buoi)
+    if host is False:
+        buoi.trang_thai, buoi.zoom_loi = TT.LOI_ZOOM, "Không còn tài khoản Zoom trống trong khung giờ này."
+        buoi.save(update_fields=["trang_thai", "zoom_loi", "cap_nhat_luc"])
+        return False
+    email = host.email_host if host else settings.ZOOM_HOST_EMAIL_MAC_DINH
     try:
         phong = lay_zoom_client().tao_phong(
-            settings.ZOOM_HOST_EMAIL_MAC_DINH, _chu_de(buoi), buoi.bat_dau, buoi.thoi_luong_phut,
+            email, _chu_de(buoi), buoi.bat_dau, buoi.thoi_luong_phut,
             ghi_hinh=buoi.hoc_vien.dong_y_ghi_hinh)
     except ZoomError as exc:
         buoi.trang_thai, buoi.zoom_loi = TT.LOI_ZOOM, str(exc)[:1000]
@@ -99,9 +145,9 @@ def _gan_zoom(buoi):
         return False
     buoi.zoom_meeting_id, buoi.zoom_join_url = phong.meeting_id, phong.join_url
     buoi.zoom_start_url, buoi.zoom_passcode = phong.start_url, phong.passcode
-    buoi.trang_thai, buoi.zoom_loi = TT.DA_LEN_LICH, ""
+    buoi.trang_thai, buoi.zoom_loi, buoi.tai_khoan_zoom = TT.DA_LEN_LICH, "", host or None
     buoi.save(update_fields=["zoom_meeting_id", "zoom_join_url", "zoom_start_url", "zoom_passcode",
-                             "trang_thai", "zoom_loi", "cap_nhat_luc"])
+                             "trang_thai", "zoom_loi", "tai_khoan_zoom", "cap_nhat_luc"])
     return True
 
 
@@ -122,12 +168,26 @@ def khoa_co_the_xep(gia_su):
 
 def yeu_cau_co_the_hoc_thu(gia_su):
     """Lớp đã nhận (DA_PHAN_CONG) chưa có buổi học thử nào đang mở/hoàn tất với gia sư này."""
-    ds = YeuCauHocTap.objects.filter(gia_su=gia_su, trang_thai=YC.DA_PHAN_CONG).select_related("hoc_vien", "mon_hoc")
+    ds = YeuCauHocTap.objects.filter(gia_su=gia_su, trang_thai=YC.DA_PHAN_CONG, dang_ky_thang=False).select_related(
+        "hoc_vien", "mon_hoc")
     return [y for y in ds if not y.buoi_hoc.filter(loai=BuoiHoc.Loai.HOC_THU, gia_su=gia_su)
             .exclude(trang_thai=TT.DA_HUY).exists()]
 
 
-def tao_buoi_chinh_thuc(gia_su, khoa, bat_dau, thay_the_cho=None):
+def kiem_tra_hoc_bu(lop, hoc_bu_cho):
+    """Buổi được bù phải là buổi đã hủy vì gia sư / học viên nghỉ, cùng lớp, chưa được bù."""
+    if hoc_bu_cho is None:
+        return
+    if hoc_bu_cho.trang_thai != TT.DA_HUY or hoc_bu_cho.ly_do_huy not in LY_DO_GIA_SU_CHON:
+        raise ValidationError("Chỉ học bù cho buổi đã hủy vì gia sư hoặc học viên nghỉ.")
+    cung_lop = (hoc_bu_cho.khoa_hoc_id == lop.pk) if isinstance(lop, KhoaHoc) else (hoc_bu_cho.yeu_cau_id == lop.pk)
+    if not cung_lop:
+        raise ValidationError("Buổi cần bù không thuộc lớp này.")
+    if BuoiHoc.objects.filter(hoc_bu_cho=hoc_bu_cho).exclude(trang_thai=TT.DA_HUY).exists():
+        raise ValidationError(f"Buổi {hoc_bu_cho.ma} đã có buổi học bù.")
+
+
+def tao_buoi_chinh_thuc(gia_su, khoa, bat_dau, thay_the_cho=None, hoc_bu_cho=None):
     khoa.refresh_from_db()
     if khoa.gia_su_id != gia_su.pk:
         raise ValidationError("Đây không phải khóa bạn phụ trách.")
@@ -137,14 +197,17 @@ def tao_buoi_chinh_thuc(gia_su, khoa, bat_dau, thay_the_cho=None):
         raise ValidationError("Khóa đã xếp đủ số buổi đăng ký, không tạo thêm buổi được.")
     thoi_luong = thoi_luong_demo() or khoa.thoi_luong_phut
     kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=getattr(thay_the_cho, "pk", None))
+    kiem_tra_hoc_bu(khoa, hoc_bu_cho)
     return _tao(gia_su, BuoiHoc.Loai.CHINH_THUC, khoa.yeu_cau, bat_dau, thoi_luong,
-                khoa=khoa, thu_lao=khoa.thu_lao_moi_buoi, thay_the_cho=thay_the_cho)
+                khoa=khoa, thu_lao=khoa.thu_lao_moi_buoi, thay_the_cho=thay_the_cho, hoc_bu_cho=hoc_bu_cho)
 
 
 def tao_buoi_hoc_thu(gia_su, yc, bat_dau, thoi_luong, thay_the_cho=None):
     yc.refresh_from_db()
     if yc.gia_su_id != gia_su.pk or yc.trang_thai != YC.DA_PHAN_CONG:
         raise ValidationError("Chỉ tạo buổi học thử cho lớp bạn đã nhận và đang chờ chốt.")
+    if yc.dang_ky_thang and not thay_the_cho:
+        raise ValidationError("Phụ huynh đã đăng ký chính thức luôn (không học thử). Chờ Tuyển sinh mở khóa học.")
     if thoi_luong_demo():
         thoi_luong = thoi_luong_demo()
     elif thoi_luong not in THOI_LUONG_HOC_THU:
@@ -158,16 +221,17 @@ def tao_buoi_hoc_thu(gia_su, yc, bat_dau, thoi_luong, thay_the_cho=None):
     return _tao(gia_su, BuoiHoc.Loai.HOC_THU, yc, bat_dau, thoi_luong, thay_the_cho=thay_the_cho)
 
 
-def _tao(gia_su, loai, yc, bat_dau, thoi_luong, khoa=None, thu_lao=0, thay_the_cho=None):
+def _tao(gia_su, loai, yc, bat_dau, thoi_luong, khoa=None, thu_lao=0, thay_the_cho=None, hoc_bu_cho=None):
     hv = yc.hoc_vien
     buoi = BuoiHoc.objects.create(
         loai=loai, khoa_hoc=khoa, yeu_cau=yc, gia_su=gia_su, hoc_vien=hv, bat_dau=bat_dau,
         thoi_luong_phut=thoi_luong, trang_thai=TT.LOI_ZOOM, thu_lao_du_kien=thu_lao,
         han_xac_nhan=bat_dau + timedelta(minutes=thoi_luong) + _gio(NV["HAN_XAC_NHAN_GIO"]),
         ban_ghi_trang_thai=BuoiHoc.BanGhi.CHO_XU_LY if hv.dong_y_ghi_hinh else BuoiHoc.BanGhi.KHONG_GHI,
-        thay_the_cho=thay_the_cho,
+        thay_the_cho=thay_the_cho, hoc_bu_cho=hoc_bu_cho,
     )
-    ghi_nhat_ky(gia_su, "Tạo buổi học", buoi.ma, f"{buoi}; {thoi_luong} phút")
+    ghi_nhat_ky(gia_su, "Tạo buổi học", buoi.ma, f"{buoi}; {thoi_luong} phút"
+                + (f"; học bù cho {hoc_bu_cho.ma}" if hoc_bu_cho else ""))
     _gan_zoom(buoi)
     return buoi
 
@@ -180,13 +244,117 @@ def thu_lai_zoom(gia_su, buoi):
     return _gan_zoom(buoi)
 
 
+def gio_mo_phong(buoi):
+    return buoi.bat_dau - timedelta(minutes=NV.get("MO_PHONG_TRUOC_PHUT", 10))
+
+
+def gio_dong_phong(buoi):
+    return buoi.ket_thuc + timedelta(minutes=NV.get("DONG_PHONG_SAU_PHUT", 5))
+
+
 def lay_link_mo_phong(gia_su, buoi):
     if buoi.gia_su_id != gia_su.pk or buoi.trang_thai != TT.DA_LEN_LICH or not buoi.zoom_meeting_id:
         raise ValidationError("Buổi học chưa có phòng Zoom.")
+    now = timezone.now()
+    if now < gio_mo_phong(buoi):
+        raise ValidationError(f"Phòng mở lúc {timezone.localtime(gio_mo_phong(buoi)):%H:%M %d/%m} "
+                              f"({NV.get('MO_PHONG_TRUOC_PHUT', 10)} phút trước giờ học).")
+    if now > gio_dong_phong(buoi):
+        raise ValidationError("Buổi học đã kết thúc, phòng Zoom đã đóng.")
     try:
         return lay_zoom_client().lay_start_url(buoi.zoom_meeting_id)
     except ZoomError as exc:
         raise ValidationError(f"Không lấy được link mở phòng: {exc}")
+
+
+# =============================================================================
+# Tạo nhiều buổi một lần (SD-13): kiểm tra trước, tạo từng buổi độc lập
+# =============================================================================
+def thoi_luong_cua_lop(lop, thoi_luong_thu=None):
+    if thoi_luong_demo():
+        return thoi_luong_demo()
+    return lop.thoi_luong_phut if isinstance(lop, KhoaHoc) else int(thoi_luong_thu or 90)
+
+
+def kiem_tra_ke_hoach(gia_su, lop, ds_bat_dau, hoc_bu_cho=None, thoi_luong_thu=None):
+    """Kiểm tra từng buổi dự kiến; KHÔNG ghi gì. lop = KhoaHoc (chính thức) hoặc YeuCauHocTap (học thử).
+
+    Trả về list dict: bat_dau, ket_thuc, muc ("ok" | "chan" | "canh_bao"), ly_do, nhan ("Buổi 6/16").
+    """
+    toi_da = NV.get("SO_BUOI_TAO_TOI_DA_MOT_LAN", 8)
+    if not ds_bat_dau:
+        raise ValidationError("Chọn ít nhất một ngày giờ học.")
+    if len(ds_bat_dau) > toi_da:
+        raise ValidationError(f"Mỗi lần tạo tối đa {toi_da} buổi.")
+    la_khoa = isinstance(lop, KhoaHoc)
+    if la_khoa:
+        if lop.gia_su_id != gia_su.pk:
+            raise ValidationError("Đây không phải khóa bạn phụ trách.")
+        if lop.trang_thai != KH.DANG_HOC:
+            raise ValidationError(f"Khóa đang ở trạng thái \"{lop.get_trang_thai_display()}\", chưa xếp lịch được.")
+        con = lop.so_buoi_co_the_xep
+        so_dau = lop.so_buoi_da_dung + lop.so_buoi_dang_len_lich
+    else:
+        if lop.gia_su_id != gia_su.pk or lop.trang_thai != YC.DA_PHAN_CONG:
+            raise ValidationError("Chỉ tạo buổi học thử cho lớp bạn đã nhận và đang chờ chốt.")
+        if lop.dang_ky_thang:
+            raise ValidationError("Phụ huynh đã đăng ký chính thức luôn (không học thử). Chờ Tuyển sinh mở khóa học.")
+        if lop.buoi_hoc.filter(loai=BuoiHoc.Loai.HOC_THU, gia_su=gia_su).exclude(trang_thai=TT.DA_HUY).exists():
+            raise ValidationError("Lớp này đã có buổi học thử. Muốn đổi giờ thì dùng Dời lịch.")
+        con, so_dau = 1, 0
+    kiem_tra_hoc_bu(lop, hoc_bu_cho)
+    thoi_luong = thoi_luong_cua_lop(lop, thoi_luong_thu)
+    kq, da_nhan = [], []
+    for i, bd in enumerate(sorted(ds_bat_dau)):
+        kt = bd + timedelta(minutes=thoi_luong)
+        dong = {"bat_dau": bd, "ket_thuc": kt, "muc": "ok", "ly_do": "",
+                "nhan": (f"Buổi {so_dau + len(da_nhan) + 1}/{lop.so_buoi_dang_ky}" if la_khoa else "Học thử")}
+        if len(da_nhan) >= con:
+            dong.update(muc="chan", ly_do=("Khóa đã xếp đủ số buổi đăng ký." if la_khoa
+                                           else "Học thử chỉ tạo một buổi."))
+        elif any(bd < b2 and kt > b1 for b1, b2 in da_nhan):
+            dong.update(muc="chan", ly_do="Trùng giờ với một buổi khác trong lần tạo này.")
+        else:
+            try:
+                kiem_tra_khung_gio(gia_su, bd, thoi_luong)
+            except ValidationError as exc:
+                dong.update(muc="chan", ly_do=" ".join(m for v in exc.message_dict.values() for m in v)
+                            if hasattr(exc, "error_dict") else " ".join(exc.messages))
+        if dong["muc"] == "ok":
+            da_nhan.append((bd, kt))
+            if ngoai_gio_ranh(gia_su, bd, thoi_luong):
+                dong.update(muc="canh_bao",
+                            ly_do="Ngoài giờ rảnh đã đăng ký. Vẫn tạo được, nhớ thống nhất với phụ huynh.")
+        if hoc_bu_cho and i == 0 and dong["muc"] != "chan":
+            dong["nhan"] += " · Học bù"
+        kq.append(dong)
+    return kq
+
+
+def tao_nhieu_buoi(gia_su, lop, ds_bat_dau, hoc_bu_cho=None, thoi_luong_thu=None):
+    """Tạo các buổi đạt kiểm tra. Mỗi buổi một transaction riêng: buổi lỗi không kéo buổi khác.
+
+    Trả về list dict: bat_dau, buoi (None nếu không tạo), loi.
+    """
+    ke_hoach = kiem_tra_ke_hoach(gia_su, lop, ds_bat_dau, hoc_bu_cho, thoi_luong_thu)
+    kq, bu = [], hoc_bu_cho
+    for dong in ke_hoach:
+        if dong["muc"] == "chan":
+            kq.append({"bat_dau": dong["bat_dau"], "buoi": None, "loi": dong["ly_do"]})
+            continue
+        try:
+            with transaction.atomic():
+                if isinstance(lop, KhoaHoc):
+                    b = tao_buoi_chinh_thuc(gia_su, lop, dong["bat_dau"], hoc_bu_cho=bu)
+                else:
+                    b = tao_buoi_hoc_thu(gia_su, lop, dong["bat_dau"], thoi_luong_cua_lop(lop, thoi_luong_thu))
+            bu = None  # chỉ buổi đầu tiên là buổi học bù
+            kq.append({"bat_dau": dong["bat_dau"], "buoi": b, "loi": ""})
+        except ValidationError as exc:
+            kq.append({"bat_dau": dong["bat_dau"], "buoi": None,
+                       "loi": " ".join(m for v in exc.message_dict.values() for m in v)
+                       if hasattr(exc, "error_dict") else " ".join(exc.messages)})
+    return kq
 
 
 # =============================================================================
@@ -206,7 +374,8 @@ def huy_buoi(nguoi, buoi, ly_do_huy, ghi_chu="", boi_he_thong=False):
             raise ValidationError("Buổi học đã bắt đầu, không hủy được nữa. Nếu buổi không diễn ra, "
                                   "hãy để hệ thống tự hủy sau hạn xác nhận.")
     n = BuoiHoc.objects.filter(pk=buoi.pk, trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO).update(
-        trang_thai=TT.DA_HUY, ly_do_huy=ly_do_huy, kiem_tra_ghi_chu=ghi_chu, cap_nhat_luc=timezone.now())
+        trang_thai=TT.DA_HUY, ly_do_huy=ly_do_huy, ly_do_huy_ghi_chu=ghi_chu, kiem_tra_ghi_chu=ghi_chu,
+        cap_nhat_luc=timezone.now())
     if n == 0:
         raise ValidationError("Buổi học không còn ở trạng thái hủy được.")
     buoi.refresh_from_db()
@@ -236,8 +405,11 @@ def doi_lich(gia_su, buoi, bat_dau_moi):
 # =============================================================================
 # Xác nhận hoàn tất (gia sư) → số buổi, thù lao, Zalo
 # =============================================================================
-def xac_nhan_hoan_tat(gia_su, buoi, du_lieu):
-    """du_lieu: noi_dung, xep_loai, danh_gia, dan_do_buoi_sau."""
+def xac_nhan_hoan_tat(gia_su, buoi, du_lieu, bo_qua_han=False, nguoi_thuc_hien=None):
+    """du_lieu: noi_dung, xep_loai, danh_gia (≥ 30 ký tự), dan_do_buoi_sau, ghi_chu_tuyen_sinh, gui_zalo_phu_huynh.
+
+    bo_qua_han + nguoi_thuc_hien: Quản trị viên khôi phục từ bản nháp sau lỗi hệ thống (SD-34).
+    """
     now = timezone.now()
     if buoi.gia_su_id != gia_su.pk:
         raise ValidationError("Đây không phải buổi học của bạn.")
@@ -245,14 +417,25 @@ def xac_nhan_hoan_tat(gia_su, buoi, du_lieu):
         raise ValidationError(f"Buổi học đang ở trạng thái \"{buoi.get_trang_thai_display()}\", không xác nhận được.")
     if now < buoi.ket_thuc:
         raise ValidationError(f"Chỉ xác nhận được sau giờ kết thúc ({timezone.localtime(buoi.ket_thuc):%H:%M %d/%m}).")
-    if buoi.han_xac_nhan and now > buoi.han_xac_nhan:
-        raise ValidationError("Đã quá hạn xác nhận. Liên hệ Admin nếu buổi học thực sự đã diễn ra.")
+    if buoi.han_xac_nhan and now > buoi.han_xac_nhan and not bo_qua_han:
+        raise ValidationError("Đã quá hạn xác nhận. Nếu buổi học thực sự đã diễn ra, hãy gửi yêu cầu mở lại.")
+    toi_thieu = NV.get("DO_DAI_NHAN_XET_TOI_THIEU", 30)
+    danh_gia = (du_lieu.get("danh_gia") or "").strip()
+    if len(danh_gia) < toi_thieu:
+        raise ValidationError({"danh_gia": f"Nhận xét gửi phụ huynh cần ít nhất {toi_thieu} ký tự."})
+    if du_lieu.get("xep_loai") not in BuoiHoc.XepLoai.values:
+        raise ValidationError({"xep_loai": "Hãy chọn mức tiếp thu."})
+    if not (du_lieu.get("noi_dung") or "").strip():
+        raise ValidationError({"noi_dung": "Hãy ghi nội dung đã dạy."})
+    gui_zalo = du_lieu.get("gui_zalo_phu_huynh", True) not in (False, "", "0", "off", None)
+    nguoi = nguoi_thuc_hien or gia_su
 
     with transaction.atomic():
         n = BuoiHoc.objects.filter(pk=buoi.pk, trang_thai=TT.DA_LEN_LICH).update(
             trang_thai=TT.HOAN_TAT, xac_nhan_luc=now, cap_nhat_luc=now,
-            noi_dung=du_lieu["noi_dung"], xep_loai=du_lieu["xep_loai"], danh_gia=du_lieu["danh_gia"],
-            dan_do_buoi_sau=du_lieu.get("dan_do_buoi_sau", ""))
+            noi_dung=du_lieu["noi_dung"].strip(), xep_loai=du_lieu["xep_loai"], danh_gia=danh_gia,
+            dan_do_buoi_sau=(du_lieu.get("dan_do_buoi_sau") or "").strip(),
+            ghi_chu_tuyen_sinh=(du_lieu.get("ghi_chu_tuyen_sinh") or "").strip(), gui_zalo_phu_huynh=gui_zalo)
         if n == 0:
             raise ValidationError("Buổi học vừa được xác nhận hoặc thay đổi, vui lòng tải lại trang.")
         if buoi.khoa_hoc_id:
@@ -264,16 +447,104 @@ def xac_nhan_hoan_tat(gia_su, buoi, du_lieu):
             khoa = KhoaHoc.objects.get(pk=buoi.khoa_hoc_id)
             BuoiHoc.objects.filter(pk=buoi.pk).update(so_thu_tu=khoa.so_buoi_da_dung)
             if khoa.so_buoi_da_dung >= khoa.so_buoi_dang_ky and khoa.trang_thai == KH.DANG_HOC:
-                KhoaHoc.objects.filter(pk=khoa.pk).update(trang_thai=KH.HOAN_THANH)
+                KhoaHoc.objects.filter(pk=khoa.pk).update(trang_thai=KH.HOAN_THANH, hoan_thanh_luc=now)
             if buoi.thu_lao_du_kien:
                 from core.services.thu_lao import thang_ghi_nhan
                 ThuLao.objects.create(buoi_hoc=buoi, gia_su=gia_su, so_tien=buoi.thu_lao_du_kien,
                                       thang=thang_ghi_nhan(gia_su, timezone.localtime(buoi.bat_dau).date()))
-        ghi_nhat_ky(gia_su, "Xác nhận hoàn tất buổi học", buoi.ma,
-                    str(BuoiHoc.XepLoai(du_lieu["xep_loai"]).label))
+        BanNhapDanhGia.objects.filter(buoi_hoc=buoi).delete()
+        ho_so = getattr(gia_su, "ho_so_gia_su", None)
+        HauKiemBuoi.objects.get_or_create(buoi_hoc=buoi, defaults={
+            "nguoi_phu_trach_id": getattr(ho_so, "nguoi_moi_id", None), "do_dai_nhan_xet": len(danh_gia)})
+        chi_tiet = str(BuoiHoc.XepLoai(du_lieu["xep_loai"]).label)
+        if nguoi_thuc_hien:
+            chi_tiet = f"Quản trị viên khôi phục thay gia sư {gia_su.ho_ten} từ bản nháp. {chi_tiet}"
+        ghi_nhat_ky(nguoi, "Xác nhận hoàn tất buổi học", buoi.ma, chi_tiet)
     buoi.refresh_from_db()
-    gui_zalo_danh_gia(buoi)
+    if gui_zalo:
+        gui_zalo_danh_gia(buoi)
     return buoi
+
+
+def luu_nhap(gia_su, buoi, du_lieu):
+    """Tự lưu nháp phiếu đánh giá (SD-15). Chỉ gia sư của buổi, buổi đang chờ xác nhận / lên lịch."""
+    if buoi.gia_su_id != gia_su.pk:
+        raise ValidationError("Đây không phải buổi học của bạn.")
+    if buoi.trang_thai != TT.DA_LEN_LICH:
+        raise ValidationError("Buổi học không còn ở trạng thái nhập đánh giá.")
+    giu = {k: str(du_lieu.get(k, ""))[:2000] for k in
+           ("noi_dung", "xep_loai", "danh_gia", "dan_do_buoi_sau", "ghi_chu_tuyen_sinh", "gui_zalo_phu_huynh")}
+    nhap, _ = BanNhapDanhGia.objects.update_or_create(buoi_hoc=buoi, defaults={"du_lieu": giu})
+    return nhap
+
+
+def so_thu_tu_du_kien(buoi):
+    """Buổi thứ mấy của khóa (đã xác nhận thì lấy số thật; đang lên lịch thì ước tính theo thứ tự thời gian)."""
+    if buoi.so_thu_tu:
+        return buoi.so_thu_tu
+    if not buoi.khoa_hoc_id:
+        return None
+    k = buoi.khoa_hoc
+    truoc = k.buoi_hoc.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__lt=buoi.bat_dau).count()
+    return k.so_buoi_da_dung + truoc + (1 if buoi.trang_thai in BuoiHoc.TRANG_THAI_CHIEM_CHO else 0)
+
+
+def nhan_buoi(buoi):
+    """"Buổi 6/16 · Học bù" / "Học thử"."""
+    if buoi.loai == BuoiHoc.Loai.HOC_THU:
+        nhan = "Học thử"
+    else:
+        so = so_thu_tu_du_kien(buoi)
+        nhan = f"Buổi {so}/{buoi.khoa_hoc.so_buoi_dang_ky}" if so else "Buổi chính thức"
+    if buoi.hoc_bu_cho_id:
+        nhan += " · Học bù"
+    return nhan
+
+
+def link_lop(buoi_hoac_khoa, request=None):
+    """Link lớp cố định /lop/<ma_lop>/ (học thử: theo mã buổi)."""
+    from django.urls import reverse
+    if isinstance(buoi_hoac_khoa, KhoaHoc):
+        ma = buoi_hoac_khoa.ma_lop or buoi_hoac_khoa.ma
+    elif buoi_hoac_khoa.khoa_hoc_id:
+        ma = buoi_hoac_khoa.khoa_hoc.ma_lop or buoi_hoac_khoa.khoa_hoc.ma
+    else:
+        ma = buoi_hoac_khoa.ma
+    url = reverse("vao_lop", args=[ma])
+    return request.build_absolute_uri(url) if request else url
+
+
+def noi_dung_moi_vao_lop(buoi, request=None):
+    """Tin nhắn gia sư dán vào nhóm Zalo lớp (SD-13). KHÔNG có host key, học phí, SĐT phụ huynh."""
+    bd = timezone.localtime(buoi.bat_dau)
+    thu = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"][bd.weekday()]
+    lop = buoi.khoa_hoc.ma if buoi.khoa_hoc_id else buoi.yeu_cau.ma
+    dong = [f"Topic: Buổi dạy {lop} - {buoi.yeu_cau.mon_hoc} ({nhan_buoi(buoi)}) của gia sư {buoi.gia_su.ho_ten} "
+            f"và học viên {buoi.hoc_vien.ho_ten} vào {bd:%H:%M} {thu} {bd:%d/%m/%Y}",
+            f"Vào lớp: {link_lop(buoi, request)}"]
+    if buoi.zoom_meeting_id:
+        mid = buoi.zoom_meeting_id
+        dong.append("Meeting ID: " + (" ".join([mid[:3], mid[3:7], mid[7:]]) if len(mid) == 11 else mid))
+    if buoi.zoom_passcode:
+        dong.append(f"Passcode: {buoi.zoom_passcode}")
+    dong.append(f"Phòng mở trước {NV.get('MO_PHONG_TRUOC_PHUT', 10)} phút.")
+    return "\n".join(dong)
+
+
+def buoi_dang_mo(ma_lop, now=None):
+    """(buổi trong cửa sổ vào lớp, buổi sắp tới) của một lớp cố định (SD-14)."""
+    now = now or timezone.now()
+    ma = (ma_lop or "").upper()
+    if ma.startswith("BH-"):
+        ds = BuoiHoc.objects.filter(pk=int(ma[3:]) if ma[3:].isdigit() else 0)
+    else:
+        ds = BuoiHoc.objects.filter(khoa_hoc__ma_lop=ma)
+    ds = ds.filter(trang_thai=TT.DA_LEN_LICH).exclude(zoom_join_url="").order_by("bat_dau")
+    truoc = timedelta(minutes=NV.get("MO_PHONG_TRUOC_PHUT", 10))
+    sau = timedelta(minutes=NV.get("DONG_PHONG_SAU_PHUT", 5))
+    dang = ds.filter(bat_dau__lte=now + truoc, ket_thuc_luc__gte=now - sau).first()
+    sap = ds.filter(bat_dau__gt=now + truoc).first()
+    return dang, sap
 
 
 def noi_dung_gui_phu_huynh(buoi):

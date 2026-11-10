@@ -140,24 +140,16 @@ def trang_chu(request):
         })
         return render(request, "core/trang_chu_tuyen_sinh.html", ctx)
     # Gia sư: chỉ thấy dữ liệu của chính mình (BRULE-23)
-    from core.services.buoi_hoc import quet_han
-    quet_han()
-    now = timezone.now()
-    buoi = u.buoi_hoc.select_related("hoc_vien", "yeu_cau__mon_hoc")
-    ctx = {
-        "ds_buoi_cho_xn": [b for b in buoi.filter(trang_thai=BuoiHoc.TrangThai.DA_LEN_LICH, bat_dau__lte=now)
-                           .order_by("bat_dau") if b.cho_xac_nhan],
-        "ds_buoi_sap_toi": buoi.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now)
-                           .order_by("bat_dau")[:5],
-        "so_khoa_phu_trach": u.khoa_hoc_phu_trach.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).count(),
-        "so_buoi_sap_toi": u.buoi_hoc.filter(trang_thai=BuoiHoc.TrangThai.DA_LEN_LICH).count(),
-        "ds_loi_moi": u.loi_moi.filter(trang_thai=LoiMoi.TrangThai.CHO, het_han_luc__gt=timezone.now())
-                      .select_related("yeu_cau__hoc_vien", "yeu_cau__mon_hoc").order_by("het_han_luc"),
-        "ds_khoa": u.khoa_hoc_phu_trach.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC)
-                   .select_related("hoc_vien", "yeu_cau__mon_hoc").order_by("pk"),
-        "ds_cho_chot": YeuCauHocTap.objects.filter(
-            gia_su=u, trang_thai__in=[YeuCauHocTap.TrangThai.DA_PHAN_CONG, YeuCauHocTap.TrangThai.HOC_THU_XONG])
-            .select_related("hoc_vien", "mon_hoc"),
-        **chung,
-    }
+    from datetime import datetime
+    from core.services import trang_chu as tc
+    from core.services.buoi_hoc import link_lop
+    thang = None
+    try:
+        thang = datetime.strptime(request.GET.get("thang", ""), "%Y-%m").date()
+    except ValueError:
+        pass
+    ctx = tc.gia_su(u, thang)
+    ctx["now"] = timezone.now()
+    if ctx["tiep"]:
+        ctx["link_lop_tiep"] = link_lop(ctx["tiep"], request)
     return render(request, "core/trang_chu_gia_su.html", ctx)

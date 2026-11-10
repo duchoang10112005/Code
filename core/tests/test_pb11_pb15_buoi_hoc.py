@@ -21,7 +21,7 @@ MK = "MatKhau@Manh123"
 TT = BuoiHoc.TrangThai
 YC = YeuCauHocTap.TrangThai
 KHOA = {"so_buoi_dang_ky": 2, "thoi_luong_phut": 60, "hoc_phi_moi_buoi": 200_000, "thu_lao_moi_buoi": 120_000}
-DANH_GIA = {"noi_dung": "Phương trình bậc hai", "xep_loai": "TOT", "danh_gia": "Em làm bài tốt",
+DANH_GIA = {"noi_dung": "Phương trình bậc hai", "xep_loai": "TOT", "danh_gia": "Em làm bài tốt, nắm chắc công thức nghiệm",
             "dan_do_buoi_sau": "Làm bài 1-5"}
 
 

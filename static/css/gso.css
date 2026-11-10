@@ -261,3 +261,47 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .trang-loi h1{margin:0;font-size:22px;font-weight:600}
 .nav a span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lenh .o-nhap input::-webkit-search-cancel-button{display:none}
+
+/* Chip trạng thái theo màu (dùng chung mọi màn) */
+.chip.xanh{background:#EAF2FF;color:#1D4ED8}.chip.xanh .d{background:#3B82F6}
+.chip.cam{background:#FFF4E5;color:#B45309}.chip.cam .d{background:#F59E0B}
+.chip.do{background:#FDECEC;color:#C2292E}.chip.do .d{background:#E5484D}
+.chip.xanh_la{background:#E6FAF7;color:#0F766E}.chip.xanh_la .d{background:#14B8A6}
+.chip.tim{background:#EEF0FF;color:#4F46E5}.chip.tim .d{background:#6366F1}
+.chip.xam{background:#F1F3F9;color:#4A5068}.chip.xam .d{background:#9AA1B8}
+.btn.nhe{height:30px;padding:0 10px;border-color:#E1E4F5;color:#4F46E5;font-size:13px}.btn.nhe:hover{background:#EEF0FF;border-color:#C7CBF9;color:#4F46E5}
+
+/* Trang chủ */
+.chao{position:relative;overflow:hidden;border-radius:12px;min-height:168px;padding:28px 32px;border:1px solid #F3E4DE;
+  background:radial-gradient(120% 140% at 0% 0%,#FFE6DC 0%,rgba(255,230,220,0) 55%),radial-gradient(80% 120% at 100% 100%,#E3E5FF 0%,rgba(227,229,255,0) 65%),#FFF8F5}
+.chao h2{margin:0;font-size:26px;line-height:34px;font-weight:600;letter-spacing:-.01em}
+.chao p{margin:8px 0 0;color:#4A5068;line-height:22px;max-width:560px}
+.chao .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chao .chips span{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.9);font-size:13px;font-weight:500;white-space:nowrap}
+.chao .trang-tri{position:absolute;right:-60px;top:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#FFD0BD,#F6C9B8 40%,rgba(201,166,214,.5) 70%,transparent 72%);opacity:.6}
+.chi-so{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.chi-so>div{padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.chi-so>div+div{border-left:1px solid #E6E9F2}
+.chi-so .v{font-size:20px;font-weight:600;line-height:26px;white-space:nowrap}
+.chi-so .l{font-size:12px;color:#646B85;white-space:nowrap}
+.ke-tiep{display:grid;grid-template-columns:184px minmax(0,1fr);overflow:hidden}
+.ke-tiep .trai{padding:20px;background:#F7F8FC;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.ke-tiep .dem{font-size:24px;font-weight:600}
+.nhom-viec{position:relative;display:flex;align-items:center;gap:10px;height:40px;padding:0 16px;font-size:13px;font-weight:600;border-bottom:1px solid}
+.nhom-viec::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cham)}
+.nhom-viec .so{height:20px;min-width:20px;padding:0 7px;border-radius:10px;background:var(--cham);color:#fff;display:grid;place-items:center;font-size:12px}
+.icon-tron{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:13px}
+.tien-do{display:flex;height:6px;border-radius:3px;background:#EEF0F5;overflow:hidden}
+.tien-do .da{background:#14B8A6}.tien-do .xep{background:#99E6DA}
+.lich-thang .luoi{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;text-align:center}
+.lich-thang .thu{font-size:11px;color:#9AA1B8;font-weight:500;margin-bottom:4px}
+.lich-thang .o{height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.lich-thang .o b{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:400}
+.lich-thang .o.ngoai b{color:#C4C9D6}.lich-thang .o.nay b{background:#6366F1;color:#fff;font-weight:600}
+.lich-thang .o i{display:flex;gap:2px;height:4px}.lich-thang .o i span{width:4px;height:4px;border-radius:50%}
+.thao-tac{height:40px;padding:0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;display:flex;align-items:center;gap:10px;font-weight:500;color:#1E2235;text-decoration:none;transition:all .15s}
+.thao-tac:hover{border-color:#C7CBF9;background:#FAFAFF;text-decoration:none;color:#1E2235;transform:translateY(-1px)}
+.thao-tac .ic{width:24px;height:24px;border-radius:6px;display:grid;place-items:center}
+.thao-tac kbd{margin-left:auto}
+.ngay-nho{width:40px;flex:none;text-align:center;border-radius:8px;padding:4px 0}
+.ngay-nho small{display:block;font-size:10px;font-weight:600;letter-spacing:.04em}.ngay-nho b{display:block;font-size:15px;line-height:18px}
