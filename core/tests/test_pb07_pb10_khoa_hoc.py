@@ -105,13 +105,13 @@ class NhanhBTest(DuLieu):
     def test_BRULE13_chua_co_buoi_thu_hoan_tat_thi_khong_ghi_ket_qua(self):
         self.tao_buoi_thu(trang_thai=BuoiHoc.TrangThai.DA_LEN_LICH)
         with self.assertRaises(ValidationError):
-            dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.TIEP_TUC)
+            dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.DONG_Y)
 
     def test_BRULE14_da_hoc_thu_thi_phai_co_ket_qua_tiep_tuc_moi_tao_khoa(self):
         self.tao_buoi_thu()
-        with self.assertRaisesMessage(ValidationError, "Tiếp tục"):
+        with self.assertRaisesMessage(ValidationError, "Đồng ý đăng ký"):
             dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
-        dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.TIEP_TUC)
+        dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.DONG_Y)
         self.assertEqual(self.yc.trang_thai, YC.HOC_THU_XONG)
         khoa = dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
         self.assertEqual(khoa.gia_su, self.gs)
@@ -119,8 +119,8 @@ class NhanhBTest(DuLieu):
     def test_PB08_khong_tiep_tuc_thi_dong_yeu_cau_va_khong_tao_khoa(self):
         self.tao_buoi_thu()
         with self.assertRaises(ValidationError):
-            dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.DUNG, "")  # thiếu lý do
-        dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.DUNG, "Gia đình chuyển nhà")
+            dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.KHONG_DANG_KY, "")  # thiếu lý do
+        dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.KHONG_DANG_KY, "Gia đình chuyển nhà")
         self.assertEqual(self.yc.trang_thai, YC.DONG)
         with self.assertRaises(ValidationError):
             dv.tao_khoa_hoc(self.nvts, self.yc, KHOA)
@@ -140,7 +140,7 @@ class NhanhBTest(DuLieu):
     def test_PB08_ghi_ket_qua_qua_giao_dien_chuyen_sang_trang_tao_khoa(self):
         self.tao_buoi_thu()
         self.dang_nhap(self.nvts)
-        r = self.client.post(reverse("yeu_cau_ket_qua_hoc_thu", args=[self.yc.pk]), {"ket_qua": "TIEP_TUC"})
+        r = self.client.post(reverse("yeu_cau_ket_qua_hoc_thu", args=[self.yc.pk]), {"ket_qua": "DONG_Y"})
         self.assertRedirects(r, reverse("khoa_hoc_tao", args=[self.yc.pk]))
 
 
@@ -234,7 +234,7 @@ class SuaLoiCodeReviewPhan4Test(DuLieu):
 
     def test_PB03_loc_cho_chot_gom_ca_hoc_thu_xong(self):
         self.tao_buoi_thu()
-        dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.TIEP_TUC)
+        dv.ghi_ket_qua_hoc_thu(self.nvts, self.yc, KQ.DONG_Y)
         self.dang_nhap(self.nvts)
         r = self.client.get(reverse("yeu_cau_danh_sach"), {"cho_chot": "on"})
         self.assertEqual([y.pk for y in r.context["trang"]], [self.yc.pk])

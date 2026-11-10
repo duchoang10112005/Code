@@ -28,6 +28,10 @@ class User(AbstractUser):
     ho_ten = models.CharField("Họ tên", max_length=150)
     so_dien_thoai = models.CharField("Số điện thoại", max_length=20, blank=True)
     # Khóa tài khoản = is_active=False (Django tự chặn đăng nhập tài khoản không hoạt động).
+    # True khi Admin tạo tài khoản / đặt lại mật khẩu → sau khi đăng nhập bắt đổi mật khẩu (SD-02).
+    phai_doi_mat_khau = models.BooleanField("Phải đổi mật khẩu", default=False)
+    ly_do_khoa = models.CharField("Lý do khóa", max_length=300, blank=True)
+    khoa_luc = models.DateTimeField("Khóa lúc", null=True, blank=True)
 
     class Meta:
         verbose_name = "Tài khoản"
@@ -56,6 +60,37 @@ class User(AbstractUser):
     def la_gia_su(self):
         return self.vai_tro == self.VaiTro.GIA_SU
 
+    @property
+    def trang_thai_tai_khoan(self):
+        """Nhãn hiển thị: Đã khóa · Chưa đăng nhập · Hoạt động."""
+        if not self.is_active:
+            return "Đã khóa"
+        if self.last_login is None:
+            return "Chưa đăng nhập"
+        return "Hoạt động"
+
+
+class MaMoiGiaSu(models.Model):
+    """Link "Mời gia sư đăng ký" của từng Tuyển sinh (SD-04). Người mời = người hậu kiểm."""
+
+    ma = models.CharField("Mã mời", max_length=12, unique=True)
+    tuyen_sinh = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ma_moi_gia_su")
+    het_han_luc = models.DateTimeField("Hết hạn lúc", null=True, blank=True, help_text="Trống = không hết hạn")
+    dang_mo = models.BooleanField("Đang mở", default=True)
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Mã mời gia sư"
+        verbose_name_plural = "D1 · Mã mời gia sư"
+        ordering = ["-tao_luc"]
+
+    def __str__(self):
+        return f"{self.ma} ({self.tuyen_sinh})"
+
+    @property
+    def con_hieu_luc(self):
+        return self.dang_mo and (self.het_han_luc is None or self.het_han_luc > timezone.now())
+
 
 # =============================================================================
 # D2 – Hồ sơ gia sư (PB-04; BRULE-09, BRULE-10)
@@ -63,11 +98,35 @@ class User(AbstractUser):
 class MonHoc(models.Model):
     ma = models.CharField("Mã môn", max_length=20, unique=True)
     ten = models.CharField("Tên môn", max_length=100)
+    # Bài test năng lực của môn (Admin cấu hình, không viết cứng trong code).
+    bai_test_url = models.URLField("Link bài test", max_length=500, blank=True)
+    bai_test_so_cau = models.PositiveIntegerField("Số câu", null=True, blank=True)
+    bai_test_phut = models.PositiveIntegerField("Thời gian làm bài (phút)", null=True, blank=True)
+    diem_dat = models.DecimalField("Điểm đạt", max_digits=4, decimal_places=2, null=True, blank=True)
+    dang_mo = models.BooleanField("Đang mở đăng ký", default=True)
 
     class Meta:
         verbose_name = "Môn học"
         verbose_name_plural = "D2 · Môn học"
         ordering = ["ten"]
+
+    def __str__(self):
+        return self.ten
+
+
+class CapDo(models.Model):
+    """Danh mục cấp độ do trung tâm cấu hình (VD "Lớp 6–7", "IELTS 6.5–7.5")."""
+
+    mon_hoc = models.ForeignKey(MonHoc, null=True, blank=True, on_delete=models.CASCADE, related_name="cap_do",
+                                help_text="Trống = cấp độ dùng chung cho mọi môn")
+    ten = models.CharField("Tên cấp độ", max_length=80)
+    thu_tu = models.PositiveIntegerField("Thứ tự", default=0)
+    dang_mo = models.BooleanField("Đang dùng", default=True)
+
+    class Meta:
+        verbose_name = "Cấp độ"
+        verbose_name_plural = "D2 · Cấp độ"
+        ordering = ["mon_hoc__ten", "thu_tu", "ten"]
 
     def __str__(self):
         return self.ten
@@ -89,6 +148,14 @@ class HoSoGiaSu(models.Model):
     trang_thai = models.CharField(
         "Trạng thái", max_length=20, choices=TrangThai.choices, default=TrangThai.CHO_DUYET
     )
+    # Tuyển sinh mời gia sư này → người hậu kiểm các buổi của gia sư (SD-04, SD-21).
+    nguoi_moi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                  related_name="gia_su_da_moi", verbose_name="Tuyển sinh phụ trách")
+    ma_moi = models.ForeignKey(MaMoiGiaSu, null=True, blank=True, on_delete=models.SET_NULL, related_name="ho_so")
+    so_lop_toi_da = models.PositiveIntegerField("Số lớp tối đa", default=4)
+    tam_nghi_den = models.DateField("Tạm nghỉ đến ngày", null=True, blank=True)
+    muc_tieu_buoi_thang = models.PositiveIntegerField("Mục tiêu số buổi / tháng", default=20)
+    truong_hoc = models.CharField("Trường / học vấn", max_length=200, blank=True)
     cap_nhat_luc = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -98,6 +165,10 @@ class HoSoGiaSu(models.Model):
     def __str__(self):
         return self.user.ho_ten
 
+    @property
+    def dang_tam_nghi(self):
+        return bool(self.tam_nghi_den and self.tam_nghi_den >= timezone.localdate())
+
 
 class MonGiaSu(models.Model):
     """Môn gia sư đăng ký dạy. Chỉ Admin được duyệt (BRULE-10)."""
@@ -106,10 +177,19 @@ class MonGiaSu(models.Model):
         CHO_DUYET = "CHO_DUYET", "Chờ duyệt"
         DA_DUYET = "DA_DUYET", "Đã duyệt"
         TU_CHOI = "TU_CHOI", "Bị từ chối"
+        DA_RUT = "DA_RUT", "Đã rút"
 
     ho_so = models.ForeignKey(HoSoGiaSu, on_delete=models.CASCADE, related_name="mon_day")
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.PROTECT)
+    # Chuỗi hiển thị (giữ để tương thích); danh mục thật ở cap_do_duyet.
     cap_do = models.CharField("Cấp độ dạy", max_length=100, blank=True, help_text="VD: Lớp 6–9, IELTS 6.5")
+    cap_do_duyet = models.ManyToManyField(CapDo, blank=True, related_name="mon_gia_su",
+                                          verbose_name="Cấp độ (đề nghị / được duyệt)")
+    diem_test = models.DecimalField("Điểm bài test", max_digits=4, decimal_places=2, null=True, blank=True)
+    anh_ket_qua_test = models.FileField("Ảnh kết quả test", upload_to="minh_chung/test/", blank=True)
+    link_ket_qua_test = models.URLField("Link kết quả test", max_length=500, blank=True)
+    ly_do_dang_ky = models.TextField("Kinh nghiệm / lý do đăng ký", blank=True)
+    gui_luc = models.DateTimeField("Gửi lúc", null=True, blank=True)
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.CHO_DUYET)
     duyet_boi = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -128,6 +208,46 @@ class MonGiaSu(models.Model):
         return f"{self.ho_so} – {self.mon_hoc} ({self.get_trang_thai_display()})"
 
 
+class MinhChung(models.Model):
+    """Nhiều minh chứng cho một môn (hoặc chung cho hồ sơ): tệp ≤ 5MB hoặc link https."""
+
+    class Loai(models.TextChoices):
+        BANG_CAP = "BANG_CAP", "Bằng cấp"
+        BANG_DIEM = "BANG_DIEM", "Bảng điểm"
+        THE_SV = "THE_SV", "Thẻ sinh viên"
+        CHUNG_CHI = "CHUNG_CHI", "Chứng chỉ"
+        GIAY_KHEN = "GIAY_KHEN", "Giấy khen"
+        KHAC = "KHAC", "Khác"
+
+    class Kieu(models.TextChoices):
+        TEP = "TEP", "Tệp"
+        LINK = "LINK", "Link"
+
+    ho_so = models.ForeignKey(HoSoGiaSu, on_delete=models.CASCADE, related_name="minh_chung")
+    mon_gia_su = models.ForeignKey(MonGiaSu, null=True, blank=True, on_delete=models.CASCADE,
+                                   related_name="minh_chung")
+    loai = models.CharField("Loại", max_length=20, choices=Loai.choices)
+    kieu = models.CharField("Dạng", max_length=10, choices=Kieu.choices)
+    tep = models.FileField("Tệp", upload_to="minh_chung/", blank=True)
+    url = models.URLField("Link", max_length=500, blank=True)
+    mo_ta = models.CharField("Mô tả", max_length=200, blank=True)
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Minh chứng"
+        verbose_name_plural = "D2 · Minh chứng"
+        ordering = ["tao_luc"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(Q(kieu="TEP") & ~Q(tep="")) | (Q(kieu="LINK") & ~Q(url="")),
+                name="minh_chung_co_tep_hoac_link",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.get_loai_display()} – {self.ho_so}"
+
+
 class LichRanh(models.Model):
     class Thu(models.IntegerChoices):
         T2 = 0, "Thứ 2"
@@ -138,8 +258,22 @@ class LichRanh(models.Model):
         T7 = 5, "Thứ 7"
         CN = 6, "Chủ nhật"
 
+    class Khung(models.TextChoices):
+        SANG = "SANG", "Sáng 08–11"
+        CHIEU = "CHIEU", "Chiều 14–17"
+        TOI_SOM = "TOI_SOM", "Tối sớm 17:30–19"
+        TOI = "TOI", "Tối 19–21"
+
+    # Giờ của từng khung trên lưới giờ rảnh (UI): (từ, đến).
+    GIO_KHUNG = {
+        "SANG": ("08:00", "11:00"), "CHIEU": ("14:00", "17:00"),
+        "TOI_SOM": ("17:30", "19:00"), "TOI": ("19:00", "21:00"),
+    }
+
     ho_so = models.ForeignKey(HoSoGiaSu, on_delete=models.CASCADE, related_name="lich_ranh")
     thu = models.IntegerField(choices=Thu.choices)
+    # Khung trên lưới giờ rảnh; tu_gio/den_gio điền theo khung để so trùng giờ như cũ.
+    khung = models.CharField("Khung giờ", max_length=10, choices=Khung.choices, blank=True)
     tu_gio = models.TimeField()
     den_gio = models.TimeField()
 
@@ -152,7 +286,23 @@ class LichRanh(models.Model):
                 condition=Q(den_gio__gt=F("tu_gio")), name="lich_ranh_gio_hop_le",
                 violation_error_message="Giờ kết thúc phải sau giờ bắt đầu.",
             ),
+            models.UniqueConstraint(fields=["ho_so", "thu", "khung"], condition=~Q(khung=""),
+                                    name="lich_ranh_mot_khung_moi_thu"),
         ]
+
+    @classmethod
+    def khung_cua_gio(cls, tu_gio, den_gio):
+        """Khung (SANG/CHIEU/...) giao nhiều nhất với khoảng giờ; dùng chuyển dữ liệu cũ."""
+        def phut(t):
+            return t.hour * 60 + t.minute
+        tot, best = 0, ""
+        for k, (a, b) in cls.GIO_KHUNG.items():
+            a_p = int(a[:2]) * 60 + int(a[3:])
+            b_p = int(b[:2]) * 60 + int(b[3:])
+            giao = min(b_p, phut(den_gio)) - max(a_p, phut(tu_gio))
+            if giao > tot:
+                tot, best = giao, k
+        return best
 
     def __str__(self):
         return f"{self.get_thu_display()} {self.tu_gio:%H:%M}–{self.den_gio:%H:%M}"
@@ -168,10 +318,19 @@ class HocVien(models.Model):
     # Lưu dạng chuẩn 84xxxxxxxxx để gửi Zalo ZNS.
     sdt_phu_huynh = models.CharField("SĐT phụ huynh (Zalo)", max_length=15)
     dong_y_ghi_hinh = models.BooleanField("Phụ huynh đồng ý ghi hình buổi học", default=False)
+    class GioiTinh(models.TextChoices):
+        NAM = "NAM", "Nam"
+        NU = "NU", "Nữ"
+
+    gioi_tinh = models.CharField("Giới tính", max_length=5, choices=GioiTinh.choices, blank=True)
+    truong = models.CharField("Trường", max_length=200, blank=True)
     ghi_chu = models.TextField(blank=True)
     tao_boi = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
+    tuyen_sinh_phu_trach = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                             on_delete=models.SET_NULL, related_name="hoc_vien_phu_trach",
+                                             verbose_name="Tuyển sinh phụ trách")
     tao_luc = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -196,17 +355,27 @@ class YeuCauHocTap(models.Model):
         DONG = "DONG", "Đã đóng"
 
     class KetQuaHocThu(models.TextChoices):
-        TIEP_TUC = "TIEP_TUC", "Tiếp tục học chính thức"
+        DONG_Y = "DONG_Y", "Đồng ý đăng ký"
+        CAN_THEM_THOI_GIAN = "CAN_THEM_THOI_GIAN", "Cần thêm thời gian"
         TIM_GIA_SU_KHAC = "TIM_GIA_SU_KHAC", "Tìm gia sư khác"
-        DUNG = "DUNG", "Không tiếp tục (đóng yêu cầu)"
+        KHONG_DANG_KY = "KHONG_DANG_KY", "Không đăng ký"
 
     hoc_vien = models.ForeignKey(HocVien, on_delete=models.PROTECT, related_name="yeu_cau")
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.PROTECT)
     trinh_do = models.CharField("Trình độ / lớp", max_length=100)
+    cap_do = models.ForeignKey(CapDo, null=True, blank=True, on_delete=models.SET_NULL, related_name="+",
+                               verbose_name="Cấp độ")
     muc_tieu = models.TextField("Mục tiêu học tập")
     lich_mong_muon = models.CharField("Thời gian mong muốn", max_length=200)
     # Các thứ trong tuần học viên muốn học (0 = Thứ 2 … 6 = CN) — dùng để so khớp lịch rảnh gia sư.
     thu_mong_muon = models.JSONField("Thứ mong muốn", default=list, blank=True)
+    # Ô trên lưới khung giờ: ["<thu>-<khung>"], VD ["1-TOI", "5-SANG"]. thu_mong_muon suy từ đây.
+    khung_mong_muon = models.JSONField("Khung giờ mong muốn", default=list, blank=True)
+    ghi_chu = models.TextField("Ghi chú cho gia sư", blank=True)
+    thu_lao_du_kien = models.PositiveIntegerField("Thù lao dự kiến / buổi (đ)", null=True, blank=True,
+                                                  help_text="Trống = thỏa thuận khi mở khóa")
+    dang_ky_thang = models.BooleanField("Đăng ký chính thức luôn (nhánh A)", default=False)
+    nhac_goi_lai_luc = models.DateTimeField("Nhắc gọi lại lúc", null=True, blank=True)
     ly_do_dong = models.CharField("Lý do đóng yêu cầu", max_length=300, blank=True)
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.MOI)
     gia_su = models.ForeignKey(
@@ -261,11 +430,19 @@ class LoiMoi(models.Model):
     gui_boi = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
+    # Điểm khớp 0–100 lúc gửi (chỉ để sắp xếp / giải thích, không phải AI).
+    diem_khop = models.PositiveSmallIntegerField("Điểm khớp", null=True, blank=True)
+    chi_tiet_khop = models.JSONField("Chi tiết khớp", default=dict, blank=True)
+    ghi_chu_gia_su = models.CharField("Lời nhắn của gia sư", max_length=300, blank=True)
+    cam_ket = models.BooleanField("Cam kết dạy đúng lịch", default=False)
+
+    LY_DO_TU_CHOI_GOI_Y = ["Không trùng giờ rảnh", "Đã đủ số lớp đang dạy", "Không hợp cấp độ", "Lý do khác"]
 
     class Meta:
         verbose_name = "Lời mời nhận lớp"
         verbose_name_plural = "D5 · Lời mời nhận lớp"
         ordering = ["-gui_luc"]
+        indexes = [models.Index(fields=["trang_thai", "het_han_luc"], name="loi_moi_tt_han")]
         constraints = [
             # Một gia sư chỉ có tối đa 1 lời mời đang chờ cho cùng một yêu cầu.
             models.UniqueConstraint(
@@ -316,10 +493,31 @@ class KhoaHoc(models.Model):
     thu_lao_moi_buoi = models.PositiveIntegerField("Thù lao gia sư mỗi buổi (đ)")
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DANG_HOC)
     ghi_chu = models.CharField("Ghi chú / lý do đổi trạng thái", max_length=300, blank=True)
+    # Link lớp cố định /lop/<ma_lop>/ gửi vào nhóm Zalo lớp (SD-14). Mặc định = mã khóa.
+    ma_lop = models.CharField("Mã lớp", max_length=20, unique=True, null=True, blank=True)
+    lich_co_dinh = models.JSONField("Lịch cố định", default=list, blank=True,
+                                    help_text='VD [{"thu": 2, "gio": "20:00"}]')
+    zalo_nhom = models.CharField("Tên nhóm Zalo lớp", max_length=150, blank=True)
+    ghi_chu_phu_huynh = models.TextField("Ghi chú của phụ huynh (gia sư thấy)", blank=True)
     tao_boi = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
+    tuyen_sinh_phu_trach = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                             on_delete=models.SET_NULL, related_name="khoa_hoc_ts_phu_trach",
+                                             verbose_name="Tuyển sinh phụ trách")
+    hoan_thanh_luc = models.DateTimeField("Hoàn thành lúc", null=True, blank=True)
     tao_luc = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.ma_lop:
+            KhoaHoc.objects.filter(pk=self.pk, ma_lop__isnull=True).update(ma_lop=self.ma)
+            self.ma_lop = self.ma
+
+    @property
+    def sap_het_buoi(self):
+        return (self.trang_thai == self.TrangThai.DANG_HOC
+                and self.so_buoi_con_lai <= settings.NGHIEP_VU.get("NGUONG_SAP_HET_BUOI", 2))
 
     class Meta:
         verbose_name = "Khóa học"
@@ -389,6 +587,9 @@ class DoiGiaSu(models.Model):
                                    related_name="+")
     ly_do = models.CharField("Lý do", max_length=30, choices=LyDo.choices)
     ghi_chu = models.CharField("Ghi chú", max_length=300, blank=True)
+    thu_lao_moi = models.PositiveIntegerField("Thù lao mới / buổi (đ)", null=True, blank=True)
+    gia_su_moi_dong_y = models.BooleanField("Gia sư mới đã đồng ý (qua Zalo)", default=False)
+    so_buoi_chuyen = models.PositiveIntegerField("Số buổi đã xếp được chuyển", default=0)
     trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.DA_THUC_HIEN)
     tao_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     tao_luc = models.DateTimeField(auto_now_add=True)
@@ -403,6 +604,45 @@ class DoiGiaSu(models.Model):
 
     def __str__(self):
         return f"Đổi GS {self.khoa_hoc.ma}: {self.gia_su_cu} ({self.get_trang_thai_display()})"
+
+
+class GiaHanKhoa(models.Model):
+    """Lịch sử gia hạn (Tuyển sinh) / sửa số buổi nhập nhầm (Quản trị viên) của một khóa (SD-24)."""
+
+    class Loai(models.TextChoices):
+        GIA_HAN = "GIA_HAN", "Gia hạn thêm buổi"
+        SUA_NHAP_NHAM = "SUA_NHAP_NHAM", "Sửa số buổi nhập nhầm"
+
+    khoa_hoc = models.ForeignKey(KhoaHoc, on_delete=models.CASCADE, related_name="lich_su_gia_han")
+    loai = models.CharField(max_length=20, choices=Loai.choices)
+    so_buoi_cu = models.PositiveIntegerField()
+    so_buoi_moi = models.PositiveIntegerField()
+    hoc_phi_moi_buoi = models.PositiveIntegerField("Học phí mới / buổi (đ)", null=True, blank=True)
+    ly_do = models.CharField("Lý do", max_length=300)
+    tao_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Gia hạn / sửa số buổi"
+        verbose_name_plural = "D6 · Gia hạn khóa học"
+        ordering = ["-tao_luc"]
+
+
+class TaiKhoanZoom(models.Model):
+    """Nhóm tài khoản host Zoom của trung tâm. Số phòng chạy cùng lúc = số tài khoản đang bật."""
+
+    email_host = models.EmailField("Email host", unique=True)
+    host_key = models.CharField("Host key", max_length=10, blank=True)
+    dang_bat = models.BooleanField("Đang bật", default=True)
+    ghi_chu = models.CharField("Ghi chú", max_length=200, blank=True)
+
+    class Meta:
+        verbose_name = "Tài khoản Zoom"
+        verbose_name_plural = "D7 · Tài khoản Zoom"
+        ordering = ["email_host"]
+
+    def __str__(self):
+        return self.email_host
 
 
 # =============================================================================
@@ -473,8 +713,19 @@ class BuoiHoc(models.Model):
         "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="buoi_doi_sang",
         help_text="Buổi cũ bị dời lịch sang buổi này",
     )
+    # Học bù cho buổi đã hủy (gia sư / học viên nghỉ). Khác thay_the_cho (dời lịch). Mỗi buổi chỉ bù 1 lần.
+    hoc_bu_cho = models.OneToOneField(
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="buoi_hoc_bu",
+    )
+    # = bat_dau + thoi_luong_phut, tính trong save(); dùng lọc "Chờ xác nhận" và trùng giờ bằng SQL.
+    ket_thuc_luc = models.DateTimeField("Kết thúc lúc", null=True, blank=True, db_index=True)
+    ly_do_huy_ghi_chu = models.CharField("Ghi chú hủy", max_length=300, blank=True)
 
     # Zoom
+    tai_khoan_zoom = models.ForeignKey("TaiKhoanZoom", null=True, blank=True, on_delete=models.SET_NULL,
+                                       related_name="buoi_hoc", verbose_name="Host Zoom")
+    phong_mo_luc = models.DateTimeField(null=True, blank=True)
+    phong_dong_luc = models.DateTimeField(null=True, blank=True)
     zoom_meeting_id = models.CharField(max_length=50, blank=True)
     zoom_join_url = models.URLField(max_length=500, blank=True)
     zoom_start_url = models.URLField(max_length=1000, blank=True)
@@ -482,10 +733,12 @@ class BuoiHoc(models.Model):
     zoom_loi = models.TextField(blank=True)
 
     # Kết quả buổi học (gia sư nhập)
-    noi_dung = models.TextField("Nội dung buổi học", blank=True)
-    xep_loai = models.CharField("Đánh giá chung", max_length=20, choices=XepLoai.choices, blank=True)
-    danh_gia = models.TextField("Nhận xét học viên", blank=True)
-    dan_do_buoi_sau = models.TextField("Dặn dò cho buổi sau", blank=True)
+    noi_dung = models.TextField("Nội dung đã dạy", blank=True)
+    xep_loai = models.CharField("Mức tiếp thu", max_length=20, choices=XepLoai.choices, blank=True)
+    danh_gia = models.TextField("Nhận xét gửi phụ huynh", blank=True)
+    dan_do_buoi_sau = models.TextField("Bài tập về nhà", blank=True)
+    ghi_chu_tuyen_sinh = models.TextField("Ghi chú cho Tuyển sinh", blank=True)
+    gui_zalo_phu_huynh = models.BooleanField("Gửi nhận xét qua Zalo", default=True)
     xac_nhan_luc = models.DateTimeField(null=True, blank=True)
     # Hạn xác nhận = giờ kết thúc + HAN_XAC_NHAN_GIO; quá hạn thì hệ thống tự hủy buổi.
     han_xac_nhan = models.DateTimeField("Hạn xác nhận", null=True, blank=True)
@@ -517,6 +770,10 @@ class BuoiHoc(models.Model):
         verbose_name = "Buổi học"
         verbose_name_plural = "D7 · Buổi học"
         ordering = ["-bat_dau"]
+        indexes = [
+            models.Index(fields=["gia_su", "trang_thai", "bat_dau"], name="buoi_gs_tt_bd"),
+            models.Index(fields=["trang_thai", "han_xac_nhan"], name="buoi_tt_han"),
+        ]
         constraints = [
             # Buổi chính thức bắt buộc thuộc một khóa học.
             models.CheckConstraint(
@@ -525,8 +782,42 @@ class BuoiHoc(models.Model):
             ),
         ]
 
+    def save(self, *args, **kwargs):
+        if self.bat_dau and self.thoi_luong_phut:
+            self.ket_thuc_luc = self.bat_dau + timedelta(minutes=self.thoi_luong_phut)
+            uf = kwargs.get("update_fields")
+            if uf is not None and ("bat_dau" in uf or "thoi_luong_phut" in uf):
+                kwargs["update_fields"] = list(set(uf) | {"ket_thuc_luc"})
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Buổi {self.get_loai_display().lower()} {self.hoc_vien} {timezone.localtime(self.bat_dau):%d/%m %H:%M}"
+
+    @property
+    def tu_huy(self):
+        return self.trang_thai == self.TrangThai.DA_HUY and self.ly_do_huy == self.LyDoHuy.QUA_HAN
+
+    @property
+    def trang_thai_hien_thi(self):
+        """(khóa, nhãn) hiển thị — suy ra theo thời gian, không lưu (Q4)."""
+        TT = self.TrangThai
+        now = timezone.now()
+        if self.trang_thai == TT.LOI_ZOOM:
+            return ("loi_zoom", "Lỗi Zoom")
+        if self.trang_thai == TT.DA_LEN_LICH:
+            if now < self.bat_dau:
+                return ("sap_dien_ra", "Sắp diễn ra")
+            if now < self.ket_thuc:
+                return ("dang_hoc", "Đang học")
+            if self.han_xac_nhan and now > self.han_xac_nhan:
+                return ("qua_han", "Quá hạn xác nhận")
+            gio = settings.NGHIEP_VU.get("NHAC_TRUOC_HAN_GIO", 3)
+            if self.han_xac_nhan and self.han_xac_nhan - now <= timedelta(hours=gio):
+                return ("sap_tu_huy", "Sắp tự hủy")
+            return ("cho_xac_nhan", "Chờ xác nhận")
+        if self.tu_huy:
+            return ("tu_huy", "Tự hủy")
+        return (self.trang_thai.lower(), self.get_trang_thai_display())
 
     @property
     def ket_thuc(self):
@@ -543,6 +834,101 @@ class BuoiHoc(models.Model):
         return (self.trang_thai == self.TrangThai.DA_LEN_LICH and self.ket_thuc <= now
                 and (self.han_xac_nhan is None or now <= self.han_xac_nhan))
 
+
+class BanNhapDanhGia(models.Model):
+    """Tự lưu nháp phiếu đánh giá (SD-15); QTV dùng để khôi phục sau lỗi hệ thống (SD-34)."""
+
+    buoi_hoc = models.OneToOneField(BuoiHoc, on_delete=models.CASCADE, related_name="ban_nhap")
+    du_lieu = models.JSONField(default=dict)
+    luu_luc = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Bản nháp đánh giá"
+        verbose_name_plural = "D7 · Bản nháp đánh giá"
+
+
+class HauKiemBuoi(models.Model):
+    """Kết quả 5 tiêu chí (hệ thống chấm) + kết luận của Tuyển sinh phụ trách (SD-20..22)."""
+
+    class KetLuan(models.TextChoices):
+        CHUA_KIEM_TRA = "CHUA_KIEM_TRA", "Chưa kiểm tra"
+        HOP_LE = "HOP_LE", "Hợp lệ"
+        CO_VAN_DE = "CO_VAN_DE", "Có vấn đề"
+        DA_XU_LY_TINH = "DA_XU_LY_TINH", "Đã xử lý"
+        DA_XU_LY_KHONG_TINH = "DA_XU_LY_KHONG_TINH", "Không tính"
+
+    class LyDo(models.TextChoices):
+        VAO_TRE = "VAO_TRE", "Vào trễ"
+        THIEU_GIO = "THIEU_GIO", "Tham gia thiếu giờ"
+        NHAN_XET_SO_SAI = "NHAN_XET_SO_SAI", "Nhận xét sơ sài"
+        CHUA_GUI_ZALO = "CHUA_GUI_ZALO", "Chưa gửi Zalo"
+        PHU_HUYNH_PHAN_ANH = "PHU_HUYNH_PHAN_ANH", "Phụ huynh phản ánh"
+        KHAC = "KHAC", "Khác"
+
+    buoi_hoc = models.OneToOneField(BuoiHoc, on_delete=models.CASCADE, related_name="hau_kiem")
+    nguoi_phu_trach = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                        related_name="hau_kiem_phu_trach")
+    da_cham = models.BooleanField("Hệ thống đã chấm", default=False)
+    tre_phut = models.SmallIntegerField("Gia sư vào trễ (phút)", null=True, blank=True)
+    ty_le_gia_su = models.PositiveSmallIntegerField("Gia sư tham gia (%)", null=True, blank=True)
+    ty_le_hoc_vien = models.PositiveSmallIntegerField("Học viên tham gia (%)", null=True, blank=True)
+    do_dai_nhan_xet = models.PositiveSmallIntegerField(default=0)
+    da_gui_zalo = models.BooleanField(default=False)
+    so_canh_bao = models.PositiveSmallIntegerField(default=0)
+    ket_luan = models.CharField(max_length=30, choices=KetLuan.choices, default=KetLuan.CHUA_KIEM_TRA)
+    ly_do = models.CharField(max_length=30, choices=LyDo.choices, blank=True)
+    ghi_chu = models.TextField(blank=True)
+    hang_loat = models.BooleanField("Kết luận bằng duyệt nhanh", default=False)
+    kiem_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                 related_name="+")
+    kiem_luc = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Hậu kiểm buổi học"
+        verbose_name_plural = "D7 · Hậu kiểm buổi học"
+        indexes = [models.Index(fields=["nguoi_phu_trach", "ket_luan"], name="hau_kiem_ts_kl")]
+
+    def __str__(self):
+        return f"Hậu kiểm {self.buoi_hoc.ma}: {self.get_ket_luan_display()}"
+
+
+class YeuCauXuLy(models.Model):
+    """Nguồn của trang Cần xem xét: gia sư xin mở lại, lỗi hệ thống, sự cố Zoom (SD-19, SD-34)."""
+
+    class Loai(models.TextChoices):
+        MO_LAI = "MO_LAI", "Xin mở lại buổi"
+        LOI_HE_THONG = "LOI_HE_THONG", "Lỗi hệ thống"
+        SU_CO_ZOOM = "SU_CO_ZOOM", "Sự cố Zoom"
+
+    class TrangThai(models.TextChoices):
+        CHO_XU_LY = "CHO_XU_LY", "Chờ xử lý"
+        DA_XU_LY = "DA_XU_LY", "Đã xử lý"
+        TU_CHOI = "TU_CHOI", "Từ chối"
+        CHUYEN_KY_THUAT = "CHUYEN_KY_THUAT", "Đã chuyển kỹ thuật"
+
+    loai = models.CharField(max_length=20, choices=Loai.choices)
+    buoi_hoc = models.ForeignKey(BuoiHoc, null=True, blank=True, on_delete=models.CASCADE, related_name="yeu_cau_xu_ly")
+    nguoi_gui = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                  related_name="+")
+    noi_dung = models.TextField(blank=True)
+    minh_chung_url = models.URLField(max_length=500, blank=True)
+    su_co = models.ForeignKey("SuCoHeThong", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    trang_thai = models.CharField(max_length=20, choices=TrangThai.choices, default=TrangThai.CHO_XU_LY)
+    han_xu_ly = models.DateTimeField(null=True, blank=True)
+    xu_ly_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                  related_name="+")
+    xu_ly_luc = models.DateTimeField(null=True, blank=True)
+    ket_qua = models.CharField("Kết quả / lý do", max_length=300, blank=True)
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Yêu cầu xử lý"
+        verbose_name_plural = "D7 · Yêu cầu xử lý"
+        ordering = ["han_xu_ly", "tao_luc"]
+        indexes = [models.Index(fields=["trang_thai", "loai"], name="ycxl_tt_loai")]
+
+    def __str__(self):
+        return f"{self.get_loai_display()} {self.buoi_hoc.ma if self.buoi_hoc_id else ''}"
 
 # =============================================================================
 # D8 – Thù lao gia sư (PB-16, PB-17; đối soát)
@@ -595,6 +981,7 @@ class DoiSoatThang(models.Model):
     class TrangThai(models.TextChoices):
         DA_KIEM_TRA = "DA_KIEM_TRA", "Tuyển sinh đã kiểm tra"
         DA_CHOT = "DA_CHOT", "Đã chốt"
+        DA_CHI_TRA = "DA_CHI_TRA", "Đã chi trả"
 
     gia_su = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="doi_soat")
     thang = models.DateField()
@@ -604,6 +991,10 @@ class DoiSoatThang(models.Model):
     kiem_tra_luc = models.DateTimeField(null=True, blank=True)
     chot_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     chot_luc = models.DateTimeField(null=True, blank=True)
+    chi_tra_boi = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                    related_name="+")
+    chi_tra_luc = models.DateTimeField(null=True, blank=True)
+    chung_tu = models.CharField("Chứng từ chi trả", max_length=200, blank=True)
     ghi_chu = models.TextField(blank=True)
 
     class Meta:
@@ -618,12 +1009,30 @@ class DoiSoatThang(models.Model):
 # D9 – Nhật ký hệ thống (PB-23; nhật ký gửi tin Zalo/Email)
 # =============================================================================
 class NhatKy(models.Model):
+    """Chỉ thêm, không sửa, không xóa."""
+
+    class LoaiDoiTuong(models.TextChoices):
+        YEU_CAU = "YEU_CAU", "Yêu cầu"
+        LOI_MOI = "LOI_MOI", "Lời mời"
+        KHOA_HOC = "KHOA_HOC", "Khóa học"
+        BUOI_HOC = "BUOI_HOC", "Buổi học"
+        HO_SO = "HO_SO", "Hồ sơ"
+        MON = "MON", "Môn"
+        THU_LAO = "THU_LAO", "Thù lao"
+        TAI_KHOAN = "TAI_KHOAN", "Tài khoản"
+        HE_THONG = "HE_THONG", "Hệ thống"
+
     nguoi_thuc_hien = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     hanh_dong = models.CharField(max_length=100)
     doi_tuong = models.CharField(max_length=200, blank=True)
     chi_tiet = models.TextField(blank=True)
+    loai_doi_tuong = models.CharField(max_length=20, choices=LoaiDoiTuong.choices, blank=True)
+    ma_doi_tuong = models.CharField(max_length=30, blank=True, db_index=True)
+    gia_tri_cu = models.JSONField(null=True, blank=True)
+    gia_tri_moi = models.JSONField(null=True, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
     thoi_diem = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -653,3 +1062,83 @@ class NhatKyGuiTin(models.Model):
         verbose_name = "Nhật ký gửi tin"
         verbose_name_plural = "D9 · Nhật ký gửi tin"
         ordering = ["-thoi_diem"]
+
+
+class ThongBao(models.Model):
+    """Thông báo trong ứng dụng (chuông). Tạo cùng chỗ gửi email."""
+
+    class Loai(models.TextChoices):
+        LOI_MOI = "LOI_MOI", "Lời mời"
+        YEU_CAU = "YEU_CAU", "Yêu cầu"
+        KHOA_HOC = "KHOA_HOC", "Khóa học"
+        BUOI_HOC = "BUOI_HOC", "Buổi học"
+        HAU_KIEM = "HAU_KIEM", "Hậu kiểm"
+        HO_SO = "HO_SO", "Hồ sơ"
+        THU_LAO = "THU_LAO", "Thù lao"
+        XEM_XET = "XEM_XET", "Cần xem xét"
+        KHAC = "KHAC", "Khác"
+
+    nguoi_nhan = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="thong_bao")
+    loai = models.CharField(max_length=20, choices=Loai.choices, default=Loai.KHAC)
+    tieu_de = models.CharField(max_length=200)
+    noi_dung = models.TextField(blank=True)
+    url = models.CharField(max_length=300, blank=True)
+    da_doc = models.BooleanField(default=False)
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Thông báo"
+        verbose_name_plural = "D9 · Thông báo"
+        ordering = ["-tao_luc"]
+        indexes = [models.Index(fields=["nguoi_nhan", "da_doc"], name="thong_bao_nn_doc")]
+
+    def __str__(self):
+        return self.tieu_de
+
+
+class NhacViec(models.Model):
+    """Việc có hạn của Tuyển sinh: gọi lại phụ huynh, hỏi gia hạn… (trang chủ Tuyển sinh)."""
+
+    class Loai(models.TextChoices):
+        GOI_LAI_PHU_HUYNH = "GOI_LAI_PHU_HUYNH", "Gọi lại phụ huynh"
+        HOI_GIA_HAN = "HOI_GIA_HAN", "Hỏi phụ huynh gia hạn"
+        KHAC = "KHAC", "Khác"
+
+    nguoi_phu_trach = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="nhac_viec")
+    loai = models.CharField(max_length=30, choices=Loai.choices)
+    yeu_cau = models.ForeignKey(YeuCauHocTap, null=True, blank=True, on_delete=models.CASCADE, related_name="nhac_viec")
+    khoa_hoc = models.ForeignKey(KhoaHoc, null=True, blank=True, on_delete=models.CASCADE, related_name="nhac_viec")
+    noi_dung = models.CharField(max_length=300, blank=True)
+    han_luc = models.DateTimeField()
+    da_bao_luc = models.DateTimeField(null=True, blank=True, help_text="Lần cuối gửi thông báo quá hạn")
+    xong_luc = models.DateTimeField(null=True, blank=True)
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Nhắc việc"
+        verbose_name_plural = "D9 · Nhắc việc"
+        ordering = ["han_luc"]
+
+    def __str__(self):
+        return f"{self.get_loai_display()} – hạn {self.han_luc:%d/%m}"
+
+
+class SuCoHeThong(models.Model):
+    """Lỗi 500 tự ghi lại khi người dùng thao tác (middleware, SD-34)."""
+
+    nguoi_dung = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                   related_name="+")
+    duong_dan = models.CharField(max_length=500)
+    phuong_thuc = models.CharField(max_length=10)
+    ma_loi = models.PositiveSmallIntegerField(default=500)
+    chi_tiet = models.TextField(blank=True)
+    du_lieu_form = models.JSONField(default=dict, blank=True)
+    tao_luc = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Sự cố hệ thống"
+        verbose_name_plural = "D9 · Sự cố hệ thống"
+        ordering = ["-tao_luc"]
+
+    def __str__(self):
+        return f"{self.ma_loi} {self.phuong_thuc} {self.duong_dan}"

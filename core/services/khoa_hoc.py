@@ -5,16 +5,20 @@ Backlog: PB-07 (phần kết quả học thử), PB-08, PB-09, PB-10. Quy tắc:
 Từ yêu cầu DA_PHAN_CONG:
   Nhánh A – chưa học thử → tạo khóa ngay → CHINH_THUC
   Nhánh B – có buổi học thử HOÀN TẤT với gia sư hiện tại → ghi kết quả:
-      TIEP_TUC        → HOC_THU_XONG → tạo khóa → CHINH_THUC
+      DONG_Y          → HOC_THU_XONG → tạo khóa → CHINH_THUC
       TIM_GIA_SU_KHAC → DANG_TIM (bỏ gán gia sư, NVTS mời người khác)
-      DUNG            → DONG
+      CAN_THEM_THOI_GIAN → giữ DA_PHAN_CONG, nhắc gọi lại sau 2 ngày
+      KHONG_DANG_KY   → DONG
 """
 
+from datetime import timedelta
+
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from core.models import BuoiHoc, KhoaHoc, LoiMoi, YeuCauHocTap
+from core.models import BuoiHoc, KhoaHoc, LoiMoi, NhacViec, YeuCauHocTap
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
 from core.services.tien_ich import dinh_dang_tien
@@ -65,7 +69,7 @@ def co_buoi_hoc_thu(yc):
 def co_the_tao_khoa(yc):
     if yc.trang_thai == YC.DA_PHAN_CONG:
         return not co_buoi_hoc_thu(yc)  # nhánh A
-    return yc.trang_thai == YC.HOC_THU_XONG and yc.ket_qua_hoc_thu == KQ.TIEP_TUC
+    return yc.trang_thai == YC.HOC_THU_XONG and yc.ket_qua_hoc_thu == KQ.DONG_Y
 
 
 # =============================================================================
@@ -77,29 +81,44 @@ def ghi_ket_qua_hoc_thu(nvts, yc, ket_qua, ghi_chu=""):
         raise ValidationError("Kết quả học thử không hợp lệ.")
     if not buoi_hoc_thu_hoan_tat(yc):
         raise ValidationError("Chưa có buổi học thử hoàn tất với gia sư hiện tại, chưa ghi kết quả được.")
-    if ket_qua == KQ.DUNG and not ghi_chu:
+    if ket_qua == KQ.KHONG_DANG_KY and not ghi_chu:
         raise ValidationError("Cần ghi lý do phụ huynh không tiếp tục.")
 
     gia_su = yc.gia_su
     now = timezone.now()
-    cap_nhat = {"ket_qua_hoc_thu": ket_qua, "ghi_chu_hoc_thu": ghi_chu, "cap_nhat_luc": now}
-    if ket_qua == KQ.TIEP_TUC:
+    cap_nhat = {"ket_qua_hoc_thu": ket_qua, "ghi_chu_hoc_thu": ghi_chu, "cap_nhat_luc": now,
+                "nhac_goi_lai_luc": None}
+    if ket_qua == KQ.DONG_Y:
         cap_nhat["trang_thai"] = YC.HOC_THU_XONG
+    elif ket_qua == KQ.CAN_THEM_THOI_GIAN:
+        # Giữ Đã có gia sư, hẹn gọi lại phụ huynh sau NGAY_NHAC_GOI_LAI ngày.
+        cap_nhat["nhac_goi_lai_luc"] = now + timedelta(days=settings.NGHIEP_VU.get("NGAY_NHAC_GOI_LAI", 2))
     elif ket_qua == KQ.TIM_GIA_SU_KHAC:
         cap_nhat.update(trang_thai=YC.DANG_TIM, gia_su=None, phan_cong_luc=None)
     else:
-        cap_nhat.update(trang_thai=YC.DONG, ly_do_dong=ghi_chu)
+        cap_nhat.update(trang_thai=YC.DONG, ly_do_dong=f"Không đăng ký sau học thử: {ghi_chu}"[:300])
+    ket_thuc = ket_qua not in (KQ.DONG_Y, KQ.CAN_THEM_THOI_GIAN)
 
     with transaction.atomic():
         n = YeuCauHocTap.objects.filter(pk=yc.pk, trang_thai=YC.DA_PHAN_CONG).update(**cap_nhat)
         if n == 0:
             raise ValidationError("Yêu cầu không còn ở trạng thái Đã có gia sư.")
+        # Nhắc gọi lại cũ (nếu có) coi như xong; tạo nhắc mới khi cần thêm thời gian.
+        NhacViec.objects.filter(yeu_cau=yc, loai=NhacViec.Loai.GOI_LAI_PHU_HUYNH, xong_luc__isnull=True).update(
+            xong_luc=now)
+        if ket_qua == KQ.CAN_THEM_THOI_GIAN:
+            NhacViec.objects.create(nguoi_phu_trach=nvts, loai=NhacViec.Loai.GOI_LAI_PHU_HUYNH, yeu_cau=yc,
+                                    noi_dung=f"Gọi lại phụ huynh {yc.hoc_vien.ten_phu_huynh} về kết quả học thử {yc.ma}",
+                                    han_luc=cap_nhat["nhac_goi_lai_luc"])
+        if ket_qua == KQ.KHONG_DANG_KY:
+            LoiMoi.objects.filter(yeu_cau=yc, trang_thai=LoiMoi.TrangThai.CHO).update(
+                trang_thai=LoiMoi.TrangThai.VOIDED, phan_hoi_luc=now)
         ghi_nhat_ky(nvts, "Ghi kết quả học thử", yc.ma, f"{KQ(ket_qua).label}. {ghi_chu}".strip())
-        if ket_qua != KQ.TIEP_TUC and gia_su:
+        if ket_thuc and gia_su:
             huy_buoi_thu_chua_hoc(yc, gia_su, f"Kết quả học thử: {KQ(ket_qua).label}")
     yc.refresh_from_db()
 
-    if ket_qua != KQ.TIEP_TUC and gia_su:
+    if ket_thuc and gia_su:
         gui_email(gia_su, f"Kết quả học thử {yc.ma}",
                   f"Sau buổi học thử môn {yc.mon_hoc} với học viên {yc.hoc_vien}, phụ huynh chọn: "
                   f"{KQ(ket_qua).label}.\nCảm ơn bạn đã dạy thử.")
@@ -113,13 +132,13 @@ def tao_khoa_hoc(nvts, yc, du_lieu):
     """du_lieu: so_buoi_dang_ky, thoi_luong_phut, hoc_phi_moi_buoi, thu_lao_moi_buoi (NV tuyển sinh nhập)."""
     yc.refresh_from_db()
     if yc.trang_thai == YC.DA_PHAN_CONG and co_buoi_hoc_thu(yc):
-        raise ValidationError("Yêu cầu này đã học thử: cần ghi kết quả \"Tiếp tục\" trước khi tạo khóa.")
+        raise ValidationError("Yêu cầu này đã học thử: cần ghi kết quả \"Đồng ý đăng ký\" trước khi tạo khóa.")
     if yc.gia_su_id and not la_du_dieu_kien(yc.gia_su, yc.mon_hoc):
         raise ValidationError(f"Gia sư {yc.gia_su.ho_ten} không còn đủ điều kiện dạy môn {yc.mon_hoc} "
                               "(bị khóa, tạm ngừng hoặc bị thu hồi môn).")
     if not co_the_tao_khoa(yc):
         raise ValidationError("Chỉ tạo khóa cho yêu cầu đã phân công (đăng ký thẳng) "
-                              "hoặc đã học thử với kết quả Tiếp tục.")
+                              "hoặc đã học thử với kết quả Đồng ý đăng ký.")
     trang_thai_cu = yc.trang_thai
     try:
         with transaction.atomic():

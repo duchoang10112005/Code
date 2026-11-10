@@ -259,7 +259,7 @@ class KetQuaHocThuForm(BootstrapMixin, forms.Form):
 
     def clean(self):
         d = super().clean()
-        if d.get("ket_qua") == YeuCauHocTap.KetQuaHocThu.DUNG and not d.get("ghi_chu", "").strip():
+        if d.get("ket_qua") == YeuCauHocTap.KetQuaHocThu.KHONG_DANG_KY and not d.get("ghi_chu", "").strip():
             self.add_error("ghi_chu", "Cần ghi lý do phụ huynh không tiếp tục.")
         return d
 

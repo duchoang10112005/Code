@@ -52,7 +52,7 @@ def ghi_ket_qua_hoc_thu(request, pk):
 def tao(request, pk):
     yc = get_object_or_404(YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su"), pk=pk)
     if not dv.co_the_tao_khoa(yc):
-        messages.error(request, "Yêu cầu này chưa đủ điều kiện tạo khóa (đã học thử thì cần kết quả Tiếp tục).")
+        messages.error(request, "Yêu cầu này chưa đủ điều kiện tạo khóa (đã học thử thì cần kết quả Đồng ý đăng ký).")
         return redirect("yeu_cau_chi_tiet", pk=pk)
     form = KhoaHocForm(request.POST or None)
     if request.method == "POST" and form.is_valid():

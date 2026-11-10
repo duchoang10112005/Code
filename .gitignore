@@ -2,3 +2,5 @@
 __pycache__/
 db.sqlite3
 .env
+media/
+db_sao_luu_*.sqlite3

@@ -111,6 +111,11 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# Tệp gia sư tải lên (ảnh kết quả test, minh chứng ≤ 5MB). Không đưa lên Git; chỉ phục vụ qua view có kiểm tra quyền.
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+GIOI_HAN_TEP_MB = 5
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
@@ -163,4 +168,15 @@ NGHIEP_VU = {
     # CHỈ ĐỂ CHẠY THỬ: > 0 thì mọi buổi học mới dài đúng số phút này (VD 1) và hậu kiểm chạy ngay sau buổi,
     # để test trọn luồng tạo buổi → xác nhận → thù lao → đối soát mà không phải chờ 1 giờ. Để 0 khi dùng thật.
     "THOI_LUONG_BUOI_DEMO": int(os.getenv("THOI_LUONG_BUOI_DEMO", "0")),
+    # --- Tham số cho UI mới (thiết kế luồng, 02 · mục 6) ---
+    "MO_PHONG_TRUOC_PHUT": int(os.getenv("MO_PHONG_TRUOC_PHUT", "10")),
+    "DONG_PHONG_SAU_PHUT": int(os.getenv("DONG_PHONG_SAU_PHUT", "5")),
+    "GIO_KET_THUC_MUON_NHAT": os.getenv("GIO_KET_THUC_MUON_NHAT", "22:00"),
+    "NGUONG_SAP_HET_BUOI": int(os.getenv("NGUONG_SAP_HET_BUOI", "2")),
+    "TRE_TOI_DA_PHUT": int(os.getenv("TRE_TOI_DA_PHUT", "5")),
+    "DO_DAI_NHAN_XET_TOI_THIEU": int(os.getenv("DO_DAI_NHAN_XET_TOI_THIEU", "30")),
+    "NGAY_NHAC_GOI_LAI": int(os.getenv("NGAY_NHAC_GOI_LAI", "2")),
+    "GIAY_HOAN_TAC": int(os.getenv("GIAY_HOAN_TAC", "6")),
+    "SO_BUOI_TAO_TOI_DA_MOT_LAN": int(os.getenv("SO_BUOI_TAO_TOI_DA_MOT_LAN", "8")),
+    "CHO_ZOOM_TONG_HOP_PHUT": int(os.getenv("CHO_ZOOM_TONG_HOP_PHUT", "30")),
 }

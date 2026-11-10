@@ -12,7 +12,8 @@ class TaiKhoanAdmin(UserAdmin):
     list_display = ("username", "ho_ten", "vai_tro", "email", "is_active")
     list_filter = ("vai_tro", "is_active")
     search_fields = ("username", "ho_ten", "email")
-    fieldsets = UserAdmin.fieldsets + (("Thông tin trung tâm", {"fields": ("vai_tro", "ho_ten", "so_dien_thoai")}),)
+    fieldsets = UserAdmin.fieldsets + (("Thông tin trung tâm", {"fields": ("vai_tro", "ho_ten", "so_dien_thoai",
+                                                                         "phai_doi_mat_khau", "ly_do_khoa", "khoa_luc")}),)
     add_fieldsets = UserAdmin.add_fieldsets + (("Thông tin trung tâm", {"fields": ("vai_tro", "ho_ten", "email")}),)
 
 
@@ -51,7 +52,16 @@ class BuoiHocAdmin(admin.ModelAdmin):
 
 @admin.register(m.NhatKy)
 class NhatKyAdmin(admin.ModelAdmin):
-    list_display = ("thoi_diem", "nguoi_thuc_hien", "hanh_dong", "doi_tuong")
+    """Nhật ký chỉ thêm: không sửa, không xóa (SD-35)."""
+    list_display = ("thoi_diem", "nguoi_thuc_hien", "hanh_dong", "doi_tuong", "ma_doi_tuong")
+    list_filter = ("loai_doi_tuong",)
+    search_fields = ("ma_doi_tuong", "hanh_dong", "chi_tiet")
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(m.NhatKyGuiTin)
@@ -59,5 +69,7 @@ class NhatKyGuiTinAdmin(admin.ModelAdmin):
     list_display = ("thoi_diem", "kenh", "nguoi_nhan", "thanh_cong")
 
 
-for model in (m.MonHoc, m.MonGiaSu, m.LichRanh, m.HocVien, m.LoiMoi, m.ThuLao, m.DieuChinhThuLao, m.DoiSoatThang):
+for model in (m.MonHoc, m.MonGiaSu, m.LichRanh, m.HocVien, m.LoiMoi, m.ThuLao, m.DieuChinhThuLao, m.DoiSoatThang,
+              m.MaMoiGiaSu, m.CapDo, m.MinhChung, m.GiaHanKhoa, m.TaiKhoanZoom, m.BanNhapDanhGia, m.HauKiemBuoi,
+              m.YeuCauXuLy, m.ThongBao, m.NhacViec, m.SuCoHeThong):
     admin.site.register(model)
