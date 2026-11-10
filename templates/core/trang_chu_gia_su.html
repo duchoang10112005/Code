@@ -1,5 +1,5 @@
 {% extends "giao_dien/khung.html" %}
-{% load gso %}
+{% load gso l10n %}
 {% block title %}Trang chủ{% endblock %}
 {% block tieu_de_trang %}Trang chủ{% endblock %}
 {% block content %}
@@ -17,7 +17,7 @@
 
   <section class="card chi-so" aria-label="Chỉ số tháng {{ HOM_NAY.month }}">
     <div style="flex-direction:row;align-items:center;gap:10px">
-      <svg width="40" height="40" viewBox="0 0 44 44" style="flex:none;transform:rotate(-90deg)" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="#EEF0FF" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="{{ vong_offset }}"/></svg>
+      <svg width="40" height="40" viewBox="0 0 44 44" style="flex:none;transform:rotate(-90deg)" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="#EEF0FF" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#6366F1" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="{{ vong_offset|unlocalize }}"/></svg>
       <div><div class="v">{{ so_buoi_thang }}<span style="color:#9AA1B8;font-weight:500;font-size:14px">/{{ muc_tieu }}</span></div><div class="l">buổi dạy T{{ HOM_NAY.month }}</div></div>
     </div>
     <div><div class="v">{{ tam_tinh|tien }}</div>
