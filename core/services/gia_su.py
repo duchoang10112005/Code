@@ -184,9 +184,16 @@ def _bao_gia_su(ho_so, tieu_de, noi_dung):
 
 
 @transaction.atomic
-def duyet_mon(admin, mon_gia_su, ghi_chu=""):
+def duyet_mon(admin, mon_gia_su, ghi_chu="", cap_do_ids=None):
+    """cap_do_ids: QTV có thể bớt cấp độ gia sư đăng ký (chỉ giữ cấp độ thuộc môn đó)."""
     if mon_gia_su.trang_thai == MonGiaSu.TrangThai.DA_DUYET:
         raise ValidationError(f"Môn {mon_gia_su.mon_hoc} đã được duyệt rồi.")  # chống bấm 2 lần / F5
+    if cap_do_ids is not None:
+        hop_le = list(mon_gia_su.mon_hoc.cap_do.filter(pk__in=[int(i) for i in cap_do_ids if str(i).isdigit()]))
+        if not hop_le:
+            raise ValidationError("Chọn ít nhất một cấp độ được duyệt.")
+        mon_gia_su.cap_do_duyet.set(hop_le)
+        mon_gia_su.cap_do = ", ".join(c.ten for c in hop_le)[:100]
     mon_gia_su.trang_thai = MonGiaSu.TrangThai.DA_DUYET
     mon_gia_su.duyet_boi, mon_gia_su.duyet_luc = admin, timezone.now()
     mon_gia_su.ghi_chu_duyet = ghi_chu

@@ -93,3 +93,34 @@ class DanhSachGiaSuTest(TestCase):
         self.assertEqual(r.context["chon"]["hs"], self.hs_a)
         self.assertEqual(len(r.context["chon"]["luoi"]), 4)
         self.assertContains(r, "Người mời")
+
+
+class HoSoGiaSuQtvTest(TestCase):
+    """Bước 5c – QTV › Hồ sơ gia sư (SD-28): duyệt môn chọn cấp độ; Tuyển sinh chỉ xem."""
+
+    def setUp(self):
+        from core.models import CapDo
+        self.ad = User.objects.create_user("ad", password=MK, vai_tro=User.VaiTro.ADMIN, ho_ten="QTV")
+        self.ts = User.objects.create_user("ts", password=MK, vai_tro=User.VaiTro.TUYEN_SINH, ho_ten="TS")
+        gs = User.objects.create_user("gs", password=MK, vai_tro=User.VaiTro.GIA_SU, ho_ten="GS Mới")
+        self.hs = HoSoGiaSu.objects.create(user=gs, trang_thai=HoSoGiaSu.TrangThai.CHO_DUYET)
+        toan = MonHoc.objects.create(ma="TOAN", ten="Toán")
+        self.c8 = CapDo.objects.create(mon_hoc=toan, ten="Lớp 8")
+        self.c12 = CapDo.objects.create(mon_hoc=toan, ten="Lớp 12")
+        self.mg = MonGiaSu.objects.create(ho_so=self.hs, mon_hoc=toan)
+        self.mg.cap_do_duyet.set([self.c8, self.c12])
+
+    def test_duyet_bot_cap_do_roi_kich_hoat(self):
+        self.client.force_login(self.ad)
+        url = reverse("gia_su_chi_tiet", args=[self.hs.pk])
+        self.assertContains(self.client.get(url), "Duyệt môn Toán")
+        self.client.post(reverse("gia_su_xu_ly_mon", args=[self.mg.pk]), {"hanh_dong": "duyet", "cap_do": [self.c8.pk]})
+        self.mg.refresh_from_db()
+        self.assertEqual((self.mg.trang_thai, list(self.mg.cap_do_duyet.all())), ("DA_DUYET", [self.c8]))
+        self.assertContains(self.client.get(url), "Kích hoạt hồ sơ")
+
+    def test_tuyen_sinh_chi_xem(self):
+        self.client.force_login(self.ts)
+        r = self.client.get(reverse("gia_su_chi_tiet", args=[self.hs.pk]))
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, "Duyệt môn Toán")

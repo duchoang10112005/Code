@@ -262,12 +262,34 @@ def _qs_tru(request, *bo):
 
 @vai_tro_required(ADMIN, TUYEN_SINH)
 def chi_tiet(request, pk):
-    ho_so = get_object_or_404(HoSoGiaSu.objects.select_related("user"), pk=pk, user__vai_tro=User.VaiTro.GIA_SU)
+    """QTV › Hồ sơ gia sư (SD-28): duyệt / từ chối môn (chọn cấp độ duyệt), đổi trạng thái hồ sơ. Tuyển sinh chỉ xem."""
+    from django.db.models import Count, Q as Q_
+    from core.models import BuoiHoc, KhoaHoc, NhatKy
+    from core.services.yeu_cau import KHUNG
+    ho_so = get_object_or_404(HoSoGiaSu.objects.select_related("user", "nguoi_moi"), pk=pk,
+                              user__vai_tro=User.VaiTro.GIA_SU)
+    u = ho_so.user
+    ds_mon = list(ho_so.mon_day.exclude(trang_thai=MonGiaSu.TrangThai.DA_RUT).select_related(
+        "mon_hoc", "duyet_boi").prefetch_related("cap_do_duyet", "mon_hoc__cap_do", "minh_chung")
+        .order_by("trang_thai", "mon_hoc__ten"))
+    ranh = {f"{t}-{k}" for t, k in ho_so.lich_ranh.exclude(khung="").values_list("thu", "khung")}
+    day = dv.khung_dang_day(ho_so)
+    gio = {"SANG": "08:00–11:00", "CHIEU": "14:00–17:00", "TOI_SOM": "17:30–19:00", "TOI": "19:00–21:00"}
+    ten = {"SANG": "Sáng", "CHIEU": "Chiều", "TOI_SOM": "Tối sớm", "TOI": "Tối"}
+    luoi = [{"ten": ten[k], "gio": gio[k], "o": ["day" if f"{t}-{k}" in day else ("ranh" if f"{t}-{k}" in ranh else "")
+                                                for t in range(7)]} for k in KHUNG]
+    bh = BuoiHoc.objects.filter(gia_su=u, trang_thai=BuoiHoc.TrangThai.HOAN_TAT).aggregate(
+        n=Count("pk"), tot=Count("pk", filter=Q_(xep_loai="TOT")))
     return render(request, "core/gia_su/chi_tiet.html", {
-        "ho_so": ho_so,
-        "ds_mon": ho_so.mon_day.select_related("mon_hoc", "duyet_boi").order_by("trang_thai", "mon_hoc__ten"),
-        "ds_lich": ho_so.lich_ranh.all(),
-        "TrangThai": HoSoGiaSu.TrangThai,
+        "ho_so": ho_so, "ds_mon": ds_mon, "cs": dv.chi_so_gia_su(ho_so), "luoi": luoi, "so_ranh": len(ranh),
+        "so_duyet": sum(1 for m in ds_mon if m.trang_thai == MonGiaSu.TrangThai.DA_DUYET),
+        "so_buoi": bh["n"], "pt_tot": round(bh["tot"] * 100 / bh["n"]) if bh["n"] else None,
+        "khoa": KhoaHoc.objects.filter(gia_su=u, trang_thai__in=[KhoaHoc.TrangThai.DANG_HOC, KhoaHoc.TrangThai.TAM_DUNG])
+        .select_related("hoc_vien", "yeu_cau__mon_hoc"),
+        "nhat_ky": NhatKy.objects.filter(Q_(doi_tuong=u.username) | Q_(nguoi_thuc_hien=u, loai_doi_tuong="HO_SO"))
+        .order_by("-thoi_diem")[:6],
+        "minh_chung_chung": ho_so.minh_chung.filter(mon_gia_su__isnull=True),
+        "la_qtv": request.user.la_admin, "TrangThai": HoSoGiaSu.TrangThai,
     })
 
 
@@ -279,7 +301,7 @@ def xu_ly_mon(request, pk):
     ly_do = request.POST.get("ly_do", "").strip()
     try:
         if hanh_dong == "duyet":
-            dv.duyet_mon(request.user, mg, ly_do)
+            dv.duyet_mon(request.user, mg, ly_do, cap_do_ids=request.POST.getlist("cap_do") or None)
             messages.success(request, f"Đã duyệt môn {mg.mon_hoc} cho {mg.ho_so.user.ho_ten}. Đã gửi email báo gia sư.")
         elif hanh_dong in ("tu_choi", "thu_hoi"):
             dv.tu_choi_mon(request.user, mg, ly_do)
