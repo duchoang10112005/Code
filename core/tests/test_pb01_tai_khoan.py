@@ -146,3 +146,56 @@ class SuaLoiCodeReviewTaiKhoanTest(TestCase):
         self.assertRedirects(r, reverse("tai_khoan_danh_sach"))
         r = self.client.post(reverse("tai_khoan_doi_trang_thai", args=[gs.pk]), {"next": "/tai-khoan/?q=gs"})
         self.assertRedirects(r, "/tai-khoan/?q=gs")
+
+
+class TaiKhoanV2Test(TestCase):
+    """Bước 5e – SD-03: mật khẩu tạm tự sinh, khóa có lý do, đặt lại mật khẩu."""
+
+    def setUp(self):
+        self.admin = tao_user("ad", User.VaiTro.ADMIN)
+        self.client.login(username="ad", password=MK)
+
+    def test_tao_khong_nhap_mat_khau_sinh_mat_khau_tam(self):
+        r = self.client.post(reverse("tai_khoan_tao"), {"ho_ten": "Lan", "email": "Lan@x.vn", "vai_tro": "TUYEN_SINH",
+                                                        "gui_email": "on"})
+        self.assertRedirects(r, reverse("tai_khoan_danh_sach"), fetch_redirect_response=False)
+        u = User.objects.get(username="lan@x.vn")
+        self.assertTrue(u.phai_doi_mat_khau)
+        r = self.client.get(reverse("tai_khoan_danh_sach"))
+        mk = r.context["mk_tam"]["mk"]
+        self.assertTrue(u.check_password(mk))
+        self.assertNotIn(mk, self.client.get(reverse("tai_khoan_danh_sach")).content.decode())  # chỉ hiện 1 lần
+        r = self.client.post(reverse("tai_khoan_tao"), {"ho_ten": "B", "email": "lan@x.vn", "vai_tro": "GIA_SU"})
+        self.assertContains(r, "Email này đã có tài khoản")
+        self.assertTrue(r.context["mo_tao"])
+
+    def test_khoa_luu_ly_do_va_dat_lai_mat_khau(self):
+        gs = tao_user("gs", User.VaiTro.GIA_SU)
+        self.client.post(reverse("tai_khoan_doi_trang_thai", args=[gs.pk]), {"ly_do": "Nghỉ dạy"})
+        gs.refresh_from_db()
+        self.assertEqual((gs.is_active, gs.ly_do_khoa), (False, "Nghỉ dạy"))
+        self.client.post(reverse("tai_khoan_dat_lai_mk", args=[gs.pk]))
+        gs.refresh_from_db()
+        self.assertTrue(gs.phai_doi_mat_khau)
+        self.assertFalse(gs.check_password(MK))
+
+
+class NhatKyV2Test(TestCase):
+    """Bước 5e – SD-35: lọc theo mã (kh5 = KH-0005), người, gom theo ngày, xuất CSV."""
+
+    def setUp(self):
+        from core.services.nhat_ky import ghi_nhat_ky
+        self.admin = tao_user("ad", User.VaiTro.ADMIN)
+        ghi_nhat_ky(self.admin, "Gia hạn khóa học", "KH-0005", "16 → 20 buổi")
+        ghi_nhat_ky(None, "Tự hủy buổi quá hạn xác nhận", "BH-00399")
+        self.client.login(username="ad", password=MK)
+
+    def test_loc_ma_va_nguoi(self):
+        url = reverse("nhat_ky")
+        r = self.client.get(url, {"q": "kh5"})
+        self.assertEqual([g.hanh_dong for g in r.context["trang"]], ["Gia hạn khóa học"])
+        r = self.client.get(url, {"nguoi": "he_thong"})
+        self.assertEqual([g.ma_doi_tuong for g in r.context["trang"]], ["BH-00399"])
+        self.assertEqual(len(self.client.get(url).context["nhom"]), 1)
+        r = self.client.get(reverse("nhat_ky_csv"), {"q": "bh399"})
+        self.assertIn("BH-00399", r.content.decode("utf-8"))

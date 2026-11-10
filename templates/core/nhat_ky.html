@@ -1,31 +1,40 @@
-{% extends "base.html" %}
-{% block title %}Nhật ký thao tác · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Nhật ký thao tác{% endblock %}
+{% block crumb %}<span class="muted">Hệ thống</span><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Nhật ký thao tác</h1>{% endblock %}
 {% block content %}
-<div class="dau-trang">
-  <div><h1>Nhật ký thao tác</h1><p class="mo-ta">Ai đã làm gì, lúc nào</p></div>
-</div>
-<form class="row g-2 mb-3" method="get" role="search">
-  <div class="col-md-6"><label class="visually-hidden" for="q">Tìm kiếm</label>
-    <input id="q" name="q" value="{{ q }}" class="form-control" placeholder="Tìm hành động, đối tượng, chi tiết"></div>
-  <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-search" aria-hidden="true"></i>Tìm</button></div>
+<div class="head"><div><h2 class="h2">Nhật ký thao tác</h2><p class="lead">Mọi thay đổi trên hệ thống: ai làm, lúc nào, thay đổi gì. Nhật ký chỉ xem, không sửa hay xóa được.</p></div>
+  <a class="btn" style="margin-left:auto" href="{% url 'nhat_ky_csv' %}?{{ loc_qs }}"><i class="bi bi-box-arrow-up-right"></i>Xuất CSV</a></div>
+
+<form method="get" class="card row" style="padding:12px 16px;gap:10px">
+  <input type="hidden" name="khoang" value="{{ loc.khoang }}">
+  <div class="tabs">
+    <a href="?khoang=1&nguoi={{ loc.nguoi }}&loai={{ loc.loai }}&q={{ loc.q|urlencode }}"{% if loc.khoang == '1' %} aria-current="page"{% endif %}>Hôm nay</a>
+    <a href="?khoang=7&nguoi={{ loc.nguoi }}&loai={{ loc.loai }}&q={{ loc.q|urlencode }}"{% if loc.khoang == '7' %} aria-current="page"{% endif %}>7 ngày</a>
+    <a href="?khoang=30&nguoi={{ loc.nguoi }}&loai={{ loc.loai }}&q={{ loc.q|urlencode }}"{% if loc.khoang == '30' %} aria-current="page"{% endif %}>30 ngày</a>
+    <a href="?khoang=all&nguoi={{ loc.nguoi }}&loai={{ loc.loai }}&q={{ loc.q|urlencode }}"{% if loc.khoang == 'all' %} aria-current="page"{% endif %}>Tất cả</a></div>
+  <select class="inp" name="nguoi" style="width:200px" onchange="this.form.submit()" aria-label="Người thao tác"><option value="">Mọi người thao tác</option><option value="he_thong"{% if loc.nguoi == 'he_thong' %} selected{% endif %}>Hệ thống (tự động)</option>{% for u in ds_nguoi %}<option value="{{ u.pk }}"{% if loc.nguoi == u.pk|stringformat:'s' %} selected{% endif %}>{{ u.ho_ten|default:u.username }}</option>{% endfor %}</select>
+  <select class="inp" name="loai" style="width:170px" onchange="this.form.submit()" aria-label="Loại đối tượng"><option value="">Mọi đối tượng</option>{% for v, n in ds_loai %}<option value="{{ v }}"{% if loc.loai == v %} selected{% endif %}>{{ n }}</option>{% endfor %}</select>
+  <div class="search" style="flex:1"><i class="bi bi-search" aria-hidden="true"></i><input class="inp" type="search" name="q" value="{{ loc.q }}" placeholder="Tìm mã YC, KH, BH hoặc tên" aria-label="Tìm trong nhật ký"></div>
 </form>
-<div class="card"><div class="table-responsive">
-<table class="table">
-  <thead><tr><th>Thời điểm</th><th>Người thực hiện</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th></tr></thead>
-  <tbody>
-  {% for nk in trang %}
-    <tr>
-      <td class="text-nowrap so text-muted">{{ nk.thoi_diem|date:"d/m/Y H:i:s" }}</td>
-      <td>{{ nk.nguoi_thuc_hien.ho_ten|default:"Hệ thống" }}</td>
-      <td class="fw-semibold">{{ nk.hanh_dong }}</td>
-      <td>{{ nk.doi_tuong }}</td>
-      <td class="text-muted">{{ nk.chi_tiet }}</td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="5"><div class="trang-rong"><i class="bi bi-journal" aria-hidden="true"></i>Chưa có nhật ký nào.</div></td></tr>
+
+{% for n in nhom %}
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>{{ n.nhan }}{{ n.ngay|ngay_day_du }}</h3><span class="sm muted">{{ n.ds|length }} thao tác</span></div>
+  {% for g in n.ds %}
+  <details class="dong-ds" style="border-top:1px solid #EEF0F5">
+    <summary class="row" style="padding:12px 20px;gap:14px;cursor:pointer;list-style:none">
+      <span class="sm muted" style="width:44px">{{ g.thoi_diem|date:"H:i" }}</span>
+      {% with u=g.nguoi_thuc_hien %}<span class="av" style="width:30px;height:30px;font-size:11px;{% if not u %}background:#F1F3F8;color:#646B85{% elif u.vai_tro == 'ADMIN' %}background:#E6FAF7;color:#0F766E{% elif u.vai_tro == 'TUYEN_SINH' %}background:#EEF0FF;color:#4F46E5{% else %}background:#FFF1EA;color:#C2410C{% endif %}">{% if u %}{{ u.ho_ten|slice:":1" }}{{ u.ho_ten.split|last|slice:":1" }}{% else %}HT{% endif %}</span>
+      <span style="flex:1;min-width:0"><span class="ell" style="display:block"><b class="b5">{{ u.ho_ten|default:"Hệ thống" }}</b> {{ g.hanh_dong|lower }} {% if g.url_ma %}<a href="{{ g.url_ma }}" onclick="event.stopPropagation()">{{ g.doi_tuong|default:g.ma_doi_tuong }}</a>{% else %}<span style="color:#4F46E5">{{ g.doi_tuong }}</span>{% endif %}</span>
+        <small class="muted">{% if u %}{{ u.get_vai_tro_display }}{% else %}Tự động{% endif %}{% if g.loai_doi_tuong %} · {{ g.get_loai_doi_tuong_display }}{% endif %}</small></span>{% endwith %}
+      {% if g.gia_tri_cu is not None or g.gia_tri_moi is not None %}<span class="row sm" style="gap:6px"><span class="chip xam">{{ g.gia_tri_cu|default:"—" }}</span><i class="bi bi-chevron-right muted"></i><span class="chip xanh_la">{{ g.gia_tri_moi|default:"—" }}</span></span>{% endif %}
+      <i class="bi bi-chevron-down muted mui-ds"></i>
+    </summary>
+    <div class="sm" style="padding:4px 20px 14px 108px;color:#4A5068">{{ g.chi_tiet|default:"Không có chi tiết." }}<div class="muted" style="margin-top:4px">{{ g.thoi_diem|date:"d/m/Y H:i:s" }}{% if g.ma_doi_tuong %} · mã {{ g.ma_doi_tuong }}{% endif %}{% if g.ip %} · IP {{ g.ip }}{% endif %}</div></div>
+  </details>
   {% endfor %}
-  </tbody>
-</table>
-</div></div>
-{% include "partials/phan_trang.html" %}
+</section>
+{% empty %}<div class="card empty"><span class="ring"><i class="bi bi-clock-history"></i></span>Không có thao tác nào khớp bộ lọc.</div>{% endfor %}
+{% if trang.paginator.num_pages > 1 %}<div class="row sm muted">Trang {{ trang.number }}/{{ trang.paginator.num_pages }}<span class="row" style="margin-left:auto;gap:6px">{% if trang.has_previous %}<a class="btn sm" href="?{{ loc_qs }}&page={{ trang.previous_page_number }}">Mới hơn</a>{% endif %}{% if trang.has_next %}<a class="btn sm" href="?{{ loc_qs }}&page={{ trang.next_page_number }}">Cũ hơn</a>{% endif %}</span></div>{% endif %}
 {% endblock %}

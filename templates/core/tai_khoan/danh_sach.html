@@ -1,60 +1,105 @@
-{% extends "base.html" %}
-{% load giao_dien %}
-{% block title %}Tài khoản · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Tài khoản{% endblock %}
+{% block crumb %}<span class="muted">Hệ thống</span><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Tài khoản</h1>{% endblock %}
 {% block content %}
-<div class="dau-trang">
-  <div><h1>Quản lý tài khoản</h1><p class="mo-ta">Tạo, phân quyền, khóa và mở khóa tài khoản người dùng</p></div>
-  <a href="{% url 'tai_khoan_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo tài khoản</a>
+<div class="head"><div><h2 class="h2">Tài khoản</h2><p class="lead">Tạo tài khoản cho nhân viên Tuyển sinh và gia sư, khóa hoặc đặt lại mật khẩu khi cần.</p></div>
+  <button type="button" class="btn pri" style="margin-left:auto" data-mo-hop="drawer-tao"><i class="bi bi-plus-lg"></i>Tạo tài khoản</button></div>
+
+<div class="kpis card" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+  <div class="kpi"><div class="v">{{ kpi.tong }}</div><div class="l">Tổng tài khoản</div></div>
+  <div class="kpi"><div class="v" style="color:#0F766E">{{ kpi.hoat_dong }}</div><div class="l">Đang hoạt động</div></div>
+  <div class="kpi"><div class="v" style="color:#4F46E5">{{ kpi.chua }}</div><div class="l">Chưa đăng nhập lần nào</div></div>
+  <div class="kpi"><div class="v">{{ kpi.khoa }}</div><div class="l">Đã khóa</div></div>
 </div>
 
-<form class="row g-2 mb-3" method="get" role="search">
-  <div class="col-md-4"><label class="visually-hidden" for="q">Tìm kiếm</label>
-    <input id="q" name="q" value="{{ loc.q }}" class="form-control" placeholder="Tìm tên, tên đăng nhập, email"></div>
-  <div class="col-md-3"><label class="visually-hidden" for="vai_tro">Vai trò</label>
-    <select id="vai_tro" name="vai_tro" class="form-select">
-      <option value="">Tất cả vai trò</option>
-      {% for value, label in VaiTro.choices %}<option value="{{ value }}" {% if loc.vai_tro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select></div>
-  <div class="col-md-3"><label class="visually-hidden" for="trang_thai">Trạng thái</label>
-    <select id="trang_thai" name="trang_thai" class="form-select">
-      <option value="">Mọi trạng thái</option>
-      <option value="hoat_dong" {% if loc.trang_thai == 'hoat_dong' %}selected{% endif %}>Đang hoạt động</option>
-      <option value="khoa" {% if loc.trang_thai == 'khoa' %}selected{% endif %}>Bị khóa</option>
-    </select></div>
-  <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
-</form>
-
-<div class="card"><div class="table-responsive">
-<table class="table table-hover">
-  <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Email</th><th>Trạng thái</th><th class="cot-thao-tac">Thao tác</th></tr></thead>
-  <tbody>
+<section class="card" style="overflow:visible">
+  <form method="get" class="row" style="padding:14px 16px;gap:10px;border-bottom:1px solid #EEF0F5">
+    <div class="tabs">{% for k, n, c in ds_tab %}<a href="?vai_tro={{ k }}{% if loc.q %}&q={{ loc.q|urlencode }}{% endif %}{% if loc.trang_thai %}&trang_thai={{ loc.trang_thai }}{% endif %}"{% if k == loc.vai_tro %} aria-current="page"{% endif %}>{{ n }}<span class="cnt">{{ c }}</span></a>{% endfor %}</div>
+    <input type="hidden" name="vai_tro" value="{{ loc.vai_tro }}">
+    <select class="inp" name="trang_thai" style="width:170px;margin-left:auto" onchange="this.form.submit()" aria-label="Lọc trạng thái">
+      <option value="">Mọi trạng thái</option><option value="hoat_dong"{% if loc.trang_thai == 'hoat_dong' %} selected{% endif %}>Hoạt động</option><option value="chua_dang_nhap"{% if loc.trang_thai == 'chua_dang_nhap' %} selected{% endif %}>Chưa đăng nhập</option><option value="khoa"{% if loc.trang_thai == 'khoa' %} selected{% endif %}>Đã khóa</option></select>
+    <div class="search" style="width:280px"><i class="bi bi-search" aria-hidden="true"></i><input class="inp" type="search" name="q" value="{{ loc.q }}" placeholder="Tìm tên, email, số điện thoại" aria-label="Tìm tài khoản"></div>
+  </form>
+  {% with cot="minmax(0,1.6fr) 140px 130px 150px 150px 44px" %}
+  <div class="gt-h" style="--cols:{{ cot }}"><span>Người dùng</span><span>Vai trò</span><span>Số điện thoại</span><span>Trạng thái</span><span>Đăng nhập gần nhất</span><span></span></div>
   {% for u in trang %}
-    <tr>
-      <td class="fw-semibold">{{ u.username }}</td>
-      <td>{{ u.ho_ten }}</td>
-      <td>{{ u.get_vai_tro_display }}</td>
-      <td class="text-muted">{{ u.email|default:"—" }}</td>
-      <td>{% nhan_tai_khoan u %}</td>
-      <td class="cot-thao-tac">
-        <a href="{% url 'tai_khoan_sua' u.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</a>
-        {% if u != user %}
-        <form method="post" action="{% url 'tai_khoan_doi_trang_thai' u.pk %}" class="d-inline"
-              data-xac-nhan="{% if u.is_active %}Khóa tài khoản {{ u.username }} ({{ u.ho_ten }})? Người này sẽ bị đăng xuất và không đăng nhập được cho tới khi mở khóa.{% else %}Mở khóa tài khoản {{ u.username }} ({{ u.ho_ten }})?{% endif %}" data-nut="{% if u.is_active %}Khóa tài khoản{% else %}Mở khóa{% endif %}">
-          {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-          {% if u.is_active %}
-            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-lock" aria-hidden="true"></i>Khóa</button>
-          {% else %}
-            <button class="btn btn-sm btn-outline-success"><i class="bi bi-unlock" aria-hidden="true"></i>Mở khóa</button>
-          {% endif %}
-        </form>
-        {% endif %}
-      </td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="6"><div class="trang-rong"><i class="bi bi-person-x" aria-hidden="true"></i>Không có tài khoản phù hợp với bộ lọc.</div></td></tr>
-  {% endfor %}
-  </tbody>
-</table>
-</div></div>
-{% include "partials/phan_trang.html" %}
+  <div class="gt-r" style="--cols:{{ cot }};position:relative">
+    <span class="who"><span class="av" style="width:32px;height:32px;font-size:11px;{% if u.vai_tro == 'ADMIN' %}background:#E6FAF7;color:#0F766E{% elif u.vai_tro == 'TUYEN_SINH' %}background:#EEF0FF;color:#4F46E5{% else %}background:#FFF1EA;color:#C2410C{% endif %}">{{ u.ho_ten|default:u.username|slice:":1" }}{{ u.ho_ten.split|last|slice:":1" }}</span><span style="min-width:0"><b class="ell">{{ u.ho_ten|default:u.username }}{% if u == user %} <span class="muted" style="font-weight:400">· bạn</span>{% endif %}</b><small class="ell">{{ u.email|default:u.username }}</small></span></span>
+    <span><span class="chip {% if u.vai_tro == 'ADMIN' %}xanh_la{% elif u.vai_tro == 'TUYEN_SINH' %}tim{% else %}cam{% endif %}">{{ u.get_vai_tro_display }}</span></span>
+    <span class="sm">{{ u.so_dien_thoai|sdt|default:"—" }}</span>
+    <span>{% if not u.is_active %}<span class="chip xam" title="{{ u.ly_do_khoa }}"><span class="d"></span>Đã khóa</span>{% elif not u.last_login %}<span class="chip xanh"><span class="d"></span>Chưa đăng nhập</span>{% else %}<span class="chip xanh_la"><span class="d"></span>Hoạt động</span>{% endif %}</span>
+    <span class="sm muted">{% if u == user %}Đang trực tuyến{% elif u.last_login %}{% if u.last_login|date:"Ymd" == now|date:"Ymd" %}Hôm nay · {{ u.last_login|date:"H:i" }}{% else %}{{ u.last_login|date:"d/m · H:i" }}{% endif %}{% else %}Chưa đăng nhập{% endif %}</span>
+    <span style="position:relative"><button type="button" class="icon-btn sm" data-mo-menu="mn-tk-{{ u.pk }}" aria-haspopup="menu" aria-label="Thao tác {{ u.username }}"><i class="bi bi-three-dots"></i></button>
+      <div class="menu" id="mn-tk-{{ u.pk }}" role="menu" hidden style="right:0;top:30px;width:220px">
+        <a role="menuitem" href="{% url 'tai_khoan_sua' u.pk %}"><i class="bi bi-pencil"></i>Sửa thông tin</a>
+        {% if u.la_gia_su and u.ho_so_gia_su %}<a role="menuitem" href="{% url 'gia_su_chi_tiet' u.ho_so_gia_su.pk %}"><i class="bi bi-person-badge"></i>Hồ sơ gia sư</a>{% endif %}
+        <form method="post" action="{% url 'tai_khoan_dat_lai_mk' u.pk %}">{% csrf_token %}<button role="menuitem" data-xac-nhan="Đặt lại mật khẩu cho {{ u.ho_ten|default:u.username }}? Mật khẩu cũ hết hiệu lực ngay."><i class="bi bi-key"></i>Đặt lại mật khẩu</button></form>
+        {% if u != user %}{% if u.is_active %}<button type="button" role="menuitem" style="color:#C2292E" data-khoa="{% url 'tai_khoan_doi_trang_thai' u.pk %}" data-ten="{{ u.ho_ten|default:u.username }}"><i class="bi bi-lock"></i>Khóa tài khoản</button>
+        {% else %}<form method="post" action="{% url 'tai_khoan_doi_trang_thai' u.pk %}">{% csrf_token %}<button role="menuitem"><i class="bi bi-unlock"></i>Mở khóa</button></form>{% endif %}{% endif %}
+      </div></span>
+  </div>
+  {% empty %}<div class="empty"><span class="ring"><i class="bi bi-people"></i></span>Không có tài khoản nào khớp bộ lọc.</div>{% endfor %}
+  {% endwith %}
+  {% if trang.paginator.num_pages > 1 %}<div class="row sm muted" style="padding:12px 16px;border-top:1px solid #EEF0F5">Trang {{ trang.number }}/{{ trang.paginator.num_pages }}<span class="row" style="margin-left:auto;gap:6px">{% if trang.has_previous %}<a class="icon-btn sm" href="?vai_tro={{ loc.vai_tro }}&q={{ loc.q|urlencode }}&trang_thai={{ loc.trang_thai }}&page={{ trang.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>{% endif %}{% if trang.has_next %}<a class="icon-btn sm" href="?vai_tro={{ loc.vai_tro }}&q={{ loc.q|urlencode }}&trang_thai={{ loc.trang_thai }}&page={{ trang.next_page_number }}"><i class="bi bi-chevron-right"></i></a>{% endif %}</span></div>{% endif %}
+</section>
+
+{# Drawer tạo tài khoản #}
+<div class="overlay ben-phai" id="drawer-tao"{% if not mo_tao and not request.GET.tao %} hidden{% endif %}>
+  <form class="drawer" method="post" action="{% url 'tai_khoan_tao' %}" novalidate>{% csrf_token %}
+    <div class="row" style="padding:18px 22px;border-bottom:1px solid #EEF0F5"><h2 style="margin:0;font-size:18px">Tạo tài khoản</h2><button type="button" class="icon-btn" style="margin-left:auto" data-dong-hop aria-label="Đóng"><i class="bi bi-x-lg"></i></button></div>
+    <div class="stack" style="gap:14px;padding:18px 22px;flex:1;overflow:auto">
+      {% if form.non_field_errors %}<div class="banner" role="alert" style="background:#FDECEC;border-color:#F8C9CA">{{ form.non_field_errors.0 }}</div>{% endif %}
+      {% for f in form %}{% if f.name == 'gui_email' %}<label class="row sm" style="gap:8px;cursor:pointer">{{ f }}{{ f.label }}</label>
+      {% elif f.name == 'mat_khau' or f.name == 'nhap_lai_mat_khau' %}{% if forloop.counter0 == 5 %}<details{% if f.errors %} open{% endif %}><summary class="sm" style="cursor:pointer;color:#4F46E5">Tự đặt mật khẩu (mặc định hệ thống sinh mật khẩu tạm)</summary><div class="stack" style="gap:12px;margin-top:10px">{% endif %}
+        <div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}</div>
+        {% if f.name == 'nhap_lai_mat_khau' %}</div></details>{% endif %}
+      {% else %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</label>{{ f }}{% if f.help_text %}<span class="sm muted">{{ f.help_text }}</span>{% endif %}{% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}</div>{% endif %}{% endfor %}
+      <div class="banner sm" style="background:#F5F6FF;border-color:#DCDFFB"><span class="ic" style="color:#4F46E5"><i class="bi bi-info-circle"></i></span><span>Người dùng phải đặt mật khẩu mới ở lần đăng nhập đầu. Gia sư tạo tay chưa có người mời: mọi Tuyển sinh thấy buổi của họ ở Hậu kiểm.</span></div>
+    </div>
+    <div class="row" style="padding:14px 22px;border-top:1px solid #EEF0F5;gap:8px;justify-content:flex-end"><button type="button" class="btn" data-dong-hop>Hủy</button><button class="btn pri" data-dang-gui="Đang tạo…"><i class="bi bi-person-plus"></i>Tạo tài khoản</button></div>
+  </form>
+</div>
+
+{# Khóa có lý do #}
+<div class="overlay" id="hop-khoa" hidden>
+  <form class="dialog" method="post" data-form-khoa>{% csrf_token %}
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#FDECEC;color:#C2292E"><i class="bi bi-lock"></i></span><div><h2>Khóa tài khoản <span data-ten-khoa></span>?</h2><p>Người này bị đăng xuất ngay. Gia sư bị khóa: lời mời đang chờ bị vô hiệu.</p></div></div>
+    <div class="field"><label for="ld-khoa">Lý do <span class="req">*</span></label><input id="ld-khoa" name="ly_do" class="inp" required placeholder="VD: Nghỉ việc từ 10/11"></div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn dangerfill">Khóa tài khoản</button></div>
+  </form>
+</div>
+
+{% if mk_tam %}
+<div class="overlay" id="hop-mk">
+  <div class="dialog" role="dialog" aria-modal="true">
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#E6FAF7;color:#0F766E"><i class="bi bi-check2-circle"></i></span><div><h2>{% if mk_tam.dat_lai %}Đã đặt lại mật khẩu{% else %}Tạo tài khoản thành công{% endif %}</h2><p>{{ mk_tam.ten }} · tên đăng nhập <b>{{ mk_tam.username }}</b>. {% if mk_tam.da_gui %}Đã gửi email mật khẩu tạm.{% else %}Chưa gửi email, hãy chuyển mật khẩu tạm cho người dùng.{% endif %}</p></div></div>
+    <div class="o-copy row" style="gap:10px;padding:12px 14px;border:1px dashed #C7CBF9;border-radius:10px;background:#F5F6FF"><code style="font-size:18px;letter-spacing:1px;flex:1">{{ mk_tam.mk }}</code><button type="button" class="btn sm" data-sao-chep="{{ mk_tam.mk }}"><i class="bi bi-copy"></i>Sao chép</button></div>
+    <p class="sm muted" style="margin:0">Mật khẩu chỉ hiện một lần. Người dùng phải đổi khi đăng nhập lần đầu.</p>
+    <div class="actions"><button type="button" class="btn pri" data-dong-hop>Xong</button></div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  /* Khóa: nhập lý do → toast "Hoàn tác" 6 giây rồi mới gửi (SD-03). */
+  var hop = document.getElementById("hop-khoa"), f = hop.querySelector("[data-form-khoa]");
+  document.querySelectorAll("[data-khoa]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      f.action = b.dataset.khoa; hop.querySelector("[data-ten-khoa]").textContent = b.dataset.ten;
+      f.ly_do.value = ""; hop.hidden = false; f.ly_do.focus();
+    });
+  });
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!f.ly_do.value.trim()) { f.ly_do.focus(); return; }
+    hop.hidden = true;
+    var ten = hop.querySelector("[data-ten-khoa]").textContent;
+    GSO.toast("Đã khóa " + ten, "ok", { hoanTac: function () { GSO.toast("Đã hủy thao tác khóa", "tin"); },
+                                        khiHet: function () { f.submit(); } });
+  });
+})();
+</script>
 {% endblock %}

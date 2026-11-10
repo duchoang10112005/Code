@@ -24,7 +24,9 @@ urlpatterns = [
     path("tai-khoan/tao/", tai_khoan.tao, name="tai_khoan_tao"),
     path("tai-khoan/<int:pk>/sua/", tai_khoan.sua, name="tai_khoan_sua"),
     path("tai-khoan/<int:pk>/doi-trang-thai/", tai_khoan.doi_trang_thai, name="tai_khoan_doi_trang_thai"),
+    path("tai-khoan/<int:pk>/dat-lai-mat-khau/", tai_khoan.dat_lai_mat_khau, name="tai_khoan_dat_lai_mk"),
     path("nhat-ky/", tai_khoan.nhat_ky, name="nhat_ky"),
+    path("nhat-ky/csv/", tai_khoan.nhat_ky_csv, name="nhat_ky_csv"),
 
     # Phần 2 – Hồ sơ gia sư (PB-04)
     path("ho-so/", gia_su.ho_so_cua_toi, name="ho_so_cua_toi"),

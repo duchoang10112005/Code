@@ -147,17 +147,39 @@ class DatMatKhauBatBuocForm(_QuyTacMatKhau, GsoMixin, SetPasswordForm):
         self.fields["new_password2"].label = "Nhập lại mật khẩu mới"
 
 
-class TaoTaiKhoanForm(BootstrapMixin, forms.ModelForm):
-    mat_khau = forms.CharField(label="Mật khẩu", widget=forms.PasswordInput)
-    nhap_lai_mat_khau = forms.CharField(label="Nhập lại mật khẩu", widget=forms.PasswordInput)
+class TaoTaiKhoanForm(GsoMixin, forms.ModelForm):
+    """SD-03: để trống mật khẩu → hệ thống sinh mật khẩu tạm và bắt đổi khi đăng nhập lần đầu."""
+
+    mat_khau = forms.CharField(label="Mật khẩu", widget=forms.PasswordInput, required=False)
+    nhap_lai_mat_khau = forms.CharField(label="Nhập lại mật khẩu", widget=forms.PasswordInput, required=False)
+    gui_email = forms.BooleanField(label="Gửi email mật khẩu tạm cho người dùng", required=False, initial=True)
 
     class Meta:
         model = User
-        fields = ["username", "ho_ten", "email", "so_dien_thoai", "vai_tro"]
-        labels = {"username": "Tên đăng nhập", "email": "Email"}
+        fields = ["ho_ten", "email", "so_dien_thoai", "vai_tro", "username"]
+        labels = {"username": "Tên đăng nhập", "email": "Email", "ho_ten": "Họ tên", "so_dien_thoai": "Số điện thoại"}
+        help_texts = {"username": "Để trống thì dùng email."}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].required = False
+        self.fields["ho_ten"].required = True
+        self.mat_khau_tam = None
+
+    def clean_email(self):
+        e = (self.cleaned_data.get("email") or "").strip().lower()
+        if e and User.objects.filter(email__iexact=e).exists():
+            raise forms.ValidationError("Email này đã có tài khoản.")
+        return e
 
     def clean(self):
         data = super().clean()
+        if not data.get("username") and data.get("email"):
+            data["username"] = data["email"]
+            if User.objects.filter(username__iexact=data["username"]).exists():
+                self.add_error("email", "Email này đã có tài khoản.")
+        if not data.get("username") and not self.has_error("email"):
+            self.add_error("username", "Nhập tên đăng nhập hoặc email.")
         if data.get("vai_tro") == User.VaiTro.GIA_SU and not data.get("email"):
             self.add_error("email", "Gia sư bắt buộc có email để nhận thông báo.")
         mk, mk2 = data.get("mat_khau"), data.get("nhap_lai_mat_khau")
@@ -171,14 +193,21 @@ class TaoTaiKhoanForm(BootstrapMixin, forms.ModelForm):
         return data
 
     def save(self, commit=True):
+        from core.services.tai_khoan import mat_khau_tam
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["mat_khau"])
+        user.username = self.cleaned_data["username"]
+        if self.cleaned_data.get("mat_khau"):
+            user.set_password(self.cleaned_data["mat_khau"])
+        else:
+            self.mat_khau_tam = mat_khau_tam()
+            user.set_password(self.mat_khau_tam)
+            user.phai_doi_mat_khau = True
         if commit:
             user.save()
         return user
 
 
-class SuaTaiKhoanForm(BootstrapMixin, forms.ModelForm):
+class SuaTaiKhoanForm(GsoMixin, forms.ModelForm):
     mat_khau_moi = forms.CharField(
         label="Đặt lại mật khẩu", required=False, widget=forms.PasswordInput,
         help_text="Để trống nếu không đổi.",

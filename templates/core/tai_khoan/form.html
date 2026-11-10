@@ -1,18 +1,17 @@
-{% extends "base.html" %}
-{% block title %}{{ tieu_de }} · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% block title %}{{ tieu_de }}{% endblock %}
+{% block crumb %}<a href="{% url 'tai_khoan_danh_sach' %}">Tài khoản</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>{{ doi_tuong.ho_ten|default:tieu_de }}</h1>{% endblock %}
 {% block content %}
-<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
-  <li class="breadcrumb-item"><a href="{% url 'tai_khoan_danh_sach' %}">Tài khoản</a></li>
-  <li class="breadcrumb-item active" aria-current="page">{{ tieu_de }}</li>
-</ol></nav>
-<div class="dau-trang"><h1>{{ tieu_de }}</h1></div>
-<div class="card" style="max-width:560px"><div class="card-body">
-  <form method="post" novalidate>{% csrf_token %}
-    {% include "partials/form_fields.html" %}
-    <div class="d-flex gap-2">
-      <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu</button>
-      <a href="{% url 'tai_khoan_danh_sach' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Hủy</a>
-    </div>
+<section class="card" style="max-width:620px">
+  <div class="card-h"><h3>{{ tieu_de }}</h3></div>
+  <form method="post" novalidate class="stack" style="gap:14px;padding:0 20px 20px">{% csrf_token %}
+    {% if form.non_field_errors %}<div class="banner" role="alert" style="background:#FDECEC;border-color:#F8C9CA">{{ form.non_field_errors.0 }}</div>{% endif %}
+    {% for f in form %}<div class="field">
+      <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</label>{{ f }}
+      {% if f.help_text %}<span class="sm muted">{{ f.help_text }}</span>{% endif %}
+      {% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}
+    </div>{% endfor %}
+    <div class="row" style="gap:8px;justify-content:flex-end"><a href="{% url 'tai_khoan_danh_sach' %}" class="btn">Hủy</a><button class="btn pri" data-dang-gui="Đang lưu…"><i class="bi bi-check-lg"></i>Lưu thay đổi</button></div>
   </form>
-</div></div>
+</section>
 {% endblock %}
