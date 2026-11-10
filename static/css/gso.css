@@ -385,3 +385,21 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .o-copy code{font-family:inherit;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tin-nhan{font-family:inherit;white-space:pre-wrap;font-size:13px;line-height:20px;background:#F7F8FC;border:1px solid #EEF0F5;border-radius:8px;padding:10px 12px;margin:8px 0 0}
 .chan-form{position:sticky;bottom:0;display:flex;align-items:center;gap:10px;padding:14px 24px;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);border-top:1px solid #E6E9F2;border-radius:0 0 12px 12px}
+
+/* Chi tiết buổi học */
+.the-muc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.the-muc label{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #E6E9F2;border-radius:10px;cursor:pointer;background:#fff}
+.the-muc label:has(input:checked){border-color:#6366F1;box-shadow:0 0 0 3px #EEF0FF;background:#FAFAFF}
+.the-muc input{margin:3px 0 0;accent-color:#6366F1}
+.the-muc b{display:block;font-size:14px;font-weight:600}.the-muc small{display:block;font-size:12px;color:#646B85;line-height:17px}
+.dem-ky-tu{margin-left:auto;font-size:12px;color:#9AA1B8;font-weight:400}
+.hop-han{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;border:1px solid}
+.hop-han .dong-ho{margin-left:auto;padding:8px 14px;border-radius:10px;background:#fff;text-align:center}
+.hop-han .dong-ho small{display:block;font-size:11px}.hop-han .dong-ho b{font-size:22px;font-weight:600}
+.dong-tt{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #EEF0F5}.dong-tt:last-child{border-bottom:none}
+.dong-tt small{display:block;font-size:12px;color:#646B85}.dong-tt b{display:block;font-weight:500}
+.thanh-tg{height:6px;border-radius:3px;background:#EEF0F5;position:relative;overflow:hidden;margin-top:6px}
+.thanh-tg span{position:absolute;left:0;top:0;bottom:0;background:#14B8A6;border-radius:3px}
+.o-zoom{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);border-top:1px solid #EEF0F5;border-bottom:1px solid #EEF0F5}
+.o-zoom>div{padding:12px 16px;min-width:0}.o-zoom>div+div{border-left:1px solid #EEF0F5}
+.o-zoom small{display:block;font-size:12px;color:#646B85;margin-bottom:4px}

@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.models import BuoiHoc, DoiGiaSu, KhoaHoc, LoiMoi, ThuLao, YeuCauHocTap
+from core.models import BuoiHoc, DoiGiaSu, KhoaHoc, LoiMoi, ThuLao, YeuCauHocTap, YeuCauXuLy
 from core.services.buoi_hoc import _xoa_zoom
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
@@ -109,10 +109,52 @@ def mo_lai(admin, buoi, ly_do):
     if n == 0:
         raise ValidationError("Buổi học vừa thay đổi, vui lòng tải lại trang.")
     ghi_nhat_ky(admin, "Mở lại buổi học quá hạn", buoi.ma, ly_do)
+    YeuCauXuLy.objects.filter(buoi_hoc=buoi, loai=YeuCauXuLy.Loai.MO_LAI, trang_thai=YeuCauXuLy.TrangThai.CHO_XU_LY) \
+        .update(trang_thai=YeuCauXuLy.TrangThai.DA_XU_LY, xu_ly_boi=admin, xu_ly_luc=now, ket_qua=ly_do[:300])
+    from django.urls import reverse
+    from core.services.thong_bao import thong_bao
+    thong_bao(buoi.gia_su, f"Buổi {buoi.ma} đã được mở lại",
+              f"Xác nhận trước {timezone.localtime(han_moi):%H:%M %d/%m}", reverse("buoi_chi_tiet", args=[buoi.pk]),
+              "BUOI_HOC")
     gui_email(buoi.gia_su, f"Buổi {buoi.ma} đã được mở lại",
               f"Trung tâm đã mở lại buổi {buoi.yeu_cau.mon_hoc} lúc {_gio(buoi)}. Bạn có tới "
               f"{timezone.localtime(han_moi):%H:%M %d/%m} để vào mục Buổi học của tôi và xác nhận.\nGhi chú: {ly_do}",
               buoi_hoc=buoi)
+
+
+# =============================================================================
+# 1b. Gia sư gửi yêu cầu xử lý: xin mở lại buổi tự hủy (SD-19), báo sự cố (SD-34)
+# =============================================================================
+def gui_yeu_cau_xu_ly(gia_su, buoi, loai, noi_dung, minh_chung_url=""):
+    noi_dung = (noi_dung or "").strip()
+    minh_chung_url = (minh_chung_url or "").strip()
+    now = timezone.now()
+    if buoi.gia_su_id != gia_su.pk:
+        raise ValidationError("Đây không phải buổi học của bạn.")
+    if loai not in YeuCauXuLy.Loai.values:
+        raise ValidationError("Loại yêu cầu không hợp lệ.")
+    if len(noi_dung) < 10:
+        raise ValidationError({"noi_dung": "Hãy mô tả ngắn gọn lý do (ít nhất 10 ký tự)."})
+    if minh_chung_url and not minh_chung_url.startswith("https://"):
+        raise ValidationError({"minh_chung_url": "Link minh chứng phải bắt đầu bằng https://"})
+    han = None
+    if loai == YeuCauXuLy.Loai.MO_LAI:
+        if buoi.trang_thai != TT.DA_HUY or buoi.ly_do_huy != BuoiHoc.LyDoHuy.QUA_HAN:
+            raise ValidationError("Chỉ xin mở lại buổi bị hệ thống tự hủy vì quá hạn xác nhận.")
+        han = buoi.han_xac_nhan + timedelta(days=NV["NGAY_MO_LAI_TOI_DA"])
+        if han < now:
+            raise ValidationError(f"Buổi đã hủy quá {NV['NGAY_MO_LAI_TOI_DA']} ngày, không mở lại được nữa.")
+    if YeuCauXuLy.objects.filter(buoi_hoc=buoi, loai=loai, trang_thai=YeuCauXuLy.TrangThai.CHO_XU_LY).exists():
+        raise ValidationError("Bạn đã gửi yêu cầu cho buổi này, đang chờ Quản trị viên xử lý.")
+    yc = YeuCauXuLy.objects.create(loai=loai, buoi_hoc=buoi, nguoi_gui=gia_su, noi_dung=noi_dung[:2000],
+                                   minh_chung_url=minh_chung_url, han_xu_ly=han or buoi.han_xac_nhan)
+    ghi_nhat_ky(gia_su, "Xin mở lại buổi học" if loai == YeuCauXuLy.Loai.MO_LAI else "Báo sự cố buổi học",
+                buoi.ma, noi_dung[:300])
+    from django.urls import reverse
+    from core.services.thong_bao import thong_bao_quan_tri
+    thong_bao_quan_tri(f"{yc.get_loai_display()}: {buoi.ma}", f"{gia_su.ho_ten}: {noi_dung[:120]}",
+                       reverse("xem_xet") + f"?q={buoi.ma}")
+    return yc
 
 
 # =============================================================================

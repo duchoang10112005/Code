@@ -66,7 +66,8 @@ class DuLieu(TestCase):
         """Dời buổi về quá khứ: đã kết thúc `ket_thuc_truoc_gio` giờ trước (giữ đúng hạn 12h)."""
         bat_dau = timezone.now() - timedelta(hours=ket_thuc_truoc_gio, minutes=buoi.thoi_luong_phut)
         BuoiHoc.objects.filter(pk=buoi.pk).update(
-            bat_dau=bat_dau, han_xac_nhan=bat_dau + timedelta(minutes=buoi.thoi_luong_phut, hours=12))
+            bat_dau=bat_dau, ket_thuc_luc=bat_dau + timedelta(minutes=buoi.thoi_luong_phut),
+            han_xac_nhan=bat_dau + timedelta(minutes=buoi.thoi_luong_phut, hours=12))
         buoi.refresh_from_db()
         return buoi
 
@@ -136,7 +137,7 @@ class TaoBuoiTest(DuLieu):
         b = BuoiHoc.objects.get()
         self.assertRedirects(r, reverse("buoi_tao") + f"?da_tao={b.pk}", fetch_redirect_response=False)
         self.assertContains(self.client.get(reverse("buoi_tao") + f"?da_tao={b.pk}"), "Meeting ID")
-        self.assertContains(self.client.get(reverse("buoi_chi_tiet", args=[b.pk])), b.zoom_join_url)
+        self.assertContains(self.client.get(reverse("buoi_chi_tiet", args=[b.pk])), f"/lop/{self.khoa.ma_lop}/")
 
 
 class CheDoChayThuTest(DuLieu):

@@ -1,102 +1,301 @@
-{% extends "base.html" %}
-{% load giao_dien %}
-{% block title %}{{ buoi.ma }} · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}{{ buoi.ma }}{% endblock %}
+{% block crumb %}<a href="{% url 'buoi_cua_toi' %}">Buổi học</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>{{ buoi.ma }}</h1>{% endblock %}
 {% block content %}
-<nav aria-label="Đường dẫn" class="small mb-2"><a href="{% url 'buoi_cua_toi' %}">Buổi học của tôi</a> / {{ buoi.ma }}</nav>
-<div class="dau-trang">
-  <div>
-    <h1>{{ buoi.get_loai_display }} {{ buoi.yeu_cau.mon_hoc }} · {{ buoi.hoc_vien.ho_ten }}</h1>
-    <p class="mo-ta">{{ buoi.ma }} · {{ buoi.bat_dau|date:"H:i" }}–{{ buoi.ket_thuc|date:"H:i" }}, {{ buoi.bat_dau|date:"d/m/Y" }} · {{ buoi.thoi_luong_phut }} phút{% if buoi.so_thu_tu %} · buổi thứ {{ buoi.so_thu_tu }}{% endif %}</p>
-  </div>
-  <div>{% nhan_trang_thai buoi "trang_thai" %}</div>
+{% with k=tt_hien.0 %}
+<div class="card buoc-tren" aria-label="Quy trình buổi học">
+  <div class="xong"><span class="c"><i class="bi bi-check2"></i></span><div><b>Tạo buổi học</b><small>Đã tạo {{ buoi.tao_luc|date:"d/m · H:i" }}</small></div></div>
+  <div class="{% if k == 'sap_dien_ra' or k == 'dang_hoc' or k == 'loi_zoom' %}dang{% elif buoi.trang_thai == 'DA_HUY' %}{% else %}xong{% endif %}"><span class="c">{% if k == 'sap_dien_ra' or k == 'dang_hoc' or k == 'loi_zoom' or buoi.trang_thai == 'DA_HUY' %}2{% else %}<i class="bi bi-check2"></i>{% endif %}</span><div><b>Dạy trên Zoom</b><small>{% if k == 'dang_hoc' %}Đang diễn ra{% else %}{{ buoi.bat_dau|date:"H:i" }}–{{ buoi.ket_thuc|time:"H:i" }} {{ buoi.bat_dau|date:"d/m" }}{% endif %}</small></div></div>
+  <div class="{% if k == 'cho_xac_nhan' or k == 'sap_tu_huy' %}dang{% elif buoi.xac_nhan_luc %}xong{% endif %}"><span class="c">{% if buoi.xac_nhan_luc %}<i class="bi bi-check2"></i>{% else %}3{% endif %}</span><div><b>Đánh giá buổi học</b><small>{% if buoi.xac_nhan_luc %}Đã xác nhận {{ buoi.xac_nhan_luc|date:"H:i d/m" }}{% elif buoi.han_xac_nhan %}Hạn {{ buoi.han_xac_nhan|date:"H:i d/m" }}{% endif %}</small></div></div>
+  <div class="{% if buoi.trang_thai == 'HOAN_TAT' %}xong{% endif %}"><span class="c">{% if buoi.trang_thai == 'HOAN_TAT' %}<i class="bi bi-check2"></i>{% else %}4{% endif %}</span><div><b>Hoàn tất</b><small>Gửi nhận xét, tính thù lao</small></div></div>
 </div>
 
-{% if buoi.trang_thai == TT.LOI_ZOOM %}
-<div class="alert alert-danger"><i class="bi bi-camera-video-off" aria-hidden="true"></i>
-  <div><b>Chưa tạo được phòng Zoom.</b> {{ buoi.zoom_loi }}
-    <form method="post" action="{% url 'buoi_thu_lai_zoom' buoi.pk %}" class="mt-2">{% csrf_token %}
-      <button class="btn btn-sm btn-danger" data-dang-gui="Đang gọi Zoom…"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Thử lại</button></form></div></div>
+<section class="card" aria-labelledby="bh-t">
+  <div class="row" style="padding:20px 24px;gap:14px">
+    <span class="av" style="width:48px;height:48px;border-radius:12px;font-size:16px;background:#E6FAF7;color:#0F766E">{{ buoi.yeu_cau.mon_hoc.ten|slice:":2"|upper }}</span>
+    <div style="flex:1;min-width:0"><div class="sm muted">{{ buoi.ma }} · {{ nhan }}</div>
+      <div class="row"><h2 id="bh-t" style="margin:0;font-size:20px;font-weight:600">{{ buoi.yeu_cau.mon_hoc }} · {{ buoi.hoc_vien.ho_ten }}</h2>
+        <span class="chip {% if k == 'cho_xac_nhan' %}cam{% elif k == 'sap_tu_huy' or k == 'loi_zoom' or k == 'tu_huy' or k == 'qua_han' %}do{% elif k == 'hoan_tat' %}xanh_la{% elif k == 'dang_hoc' or k == 'sap_dien_ra' %}tim{% elif k == 'dang_xem_xet' %}cam{% else %}xam{% endif %}"><span class="d"></span>{{ tt_hien.1 }}</span></div></div>
+    {% if k == 'cho_xac_nhan' or k == 'sap_tu_huy' %}
+      <button type="button" class="btn" data-mo-hop="hop-su-co">Buổi không diễn ra?</button>
+      <a class="btn pri" href="#phieu"><i class="bi bi-pencil-square" aria-hidden="true"></i>Đánh giá ngay</a>
+    {% elif co_the_doi %}
+      <button type="button" class="btn" data-mo-hop="hop-doi-lich"><i class="bi bi-calendar-event" aria-hidden="true"></i>Dời lịch</button>
+      <button type="button" class="btn danger" data-mo-hop="hop-huy"><i class="bi bi-x-circle" aria-hidden="true"></i>Báo hủy</button>
+    {% elif k == 'dang_hoc' and da_mo_phong %}
+      <a class="btn pri" href="{% url 'buoi_mo_phong' buoi.pk %}" target="_blank" rel="noopener"><i class="bi bi-camera-video" aria-hidden="true"></i>Mở phòng Zoom</a>
+    {% endif %}
+  </div>
+  <div class="info" style="border-top:1px solid #EEF0F5">
+    <dl>
+      <div><dt>Mã buổi</dt><dd>{{ buoi.ma }} · {{ nhan }}</dd></div>
+      <div><dt>Lớp học</dt><dd>{% if buoi.khoa_hoc %}<a href="{% url 'khoa_cua_toi' buoi.khoa_hoc.pk %}">{{ buoi.khoa_hoc.ma }}</a> · {{ buoi.yeu_cau.mon_hoc }}{% else %}{{ buoi.yeu_cau.ma }} · Học thử{% endif %}</dd></div>
+      <div><dt>Gia sư</dt><dd>{{ buoi.gia_su.ho_ten }}</dd></div>
+      <div><dt>Bắt đầu</dt><dd>{{ buoi.bat_dau|ngay_day_du }} · {{ buoi.bat_dau|time:"H:i" }}</dd></div>
+      <div><dt>Thời lượng</dt><dd>{{ buoi.thoi_luong_phut }} phút · đến {{ buoi.ket_thuc|time:"H:i" }}</dd></div>
+    </dl>
+    <dl>
+      <div><dt>Học viên</dt><dd>{{ buoi.hoc_vien.ho_ten }}{% if buoi.hoc_vien.lop %} · {{ buoi.hoc_vien.lop }}{% endif %}</dd></div>
+      <div><dt>Môn học</dt><dd>{{ buoi.yeu_cau.mon_hoc }} · {{ buoi.yeu_cau.muc_tieu|truncatechars:60 }}</dd></div>
+      <div><dt>Phụ huynh</dt><dd>{{ buoi.hoc_vien.ten_phu_huynh }}</dd></div>
+      {% if buoi.khoa_hoc.ghi_chu_phu_huynh %}<div><dt>Ghi chú phụ huynh</dt><dd>{{ buoi.khoa_hoc.ghi_chu_phu_huynh }}</dd></div>{% endif %}
+      {% if buoi.hoc_bu_cho %}<div><dt>Học bù cho</dt><dd>{{ buoi.hoc_bu_cho.ma }} ({{ buoi.hoc_bu_cho.bat_dau|date:"d/m" }})</dd></div>{% endif %}
+      {% if buoi.thay_the_cho %}<div><dt>Dời từ</dt><dd>{{ buoi.thay_the_cho.ma }} ({{ buoi.thay_the_cho.bat_dau|date:"H:i d/m" }})</dd></div>{% endif %}
+    </dl>
+  </div>
+</section>
+
+{% if k == 'cho_xac_nhan' or k == 'sap_tu_huy' %}
+<div class="hop-han" role="status" style="background:{% if k == 'sap_tu_huy' %}#FDECEC;border-color:#F8C9CA{% else %}#FFF8EE;border-color:#FDE2BF{% endif %}">
+  <span class="dlg-ic" style="background:#fff;color:#B45309"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span>
+  <div><div class="b6">Xác nhận hoàn tất trước {{ buoi.han_xac_nhan|date:"H:i d/m" }}</div><div class="sm" style="color:#4A5068">Buổi đã kết thúc lúc {{ buoi.ket_thuc|time:"H:i" }}. Điền phiếu đánh giá bên dưới rồi bấm Xác nhận hoàn tất; quá hạn buổi sẽ tự hủy và thù lao buổi này không được tính.</div></div>
+  <div class="dong-ho"><small style="color:#B45309">Còn lại</small><b style="color:#B45309" data-dem-nguoc="{{ buoi.han_xac_nhan|date:'c' }}">--:--:--</b></div>
+</div>
+{% elif k == 'tu_huy' %}
+<div class="hop-han" style="background:#FDECEC;border-color:#F8C9CA">
+  <span class="dlg-ic" style="background:#fff;color:#C2292E"><i class="bi bi-x-octagon" aria-hidden="true"></i></span>
+  <div style="flex:1"><div class="b6">Buổi đã tự hủy · Quá hạn xác nhận</div><div class="sm" style="color:#4A5068">Buổi không được xác nhận trước {{ buoi.han_xac_nhan|date:"H:i d/m" }} nên không tính vào khóa và không có thù lao. Nếu buổi học thực sự đã diễn ra, hãy xin Quản trị viên mở lại{% if han_mo_lai %} trước {{ han_mo_lai|date:"H:i d/m" }}{% endif %}.</div></div>
+  {% if co_the_xin_mo_lai %}<button type="button" class="btn pri" data-mo-hop="hop-mo-lai"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Xin mở lại</button>{% endif %}
+</div>
+{% elif buoi.trang_thai == 'DA_HUY' %}
+<div class="banner" style="background:#F7F8FC;border-color:#E6E9F2"><span class="ic"><i class="bi bi-x-circle" aria-hidden="true"></i></span><div><div class="b6">Đã hủy · {{ buoi.get_ly_do_huy_display }}</div>{% if buoi.ly_do_huy_ghi_chu %}<div class="sm muted">{{ buoi.ly_do_huy_ghi_chu }}</div>{% endif %}</div>
+  {% if buoi.khoa_hoc and buoi.ly_do_huy == 'GIA_SU_HUY' or buoi.khoa_hoc and buoi.ly_do_huy == 'HOC_VIEN_HUY' %}{% if not buoi.buoi_hoc_bu %}<a class="btn sm" style="margin-left:auto" href="{% url 'buoi_tao' %}?khoa={{ buoi.khoa_hoc.pk }}"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Tạo buổi học bù</a>{% endif %}{% endif %}</div>
+{% elif buoi.trang_thai == 'DANG_XEM_XET' %}
+<div class="banner" style="background:#FFF4E5;border-color:#FDE2BF"><span class="ic" style="color:#B45309"><i class="bi bi-search" aria-hidden="true"></i></span><div><div class="b6">Buổi đang được xem xét</div><div class="sm" style="color:#4A5068">Tuyển sinh phụ trách đang kiểm tra buổi này{% if hau_kiem.ly_do %} ({{ hau_kiem.get_ly_do_display }}){% endif %}. Thù lao buổi này tạm giữ đến khi có kết luận.</div></div></div>
 {% endif %}
+{% if yc_xl %}<div class="banner" style="background:#F5F6FF;border-color:#DCDFFB"><span class="ic" style="color:#4F46E5"><i class="bi bi-send" aria-hidden="true"></i></span><span style="font-size:13px">{{ yc_xl.get_loai_display }} gửi {{ yc_xl.tao_luc|date:"H:i d/m" }} · <b class="b5">{{ yc_xl.get_trang_thai_display }}</b>{% if yc_xl.ket_qua %} · {{ yc_xl.ket_qua }}{% endif %}</span></div>{% endif %}
 
-<div class="row g-4">
-  <div class="col-lg-7">
-    {% if buoi.trang_thai == TT.DA_LEN_LICH %}
-    <div class="card mb-4">
-      <div class="card-header"><i class="bi bi-camera-video" aria-hidden="true"></i>Phòng Zoom</div>
-      <div class="card-body">
-        <div class="mb-3"><a class="btn btn-primary" href="{% url 'buoi_mo_phong' buoi.pk %}" target="_blank" rel="noopener"><i class="bi bi-camera-video" aria-hidden="true"></i>Mở phòng (gia sư)</a></div>
-        <label class="form-label" for="link-hoc-vien">Link cho học viên</label>
-        <div class="input-group mb-2">
-          <input id="link-hoc-vien" class="form-control" readonly value="{{ buoi.zoom_join_url }}">
-          <button class="btn btn-outline-primary" type="button" data-sao-chep="link-hoc-vien"><i class="bi bi-clipboard" aria-hidden="true"></i>Sao chép</button>
-        </div>
-        <div class="small text-muted">Mã phòng {{ buoi.zoom_meeting_id }}{% if buoi.zoom_passcode %} · mật khẩu {{ buoi.zoom_passcode }}{% endif %}. Gửi link vào nhóm Zalo của lớp; không dùng nền tảng khác để dạy.</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:20px;align-items:start">
+<div class="stack">
+
+  {% if form_xac_nhan %}
+  <form class="card" method="post" action="{% url 'buoi_xac_nhan' buoi.pk %}" id="phieu" novalidate data-phieu data-url-nhap="{% url 'api_luu_nhap' buoi.pk %}">
+    {% csrf_token %}
+    <div class="card-h" style="padding:18px 24px"><span class="tile" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span>
+      <div><h3>Đánh giá buổi học</h3><div class="sm muted">Bắt buộc để xác nhận hoàn tất buổi học</div></div>
+      <span class="chip xam" style="margin-left:auto" data-du-muc><i class="bi bi-circle-half" aria-hidden="true"></i><span>0/3 mục bắt buộc</span></span></div>
+    <div class="stack" style="padding:20px 24px;gap:18px">
+      {% if form_xac_nhan.non_field_errors %}<div class="banner tom-tat-loi" tabindex="-1" role="alert" style="background:#FDECEC;border-color:#F8C9CA"><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle"></i></span><span>{{ form_xac_nhan.non_field_errors|join:" " }}</span></div>
+      {% elif form_xac_nhan.errors %}<div class="banner tom-tat-loi" tabindex="-1" role="alert" style="background:#FDECEC;border-color:#F8C9CA"><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle"></i></span><span>Còn {{ form_xac_nhan.errors|length }} mục cần sửa.</span></div>{% endif %}
+      {% with f=form_xac_nhan.noi_dung %}<div class="field"><label class="row" for="{{ f.id_for_label }}">{{ f.label }} <span class="req">*</span><span class="dem-ky-tu" data-dem-cho="{{ f.auto_id }}">0 ký tự</span></label>{{ f }}{% if f.errors %}<span id="{{ f.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ f.errors|join:" " }}</span>{% endif %}</div>{% endwith %}
+      <div class="field"><span class="lbl">Mức tiếp thu <span class="req">*</span></span>
+        <div class="the-muc" role="radiogroup" aria-label="Mức tiếp thu">
+          {% for v, nhan in form_xac_nhan.fields.xep_loai.choices %}
+          <label><input type="radio" name="xep_loai" value="{{ v }}"{% if form_xac_nhan.xep_loai.value == v %} checked{% endif %}><span><b>{{ nhan }}</b><small>{% if v == 'TOT' %}Nắm chắc bài, làm bài tập tốt{% elif v == 'KHA' %}Hiểu bài, cần luyện thêm{% else %}Chưa nắm được, cần hỗ trợ{% endif %}</small></span></label>
+          {% endfor %}
+        </div>{% if form_xac_nhan.xep_loai.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Hãy chọn mức tiếp thu.</span>{% endif %}</div>
+      {% with f=form_xac_nhan.danh_gia %}<div class="field"><label class="row" for="{{ f.id_for_label }}">Nhận xét tiến độ <span class="req">*</span><span class="opt" style="font-weight:400">Phụ huynh sẽ đọc phần này · ít nhất {{ toi_thieu }} ký tự</span><span class="dem-ky-tu" data-dem-cho="{{ f.auto_id }}" data-toi-thieu="{{ toi_thieu }}">0/1000</span></label>{{ f }}{% if f.errors %}<span id="{{ f.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ f.errors|join:" " }}</span>{% endif %}</div>{% endwith %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        {% with f=form_xac_nhan.dan_do_buoi_sau %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }} <span class="opt">(không bắt buộc)</span></label>{{ f }}</div>{% endwith %}
+        {% with f=form_xac_nhan.ghi_chu_tuyen_sinh %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }} <span class="opt">(không gửi phụ huynh)</span></label>{{ f }}</div>{% endwith %}
       </div>
+      <label class="row" style="gap:10px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:#F7F8FC;border:1px solid #EEF0F5;cursor:pointer">
+        <input type="checkbox" name="gui_zalo_phu_huynh" value="on"{% if form_xac_nhan.gui_zalo_phu_huynh.value %} checked{% endif %} style="width:16px;height:16px;margin:2px 0 0;accent-color:#6366F1">
+        <span><b class="b5" style="display:block">Gửi nhận xét cho phụ huynh qua Zalo</b><span class="sm muted">Gửi tới {{ buoi.hoc_vien.ten_phu_huynh }} ngay sau khi bạn xác nhận. Tắt nếu muốn tự sao chép gửi tay.</span></span></label>
+    </div>
+    <div class="chan-form">
+      <span class="sm muted row" data-trang-nhap><i class="bi bi-info-circle" aria-hidden="true"></i>{% if nhap %}Đã lưu nháp {{ nhap.luu_luc|time:"H:i" }}{% else %}Chưa lưu nháp. Nháp không tính là đã xác nhận.{% endif %}</span>
+      <button type="button" class="btn" style="margin-left:auto" data-luu-nhap>Lưu nháp</button>
+      <button class="btn pri" data-dang-gui="Đang xác nhận…"><i class="bi bi-check2" aria-hidden="true"></i>Xác nhận hoàn tất</button>
+    </div>
+  </form>
+  {% elif buoi.xac_nhan_luc %}
+  <section class="card">
+    <div class="card-h" style="padding:18px 24px"><span class="tile" style="background:#E6FAF7;color:#0F766E"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span>
+      <div><h3>Đánh giá buổi học</h3><div class="sm muted">Đã xác nhận hoàn tất lúc {{ buoi.xac_nhan_luc|date:"H:i d/m/Y" }}</div></div>
+      <span class="chip xanh_la" style="margin-left:auto"><span class="d"></span>{{ buoi.get_xep_loai_display }}</span></div>
+    <div class="info"><dl style="grid-column:1/-1">
+      <div><dt>Nội dung đã dạy</dt><dd>{{ buoi.noi_dung|linebreaksbr }}</dd></div>
+      <div><dt>Nhận xét gửi phụ huynh</dt><dd>{{ buoi.danh_gia|linebreaksbr }}</dd></div>
+      {% if buoi.dan_do_buoi_sau %}<div><dt>Bài tập về nhà</dt><dd>{{ buoi.dan_do_buoi_sau|linebreaksbr }}</dd></div>{% endif %}
+      {% if buoi.ghi_chu_tuyen_sinh %}<div><dt>Ghi chú cho Tuyển sinh</dt><dd>{{ buoi.ghi_chu_tuyen_sinh }}</dd></div>{% endif %}
+    </dl></div>
+  </section>
+  {% endif %}
+
+  {% if buoi.trang_thai == 'DA_LEN_LICH' or buoi.trang_thai == 'LOI_ZOOM' or buoi.zoom_meeting_id %}
+  <section class="card">
+    <div class="card-h"><span class="tile" style="background:#E6FAF7;color:#0F766E"><i class="bi bi-camera-video" aria-hidden="true"></i></span>
+      <div><h3>Phòng học Zoom</h3><div class="sm muted">{% if buoi.trang_thai == 'LOI_ZOOM' %}Chưa tạo được phòng{% else %}Mở lúc {{ mo_luc|time:"H:i" }} · đóng lúc {{ dong_luc|time:"H:i" }} · {{ buoi.bat_dau|date:"d/m" }}{% endif %}</div></div>
+      {% if buoi.trang_thai == 'LOI_ZOOM' %}<span class="chip do" style="margin-left:auto"><i class="bi bi-camera-video-off"></i>Lỗi Zoom</span>
+      {% elif da_mo_phong %}<span class="chip xanh_la" style="margin-left:auto"><span class="d"></span>Phòng đang mở</span>
+      {% elif buoi.ket_thuc < now or buoi.trang_thai != 'DA_LEN_LICH' %}<span class="chip xam" style="margin-left:auto"><span class="d"></span>Đã kết thúc</span>
+      {% else %}<span class="chip tim" style="margin-left:auto"><span class="d"></span>Phòng đã sẵn sàng</span>{% endif %}
+    </div>
+    {% if buoi.trang_thai == 'LOI_ZOOM' %}
+    <div class="row" style="padding:16px 20px;gap:12px"><div style="flex:1" class="sm">{{ buoi.zoom_loi|default:"Zoom chưa phản hồi." }}</div>
+      <form method="post" action="{% url 'buoi_thu_lai_zoom' buoi.pk %}">{% csrf_token %}<button class="btn pri" data-dang-gui="Đang tạo lại phòng…"><i class="bi bi-arrow-clockwise"></i>Thử lại</button></form>
+      <button type="button" class="btn" data-mo-hop="hop-su-co">Báo sự cố</button></div>
+    {% else %}
+    <div class="o-zoom">
+      <div><small>Link lớp học cố định</small><div class="row"><a class="ell" href="{{ link_lop }}" target="_blank" rel="noopener">{{ link_lop }}</a><button type="button" class="icon-btn sm" data-sao-chep="{{ link_lop }}" data-thong-bao="Đã sao chép link lớp" aria-label="Sao chép link lớp"><i class="bi bi-copy"></i></button></div></div>
+      <div><small>Zoom ID</small><div class="row b6">{{ buoi.zoom_meeting_id }}<button type="button" class="icon-btn sm" data-sao-chep="{{ buoi.zoom_meeting_id }}" data-thong-bao="Đã sao chép Zoom ID" aria-label="Sao chép Zoom ID"><i class="bi bi-copy"></i></button></div></div>
+      <div><small>Host key · chỉ gia sư</small>{% if buoi.tai_khoan_zoom.host_key %}<div class="row"><code data-an="{{ buoi.tai_khoan_zoom.host_key }}" style="font-family:inherit">••••••</code><button type="button" class="icon-btn sm" data-hien-ma aria-label="Hiện host key"><i class="bi bi-eye"></i></button></div>{% else %}<span class="muted">—</span>{% endif %}</div>
+    </div>
+    {% if tin_nhan_lop and buoi.trang_thai == 'DA_LEN_LICH' %}
+    <div style="padding:14px 20px">
+      <div class="row"><span class="b6 row" style="gap:6px"><i class="bi bi-chat-dots" style="color:#4F46E5"></i>Tin nhắn gửi nhóm Zalo lớp</span><span class="sm muted">Dán vào nhóm là học viên vào học được</span>
+        <button type="button" class="btn sm" style="margin-left:auto" data-sao-chep-tu="#tn-lop" data-thong-bao="Đã sao chép tin nhắn. Dán vào nhóm Zalo của lớp"><i class="bi bi-copy"></i>Sao chép tin nhắn</button></div>
+      <pre class="tin-nhan" id="tn-lop" style="background:#F5F6FF">{{ tin_nhan_lop }}</pre>
     </div>
     {% endif %}
-
-    {% if form_xac_nhan %}
-    <div class="card mb-4 the-buoc-tiep" id="xac-nhan">
-      <div class="card-header"><i class="bi bi-check2-square" aria-hidden="true"></i>Xác nhận sau buổi học</div>
-      <div class="card-body">
-        <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Hạn cuối {{ buoi.han_xac_nhan|date:"H:i d/m" }} (còn {{ buoi.han_xac_nhan|con_lai }}). Quá hạn buổi bị hủy và không tính thù lao.</p>
-        <form method="post" action="{% url 'buoi_xac_nhan' buoi.pk %}" novalidate>{% csrf_token %}
-          {% include "partials/form_fields.html" with form=form_xac_nhan %}
-          <button class="btn btn-primary" data-dang-gui="Đang lưu…"><i class="bi bi-check2-circle" aria-hidden="true"></i>Xác nhận hoàn tất</button>
-        </form>
-      </div>
-    </div>
-    {% elif buoi.trang_thai == TT.DA_LEN_LICH %}
-    <div class="trang-giay p-4 mb-4 text-muted small"><i class="bi bi-info-circle" aria-hidden="true"></i> Nút xác nhận hiện sau giờ kết thúc ({{ buoi.ket_thuc|date:"H:i d/m" }}).</div>
+    {% if buoi.trang_thai == 'DA_LEN_LICH' and buoi.ket_thuc > now %}
+    <div class="row sm muted" style="padding:10px 20px;border-top:1px solid #EEF0F5"><i class="bi bi-info-circle"></i>Zoom tự mở trước giờ học {{ mo_luc|timeuntil:buoi.bat_dau }} và tự đóng sau giờ kết thúc 5 phút.
+      {% if da_mo_phong %}<a class="btn pri sm" style="margin-left:auto" href="{% url 'buoi_mo_phong' buoi.pk %}" target="_blank" rel="noopener"><i class="bi bi-camera-video"></i>Mở phòng Zoom</a>{% endif %}</div>
     {% endif %}
-
-    {% if buoi.xac_nhan_luc %}
-    <div class="card mb-4">
-      <div class="card-header"><i class="bi bi-clipboard-data" aria-hidden="true"></i>Kết quả buổi học</div>
-      <div class="card-body small">
-        <div class="text-muted">Nội dung</div><p>{{ buoi.noi_dung|linebreaksbr }}</p>
-        <div class="text-muted">Đánh giá chung</div><p>{{ buoi.get_xep_loai_display }}</p>
-        <div class="text-muted">Nhận xét</div><p>{{ buoi.danh_gia|linebreaksbr }}</p>
-        {% if buoi.dan_do_buoi_sau %}<div class="text-muted">Dặn dò buổi sau</div><p>{{ buoi.dan_do_buoi_sau|linebreaksbr }}</p>{% endif %}
-        <div class="d-flex align-items-center gap-2 flex-wrap">Gửi phụ huynh qua Zalo: {% nhan_trang_thai buoi "zalo_trang_thai" %}</div>
-        <label class="form-label mt-3" for="noi-dung-ph">Nội dung gửi phụ huynh</label>
-        <textarea id="noi-dung-ph" class="form-control mb-2" rows="7" readonly>{{ noi_dung_phu_huynh }}</textarea>
-        <button class="btn btn-sm btn-outline-primary" type="button" data-sao-chep="noi-dung-ph"><i class="bi bi-clipboard" aria-hidden="true"></i>Sao chép nội dung gửi phụ huynh</button>
-      </div>
-    </div>
     {% endif %}
-  </div>
+  </section>
+  {% endif %}
 
-  <div class="col-lg-5">
-    <div class="card mb-4">
-      <div class="card-header"><i class="bi bi-info-circle" aria-hidden="true"></i>Thông tin</div>
-      <div class="card-body small">
-        <div class="text-muted">Học viên</div><div class="mb-2">{{ buoi.hoc_vien.ho_ten }}{% if buoi.hoc_vien.lop %} · {{ buoi.hoc_vien.lop }}{% endif %}</div>
-        <div class="text-muted">Lớp</div><div class="mb-2">{% if buoi.khoa_hoc %}<a href="{% url 'khoa_cua_toi' buoi.khoa_hoc.pk %}">{{ buoi.khoa_hoc.ma }}</a> · {{ buoi.khoa_hoc.so_buoi_da_dung }}/{{ buoi.khoa_hoc.so_buoi_dang_ky }} buổi{% else %}{{ buoi.yeu_cau.ma }} (học thử){% endif %}</div>
-        <div class="text-muted">Thù lao dự kiến</div><div class="mb-2 so">{% if buoi.thu_lao_du_kien %}{{ buoi.thu_lao_du_kien|tien }}{% else %}Buổi học thử không tính thù lao theo khóa{% endif %}</div>
-        <div class="text-muted">Ghi hình</div><div class="mb-2">{% if buoi.hoc_vien.dong_y_ghi_hinh %}Có, phụ huynh đồng ý{% else %}Không ghi hình{% endif %}</div>
-        {% if buoi.ban_ghi_url %}<div class="text-muted">Bản ghi</div><div class="mb-2"><a href="{{ buoi.ban_ghi_url }}" target="_blank" rel="noopener">Xem bản ghi</a>{% if buoi.ban_ghi_passcode %} · mật khẩu {{ buoi.ban_ghi_passcode }}{% endif %}</div>{% endif %}
-        {% if buoi.xac_nhan_luc %}<div class="text-muted">Kiểm tra Zoom</div><div class="mb-2">{% nhan_trang_thai buoi "kiem_tra" %}{% if buoi.kiem_tra_ghi_chu %}<div class="mt-1">{{ buoi.kiem_tra_ghi_chu }}</div>{% endif %}</div>{% endif %}
-        {% if buoi.trang_thai == TT.DA_HUY %}<div class="text-muted">Lý do hủy</div><div class="mb-2">{{ buoi.get_ly_do_huy_display }}{% if buoi.kiem_tra_ghi_chu %} · {{ buoi.kiem_tra_ghi_chu }}{% endif %}</div>{% endif %}
-        {% if buoi.thay_the_cho %}<div class="text-muted">Dời lịch từ</div><div class="mb-2"><a href="{% url 'buoi_chi_tiet' buoi.thay_the_cho.pk %}">{{ buoi.thay_the_cho.ma }}</a></div>{% endif %}
-      </div>
-    </div>
-
-    {% if co_the_doi %}
-    <div class="card">
-      <div class="card-header"><i class="bi bi-calendar2-x" aria-hidden="true"></i>Đổi lịch hoặc hủy</div>
-      <div class="card-body">
-        <form method="post" action="{% url 'buoi_doi_lich' buoi.pk %}" class="mb-4">{% csrf_token %}
-          {% include "partials/form_fields.html" with form=form_doi_lich %}
-          <button class="btn btn-outline-primary" data-dang-gui="Đang tạo phòng mới…"><i class="bi bi-calendar2-week" aria-hidden="true"></i>Dời lịch</button>
-        </form>
-        <form method="post" action="{% url 'buoi_huy' buoi.pk %}" data-xac-nhan="Hủy buổi học {{ buoi.ma }} lúc {{ buoi.bat_dau|date:'H:i d/m' }}? Phòng Zoom sẽ bị xóa." data-nut="Hủy buổi học">{% csrf_token %}
-          {% include "partials/form_fields.html" with form=form_huy %}
-          <button class="btn btn-outline-danger"><i class="bi bi-x-circle" aria-hidden="true"></i>Hủy buổi học</button>
-        </form>
-      </div>
-    </div>
-    {% endif %}
-  </div>
+  {% if truoc %}
+  <section class="card">
+    <div class="card-h"><h3>Buổi trước{% if truoc.so_thu_tu %} · {{ truoc.so_thu_tu }}/{{ buoi.khoa_hoc.so_buoi_dang_ky }}{% endif %}</h3><span class="sm muted">{{ truoc.bat_dau|ngay_day_du }} · {{ truoc.bat_dau|time:"H:i" }}</span><a style="margin-left:auto;font-size:13px" href="{% url 'khoa_cua_toi' buoi.khoa_hoc.pk %}">Tất cả buổi của khóa</a></div>
+    <div class="o-zoom" style="border:none"><div><small>Nội dung</small>{{ truoc.noi_dung|truncatechars:120 }}</div><div><small>Mức tiếp thu</small><span class="chip tim">{{ truoc.get_xep_loai_display }}</span></div><div><small>Bài tập đã giao</small>{{ truoc.dan_do_buoi_sau|default:"—"|truncatechars:100 }}</div></div>
+  </section>
+  {% endif %}
 </div>
+
+<aside class="stack" style="gap:16px">
+  <section class="card">
+    <div class="card-h"><i class="bi bi-person-video3" aria-hidden="true"></i><h3>Tham gia Zoom</h3>
+      <span class="chip xam" style="margin-left:auto"><span class="d"></span>{% if buoi.ket_thuc < now %}Đã kết thúc{% else %}Chưa diễn ra{% endif %}</span></div>
+    <div class="card-b stack" style="gap:12px">
+      {% if hau_kiem and hau_kiem.ty_le_gia_su is not None %}
+        <div><div class="row sm"><span>Bạn (gia sư)</span><b style="margin-left:auto">{{ hau_kiem.ty_le_gia_su }}%</b></div><div class="thanh-tg"><span style="width:{{ hau_kiem.ty_le_gia_su }}%"></span></div></div>
+        <div><div class="row sm"><span>Học viên</span><b style="margin-left:auto">{{ hau_kiem.ty_le_hoc_vien }}%</b></div><div class="thanh-tg"><span style="width:{{ hau_kiem.ty_le_hoc_vien }}%"></span></div></div>
+        {% if hau_kiem.tre_phut is not None %}<div class="sm muted">Bạn vào phòng {% if hau_kiem.tre_phut > 0 %}trễ {{ hau_kiem.tre_phut }} phút{% else %}đúng giờ{% endif %}.</div>{% endif %}
+      {% elif buoi.phut_tham_gia_chung %}
+        <div class="sm">Gia sư và học viên cùng có mặt <b>{{ buoi.phut_tham_gia_chung }}/{{ buoi.thoi_luong_phut }} phút</b>.</div>
+      {% else %}
+        <p class="sm muted" style="margin:0">Dữ liệu tham gia lấy từ Zoom sau khi bạn xác nhận hoàn tất (khoảng 30 phút sau buổi học).</p>
+      {% endif %}
+      {% if buoi.ban_ghi_trang_thai == 'SAN_SANG' %}<div class="row sm" style="padding-top:10px;border-top:1px solid #EEF0F5"><i class="bi bi-record-circle" style="color:#C2292E"></i>Bản ghi lưu đến {{ buoi.ban_ghi_het_han|date:"d/m/Y" }}<a style="margin-left:auto" href="{{ buoi.ban_ghi_url }}" target="_blank" rel="noopener">Xem bản ghi</a></div>{% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h3>Tình trạng xử lý</h3></div>
+    <div class="dong-tt"><span class="tile" style="background:#F1F3F9;color:#646B85"><i class="bi bi-wallet2"></i></span><div style="flex:1"><small>Thù lao buổi</small><b>{% if buoi.loai == 'HOC_THU' %}Học thử – không tính{% else %}{{ buoi.thu_lao_du_kien|tien }}{% endif %}</b></div>
+      {% if thu_lao %}<span class="chip {% if thu_lao.trang_thai == 'TAM_GIU' %}cam{% elif thu_lao.trang_thai == 'HUY' %}xam{% else %}xanh_la{% endif %}"><span class="d"></span>{{ thu_lao.get_trang_thai_display }}</span>
+      {% elif buoi.trang_thai == 'DA_LEN_LICH' %}<span class="chip cam"><span class="d"></span>{% if buoi.ket_thuc < now %}Chờ xác nhận{% else %}Chưa dạy{% endif %}</span>{% elif buoi.trang_thai == 'DA_HUY' %}<span class="chip xam"><span class="d"></span>Không tính</span>{% endif %}</div>
+    <div class="dong-tt"><span class="tile" style="background:#F1F3F9;color:#646B85"><i class="bi bi-chat-dots"></i></span><div style="flex:1"><small>Nhận xét gửi phụ huynh</small><b>{% if buoi.xac_nhan_luc %}{% if buoi.gui_zalo_phu_huynh %}Qua Zalo ZNS{% else %}Gia sư tự gửi{% endif %}{% else %}Gửi sau khi xác nhận{% endif %}</b></div>
+      <span class="chip {% if buoi.zalo_trang_thai == 'DA_GUI' %}xanh_la{% elif buoi.zalo_trang_thai == 'LOI' %}do{% else %}xam{% endif %}" data-chip-zalo><span class="d"></span>{{ buoi.get_zalo_trang_thai_display }}</span></div>
+    {% if buoi.xac_nhan_luc and buoi.zalo_trang_thai != 'DA_GUI' %}<div class="row" style="padding:0 16px 12px;gap:8px"><button type="button" class="btn sm" data-gui-lai-zalo="{% url 'api_gui_lai_zalo' buoi.pk %}"><i class="bi bi-send"></i>Gửi lại Zalo</button><button type="button" class="btn sm" data-sao-chep-tu="#nd-ph" data-thong-bao="Đã sao chép nhận xét"><i class="bi bi-copy"></i>Sao chép nhận xét</button></div>{% endif %}
+    <div class="dong-tt"><span class="tile" style="background:#F1F3F9;color:#646B85"><i class="bi bi-shield-check"></i></span><div style="flex:1"><small>Hậu kiểm dữ liệu Zoom</small><b>{% if hau_kiem %}{{ hau_kiem.get_ket_luan_display }}{% else %}Sau khi xác nhận hoàn tất{% endif %}</b></div>
+      <span class="chip {% if hau_kiem.ket_luan == 'HOP_LE' or hau_kiem.ket_luan == 'DA_XU_LY_TINH' %}xanh_la{% elif hau_kiem.ket_luan == 'CO_VAN_DE' %}cam{% else %}xam{% endif %}"><span class="d"></span>{% if hau_kiem %}{{ hau_kiem.get_ket_luan_display }}{% else %}Chưa tới{% endif %}</span></div>
+  </section>
+
+  {% if buoi.xac_nhan_luc or form_xac_nhan %}
+  <section class="card">
+    <div class="card-h"><i class="bi bi-chat-dots" aria-hidden="true"></i><h3>Tin nhắn gửi phụ huynh</h3><span class="sm muted" style="margin-left:auto">{% if buoi.xac_nhan_luc %}Đã soạn{% else %}Xem trước{% endif %}</span></div>
+    <div class="card-b"><pre class="tin-nhan" id="nd-ph" style="margin:0;background:#F5F6FF" data-xem-truoc-ph data-hv="{{ buoi.hoc_vien.ho_ten }}" data-mon="{{ buoi.yeu_cau.mon_hoc }}" data-gio="{{ buoi.bat_dau|date:'H:i d/m/Y' }}" data-gs="{{ buoi.gia_su.ho_ten }}" data-nhan="{{ nhan }}">{% if noi_dung_phu_huynh %}{{ noi_dung_phu_huynh }}{% endif %}</pre></div>
+  </section>
+  {% endif %}
+
+  <section class="card">
+    <div class="card-h"><h3>Nhật ký buổi học</h3><span class="sm muted" style="margin-left:auto">{{ buoi.ma }}</span></div>
+    <div class="card-b"><ul class="tl">
+      {% for x in nhat_ky %}<li><span class="rail"><span class="ic" style="border-color:#99E6DA;color:#0F766E;background:#F2FCFA"><i class="bi bi-check2"></i></span><span class="ln"></span></span><div class="tx">{{ x.chu }}<small>{{ x.ai }} · {{ x.luc|date:"d/m · H:i" }}</small></div></li>{% endfor %}
+      {% for x in sap %}<li><span class="rail"><span class="ic" style="{% if x.han %}border-color:#6366F1;color:#4F46E5;background:#EEF0FF{% else %}border-color:#D5D9E6;color:#9AA1B8;border-style:dashed{% endif %}"><i class="bi {% if x.han %}bi-clipboard-check{% else %}bi-clock{% endif %}"></i></span><span class="ln"></span></span><div class="tx">{% if x.han %}<b class="b5">{{ x.chu }}</b>{% else %}{{ x.chu }}{% endif %}<small{% if x.han %} style="color:#4F46E5"{% endif %}>{% if x.luc %}{% if x.han %}Hạn {% endif %}{{ x.luc|date:"H:i d/m" }}{% else %}{{ x.goi_y }}{% endif %}</small></div></li>{% endfor %}
+    </ul></div>
+  </section>
+</aside>
+</div>
+
+{# ---------------- Hộp thoại ---------------- #}
+{% if co_the_doi %}
+<div class="overlay" id="hop-huy" hidden>
+  <form class="dialog" method="post" action="{% url 'buoi_huy' buoi.pk %}">{% csrf_token %}
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#FDECEC;color:#C2292E"><i class="bi bi-x-circle"></i></span><div><h2>Báo hủy buổi {{ buoi.ma }}?</h2><p>Phòng Zoom sẽ bị xóa. Buổi bị hủy được trả lại cho khóa và có thể tạo buổi học bù sau.</p></div></div>
+    <div class="field"><label for="{{ form_huy.ly_do_huy.id_for_label }}">Lý do <span class="req">*</span></label>{{ form_huy.ly_do_huy }}</div>
+    <div class="field"><label for="{{ form_huy.ghi_chu.id_for_label }}">Ghi chú <span class="opt">(không bắt buộc)</span></label>{{ form_huy.ghi_chu }}</div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn dangerfill">Báo hủy</button></div>
+  </form>
+</div>
+<div class="overlay" id="hop-doi-lich" hidden>
+  <form class="dialog" method="post" action="{% url 'buoi_doi_lich' buoi.pk %}">{% csrf_token %}
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-calendar-event"></i></span><div><h2>Dời lịch buổi {{ buoi.ma }}</h2><p>Hệ thống tạo buổi mới ở giờ mới trước, thành công mới hủy buổi cũ. Nhớ gửi lại tin nhắn Zalo cho lớp.</p></div></div>
+    <div class="field"><label for="{{ form_doi_lich.bat_dau.id_for_label }}">Ngày giờ mới <span class="req">*</span></label>{{ form_doi_lich.bat_dau }}</div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn pri" data-dang-gui="Đang dời lịch…">Dời lịch</button></div>
+  </form>
+</div>
+{% endif %}
+{% if co_the_xin_mo_lai %}
+<div class="overlay" id="hop-mo-lai" hidden>
+  <form class="dialog" method="post" action="{% url 'buoi_xin_mo_lai' buoi.pk %}" style="width:500px">{% csrf_token %}
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-arrow-counterclockwise"></i></span><div><h2>Xin mở lại buổi {{ buoi.ma }}</h2><p>Quản trị viên xem lý do và dữ liệu Zoom. Nếu đồng ý, bạn có thêm 24 giờ để xác nhận.</p></div></div>
+    <div class="field"><label for="nd-mo-lai">Lý do <span class="req">*</span></label><textarea id="nd-mo-lai" name="noi_dung" class="inp" rows="3" required minlength="10" placeholder="VD: Tối hôm đó em bị sốt nên quên xác nhận, buổi học vẫn diễn ra đủ giờ."></textarea></div>
+    <div class="field"><label for="mc-mo-lai">Link minh chứng <span class="opt">(không bắt buộc, https://)</span></label><input id="mc-mo-lai" name="minh_chung_url" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Quay lại</button><button class="btn pri">Gửi yêu cầu</button></div>
+  </form>
+</div>
+{% endif %}
+<div class="overlay" id="hop-su-co" hidden>
+  <form class="dialog" method="post" action="{% url 'buoi_bao_su_co' buoi.pk %}" style="width:500px">{% csrf_token %}
+    <div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#FFF4E5;color:#B45309"><i class="bi bi-exclamation-triangle"></i></span><div><h2>Buổi học gặp sự cố?</h2><p>Nếu buổi học không diễn ra (học viên vắng, bạn bận), bạn không cần làm gì: buổi sẽ tự hủy sau hạn xác nhận và không tính thù lao. Nếu Zoom hoặc hệ thống bị lỗi, hãy báo Quản trị viên.</p></div></div>
+    <div class="field"><label for="loai-sc">Loại sự cố</label><select id="loai-sc" name="loai" class="inp"><option value="SU_CO_ZOOM">Không vào được / không mở được phòng Zoom</option><option value="LOI_HE_THONG">Lỗi hệ thống khi thao tác</option></select></div>
+    <div class="field"><label for="nd-sc">Mô tả <span class="req">*</span></label><textarea id="nd-sc" name="noi_dung" class="inp" rows="3" required minlength="10"></textarea></div>
+    <div class="actions"><button type="button" class="btn" data-dong-hop>Đóng</button><button class="btn pri">Báo Quản trị viên</button></div>
+  </form>
+</div>
+{% endwith %}
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  /* Hiện / ẩn host key */
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-hien-ma]"); if (!b) { return; }
+    var c = b.parentNode.querySelector("[data-an]"), hien = c.textContent.indexOf("•") === 0;
+    c.textContent = hien ? c.dataset.an : "••••••";
+    b.querySelector(".bi").className = "bi " + (hien ? "bi-eye-slash" : "bi-eye");
+  });
+  /* Gửi lại Zalo */
+  var gl = document.querySelector("[data-gui-lai-zalo]");
+  if (gl) { gl.onclick = function () { gl.disabled = true; GSO.post(gl.dataset.guiLaiZalo, {}).then(function (j) { GSO.toast(j.message, j.ok ? "ok" : "loi"); if (j.ok) { setTimeout(function () { location.reload(); }, 800); } else { gl.disabled = false; } }); }; }
+
+  var f = document.querySelector("[data-phieu]");
+  if (!f) { return; }
+  var toiThieu = {{ toi_thieu }}, thayDoi = false, trang = f.querySelector("[data-trang-nhap]");
+  var xt = document.querySelector("[data-xem-truoc-ph]");
+  function demKyTu() {
+    f.querySelectorAll("[data-dem-cho]").forEach(function (s) {
+      var o = document.getElementById(s.dataset.demCho), n = o.value.trim().length;
+      s.textContent = s.dataset.toiThieu ? n + "/1000" + (n < toiThieu ? " · cần ≥ " + toiThieu : "") : n + " ký tự";
+      s.style.color = s.dataset.toiThieu && n > 0 && n < toiThieu ? "#C2410C" : "";
+    });
+    var du = (f.noi_dung.value.trim() ? 1 : 0) + (f.querySelector("input[name=xep_loai]:checked") ? 1 : 0) + (f.danh_gia.value.trim().length >= toiThieu ? 1 : 0);
+    var chip = f.querySelector("[data-du-muc]");
+    chip.className = "chip " + (du === 3 ? "xanh_la" : "xam");
+    chip.querySelector("span").textContent = (du === 3 ? "Đủ " : "") + du + "/3 mục bắt buộc";
+    if (xt) {
+      var ml = f.querySelector("input[name=xep_loai]:checked");
+      xt.textContent = "[Gia Sư Online] " + xt.dataset.nhan + " " + xt.dataset.mon + " của " + xt.dataset.hv + " (" + xt.dataset.gio + ")\n" +
+        "Nội dung: " + (f.noi_dung.value.trim() || "…") + "\nMức tiếp thu: " + (ml ? ml.closest("label").querySelector("b").textContent : "…") +
+        "\nNhận xét: " + (f.danh_gia.value.trim() || "…") + (f.dan_do_buoi_sau.value.trim() ? "\nBài tập về nhà: " + f.dan_do_buoi_sau.value.trim() : "") + "\n— Gia sư " + xt.dataset.gs;
+    }
+  }
+  function luuNhap(bao) {
+    var d = {}; new FormData(f).forEach(function (v, k) { if (k !== "csrfmiddlewaretoken") { d[k] = v; } });
+    if (!d.gui_zalo_phu_huynh) { d.gui_zalo_phu_huynh = "false"; }
+    return GSO.post(f.dataset.urlNhap, d).then(function (j) {
+      if (j.ok) { thayDoi = false; trang.innerHTML = '<i class="bi bi-cloud-check" style="color:#0F766E"></i>Đã lưu nháp ' + j.data.luu_luc; if (bao) { GSO.toast(j.message, "ok"); } }
+      else if (bao) { GSO.toast(j.message, "loi"); }
+    });
+  }
+  f.addEventListener("input", function () { thayDoi = true; demKyTu(); });
+  f.addEventListener("change", function () { thayDoi = true; demKyTu(); });
+  setInterval(function () { if (thayDoi) { luuNhap(false); } }, 10000);
+  f.querySelector("[data-luu-nhap]").onclick = function () { luuNhap(true); };
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && thayDoi) { luuNhap(false); } });
+  f.addEventListener("submit", function (e) {
+    if (f.danh_gia.value.trim().length < toiThieu || !f.noi_dung.value.trim() || !f.querySelector("input[name=xep_loai]:checked")) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      GSO.toast("Còn mục bắt buộc chưa đủ: nội dung đã dạy, mức tiếp thu và nhận xét ít nhất " + toiThieu + " ký tự.", "loi");
+    }
+  }, true);
+  demKyTu();
+})();
+</script>
 {% endblock %}

@@ -148,17 +148,96 @@ def tao(request):
     })
 
 
+def _ngu_canh_chi_tiet(request, buoi, form=None):
+    """Dữ liệu trang Chi tiết buổi học v2 (SD-14..SD-19)."""
+    from core.models import NhatKy, NhatKyGuiTin, YeuCauXuLy
+    now = timezone.now()
+    nhap = getattr(buoi, "ban_nhap", None) if buoi.trang_thai == TT.DA_LEN_LICH else None
+    if form is None and buoi.cho_xac_nhan:
+        form = XacNhanBuoiForm(initial={"gui_zalo_phu_huynh": True, **(nhap.du_lieu if nhap else {})})
+        if nhap and nhap.du_lieu.get("gui_zalo_phu_huynh") in ("false", "0", ""):
+            form.initial["gui_zalo_phu_huynh"] = False
+    hau_kiem = getattr(buoi, "hau_kiem", None)
+    thu_lao = getattr(buoi, "thu_lao", None)
+    truoc = None
+    if buoi.khoa_hoc_id:
+        truoc = buoi.khoa_hoc.buoi_hoc.filter(trang_thai=TT.HOAN_TAT, bat_dau__lt=buoi.bat_dau).order_by("-bat_dau").first()
+    nhat_ky = [{"luc": x.thoi_diem, "chu": x.hanh_dong + (f": {x.chi_tiet[:80]}" if x.chi_tiet and len(x.chi_tiet) < 120 else ""),
+                "ai": x.nguoi_thuc_hien.ho_ten if x.nguoi_thuc_hien else "Hệ thống"}
+               for x in NhatKy.objects.filter(ma_doi_tuong=buoi.ma).select_related("nguoi_thuc_hien").order_by("thoi_diem")]
+    nhat_ky += [{"luc": t.thoi_diem, "chu": f"{'Gửi Zalo phụ huynh' if t.kenh == 'ZALO' else 'Email'}: {t.tieu_de}"
+                 + ("" if t.thanh_cong else " (lỗi)"), "ai": "Hệ thống"}
+                for t in NhatKyGuiTin.objects.filter(buoi_hoc=buoi)]
+    if buoi.phong_mo_luc:
+        nhat_ky.append({"luc": buoi.phong_mo_luc, "chu": "Zoom mở phòng", "ai": "Hệ thống"})
+    if buoi.phong_dong_luc:
+        nhat_ky.append({"luc": buoi.phong_dong_luc, "chu": "Buổi học kết thúc, Zoom đóng phòng", "ai": "Hệ thống"})
+    nhat_ky.sort(key=lambda x: x["luc"])
+    sap = []
+    if buoi.trang_thai in BuoiHoc.TRANG_THAI_CHIEM_CHO:
+        if buoi.bat_dau > now:
+            sap.append({"chu": f"Zoom mở phòng (trước {settings.NGHIEP_VU.get('MO_PHONG_TRUOC_PHUT', 10)} phút)",
+                        "luc": dv.gio_mo_phong(buoi)})
+        sap.append({"chu": "Đánh giá và xác nhận hoàn tất", "luc": buoi.han_xac_nhan, "han": True})
+        sap.append({"chu": "Gửi nhận xét cho phụ huynh qua Zalo", "luc": None, "goi_y": "Ngay sau khi bạn xác nhận"})
+        sap.append({"chu": "Hậu kiểm Zoom và tính thù lao", "luc": None, "goi_y": "Tuyển sinh phụ trách kiểm tra"})
+    yc_xl = YeuCauXuLy.objects.filter(buoi_hoc=buoi).order_by("-tao_luc").first()
+    tt_hien = buoi.trang_thai_hien_thi
+    return {
+        "buoi": buoi, "TT": TT, "form_xac_nhan": form, "nhap": nhap, "tt_hien": tt_hien, "now": now,
+        "form_huy": HuyBuoiForm(), "form_doi_lich": DoiLichForm(),
+        "co_the_doi": buoi.trang_thai in BuoiHoc.TRANG_THAI_CHIEM_CHO and buoi.bat_dau > now,
+        "nhan": dv.nhan_buoi(buoi), "link_lop": dv.link_lop(buoi, request),
+        "tin_nhan_lop": dv.noi_dung_moi_vao_lop(buoi, request) if buoi.zoom_meeting_id else "",
+        "mo_luc": dv.gio_mo_phong(buoi), "dong_luc": dv.gio_dong_phong(buoi),
+        "da_mo_phong": dv.gio_mo_phong(buoi) <= now <= dv.gio_dong_phong(buoi),
+        "noi_dung_phu_huynh": dv.noi_dung_gui_phu_huynh(buoi) if buoi.xac_nhan_luc else "",
+        "hau_kiem": hau_kiem, "thu_lao": thu_lao, "truoc": truoc, "nhat_ky": nhat_ky, "sap": sap,
+        "yc_xl": yc_xl, "co_the_xin_mo_lai": buoi.tu_huy and buoi.han_xac_nhan and
+        buoi.han_xac_nhan + timedelta(days=settings.NGHIEP_VU["NGAY_MO_LAI_TOI_DA"]) >= now
+        and not (yc_xl and yc_xl.loai == "MO_LAI" and yc_xl.trang_thai == "CHO_XU_LY"),
+        "han_mo_lai": buoi.han_xac_nhan + timedelta(days=settings.NGHIEP_VU["NGAY_MO_LAI_TOI_DA"]) if buoi.han_xac_nhan else None,
+        "toi_thieu": settings.NGHIEP_VU.get("DO_DAI_NHAN_XET_TOI_THIEU", 30),
+        "ho_so_moi": getattr(getattr(buoi.gia_su, "ho_so_gia_su", None), "nguoi_moi", None),
+    }
+
+
 @vai_tro_required(GIA_SU)
 def chi_tiet(request, pk):
     dv.quet_han()
     buoi = _buoi_cua_toi(request, pk)
-    return render(request, "core/buoi_hoc/chi_tiet.html", {
-        "buoi": buoi, "TT": TT,
-        "form_xac_nhan": XacNhanBuoiForm() if buoi.cho_xac_nhan else None,
-        "form_huy": HuyBuoiForm(), "form_doi_lich": DoiLichForm(),
-        "co_the_doi": buoi.trang_thai in BuoiHoc.TRANG_THAI_CHIEM_CHO and buoi.bat_dau > timezone.now(),
-        "noi_dung_phu_huynh": dv.noi_dung_gui_phu_huynh(buoi) if buoi.xac_nhan_luc else "",
-    })
+    return render(request, "core/buoi_hoc/chi_tiet.html", _ngu_canh_chi_tiet(request, buoi))
+
+
+@vai_tro_required(GIA_SU)
+@require_POST
+def xin_mo_lai(request, pk):
+    from core.models import YeuCauXuLy
+    from core.services.ngoai_le import gui_yeu_cau_xu_ly
+    buoi = _buoi_cua_toi(request, pk)
+    try:
+        yc = gui_yeu_cau_xu_ly(request.user, buoi, YeuCauXuLy.Loai.MO_LAI, request.POST.get("noi_dung", ""),
+                               request.POST.get("minh_chung_url", ""))
+        messages.success(request, f"Đã gửi yêu cầu mở lại. Quản trị viên sẽ xem xét trước "
+                                  f"{timezone.localtime(yc.han_xu_ly):%H:%M %d/%m}.")
+    except ValidationError as e:
+        messages.error(request, _loi(e))
+    return redirect("buoi_chi_tiet", pk=pk)
+
+
+@vai_tro_required(GIA_SU)
+@require_POST
+def bao_su_co(request, pk):
+    from core.models import YeuCauXuLy
+    from core.services.ngoai_le import gui_yeu_cau_xu_ly
+    buoi = _buoi_cua_toi(request, pk)
+    loai = request.POST.get("loai") if request.POST.get("loai") in ("SU_CO_ZOOM", "LOI_HE_THONG") else "SU_CO_ZOOM"
+    try:
+        gui_yeu_cau_xu_ly(request.user, buoi, loai, request.POST.get("noi_dung", ""))
+        messages.success(request, "Đã báo sự cố cho Quản trị viên. Bạn sẽ nhận thông báo khi có kết quả.")
+    except ValidationError as e:
+        messages.error(request, _loi(e))
+    return redirect("buoi_chi_tiet", pk=pk)
 
 
 @vai_tro_required(GIA_SU)
@@ -230,19 +309,24 @@ def xac_nhan(request, pk):
         try:
             buoi = dv.xac_nhan_hoan_tat(request.user, buoi, form.cleaned_data)
         except ValidationError as e:
-            messages.error(request, _loi(e))
-            return redirect("buoi_chi_tiet", pk=pk)
-        if buoi.zalo_trang_thai == BuoiHoc.GuiZalo.DA_GUI:
-            messages.success(request, "Đã xác nhận hoàn tất. Đánh giá đã được gửi cho phụ huynh qua Zalo.")
+            if hasattr(e, "error_dict"):
+                for k, v in e.error_dict.items():
+                    form.add_error(k if k in form.fields else None, v)
+            else:
+                messages.error(request, _loi(e))
+                return redirect("buoi_chi_tiet", pk=pk)
         else:
-            messages.warning(request, "Đã xác nhận hoàn tất, nhưng chưa gửi được Zalo. "
-                                      "Hãy sao chép nội dung bên dưới gửi phụ huynh.")
-        return redirect("buoi_chi_tiet", pk=pk)
-    # Form lỗi: hiển thị lại trang với lỗi tại từng ô.
-    return render(request, "core/buoi_hoc/chi_tiet.html", {
-        "buoi": buoi, "TT": TT, "form_xac_nhan": form, "form_huy": HuyBuoiForm(), "form_doi_lich": DoiLichForm(),
-        "co_the_doi": False, "noi_dung_phu_huynh": "",
-    }, status=400)
+            if not form.cleaned_data.get("gui_zalo_phu_huynh"):
+                messages.success(request, f"Đã xác nhận hoàn tất lúc {timezone.localtime(buoi.xac_nhan_luc):%H:%M}. "
+                                          "Bạn đã tắt gửi Zalo – hãy sao chép nhận xét gửi phụ huynh.")
+            elif buoi.zalo_trang_thai == BuoiHoc.GuiZalo.DA_GUI:
+                messages.success(request, "Đã xác nhận hoàn tất. Đánh giá đã được gửi cho phụ huynh qua Zalo.")
+            else:
+                messages.warning(request, "Đã xác nhận hoàn tất, nhưng chưa gửi được Zalo. "
+                                          "Bấm Gửi lại hoặc sao chép nhận xét gửi phụ huynh.")
+            return redirect("buoi_chi_tiet", pk=pk)
+    # Form lỗi: hiển thị lại trang với lỗi tại từng ô (bản nháp vẫn giữ).
+    return render(request, "core/buoi_hoc/chi_tiet.html", _ngu_canh_chi_tiet(request, buoi, form), status=400)
 
 
 def vao_lop(request, ma_lop):

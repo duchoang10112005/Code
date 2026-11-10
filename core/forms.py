@@ -432,24 +432,33 @@ class TaoBuoiForm(GsoMixin, forms.Form):
         return [dau + timedelta(weeks=i) for i in range(d.get("so_buoi") or 1)]
 
 
-class XacNhanBuoiForm(BootstrapMixin, forms.Form):
+class XacNhanBuoiForm(GsoMixin, forms.Form):
+    """Phiếu đánh giá buổi học (SD-15, SD-16)."""
+
     noi_dung = forms.CharField(label="Nội dung đã dạy", max_length=1000,
-                               widget=forms.Textarea(attrs={"rows": 3}))
-    xep_loai = forms.ChoiceField(label="Đánh giá chung", choices=BuoiHoc.XepLoai.choices, widget=forms.RadioSelect)
-    danh_gia = forms.CharField(label="Nhận xét học viên", max_length=1000, widget=forms.Textarea(attrs={"rows": 3}),
-                               help_text="Nội dung này được gửi cho phụ huynh qua Zalo.")
-    dan_do_buoi_sau = forms.CharField(label="Dặn dò cho buổi sau", max_length=500, required=False,
-                                      widget=forms.Textarea(attrs={"rows": 2}))
+                               widget=forms.Textarea(attrs={"rows": 3, "placeholder":
+                                                            "VD: Phương trình bậc hai – công thức nghiệm, bài tập 1–5"}))
+    xep_loai = forms.ChoiceField(label="Mức tiếp thu", choices=BuoiHoc.XepLoai.choices, widget=forms.RadioSelect)
+    danh_gia = forms.CharField(label="Nhận xét tiến độ", max_length=1000, min_length=30,
+                               widget=forms.Textarea(attrs={"rows": 4, "placeholder":
+                                                            "Điểm học viên làm tốt, điểm cần cải thiện, thái độ học tập…"}),
+                               error_messages={"min_length": "Nhận xét gửi phụ huynh cần ít nhất 30 ký tự."})
+    dan_do_buoi_sau = forms.CharField(label="Bài tập về nhà", max_length=500, required=False,
+                                      widget=forms.Textarea(attrs={"rows": 3, "placeholder": "VD: Làm bài 6–10 trang 42"}))
+    ghi_chu_tuyen_sinh = forms.CharField(label="Ghi chú cho Tuyển sinh", max_length=500, required=False,
+                                         widget=forms.Textarea(attrs={"rows": 3, "placeholder":
+                                                                      "VD: Học viên vào trễ 5 phút do mạng yếu"}))
+    gui_zalo_phu_huynh = forms.BooleanField(label="Gửi nhận xét cho phụ huynh qua Zalo", required=False, initial=True)
 
 
-class HuyBuoiForm(BootstrapMixin, forms.Form):
+class HuyBuoiForm(GsoMixin, forms.Form):
     ly_do_huy = forms.ChoiceField(label="Lý do hủy", choices=[
         (BuoiHoc.LyDoHuy.GIA_SU_HUY, "Gia sư bận / có việc đột xuất"),
         (BuoiHoc.LyDoHuy.HOC_VIEN_HUY, BuoiHoc.LyDoHuy.HOC_VIEN_HUY.label)])
     ghi_chu = forms.CharField(label="Ghi chú", max_length=300, required=False)
 
 
-class DoiLichForm(BootstrapMixin, forms.Form):
+class DoiLichForm(GsoMixin, forms.Form):
     bat_dau = _GioBatDauField(label="Giờ mới")
 
 

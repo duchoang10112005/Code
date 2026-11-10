@@ -65,6 +65,8 @@ urlpatterns = [
     path("buoi-hoc/<int:pk>/huy/", buoi_hoc.huy, name="buoi_huy"),
     path("buoi-hoc/<int:pk>/doi-lich/", buoi_hoc.doi_lich, name="buoi_doi_lich"),
     path("buoi-hoc/<int:pk>/xac-nhan/", buoi_hoc.xac_nhan, name="buoi_xac_nhan"),
+    path("buoi-hoc/<int:pk>/xin-mo-lai/", buoi_hoc.xin_mo_lai, name="buoi_xin_mo_lai"),
+    path("buoi-hoc/<int:pk>/bao-su-co/", buoi_hoc.bao_su_co, name="buoi_bao_su_co"),
     path("lop/<str:ma_lop>/", buoi_hoc.vao_lop, name="vao_lop"),
 
     # Phần 5b – Ngoại lệ (Admin) và đổi gia sư (NVTS)
