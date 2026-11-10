@@ -204,40 +204,40 @@ class SuaTaiKhoanForm(BootstrapMixin, forms.ModelForm):
 # ---------------------------------------------------------------------------
 # Phần 2 – Hồ sơ gia sư (PB-04)
 # ---------------------------------------------------------------------------
-class HoSoGiaSuForm(BootstrapMixin, forms.ModelForm):
-    so_dien_thoai = forms.CharField(label="Số điện thoại", max_length=20, required=False)
+class HoSoGiaSuForm(GsoMixin, forms.ModelForm):
+    """Thông tin cá nhân trên "Hồ sơ của tôi" (SD-26)."""
+
+    so_dien_thoai = forms.CharField(label="Số điện thoại / Zalo", max_length=20, required=False)
 
     class Meta:
         model = HoSoGiaSu
-        fields = ["trinh_do", "kinh_nghiem", "email_zoom"]
-        widgets = {"kinh_nghiem": forms.Textarea(attrs={"rows": 4})}
-        help_texts = {
-            "email_zoom": "Email tài khoản Zoom trung tâm cấp cho bạn. Để trống nếu chưa có.",
-            "kinh_nghiem": "Số năm dạy, đối tượng học viên, thành tích nổi bật…",
-        }
+        fields = ["trinh_do", "truong_hoc", "kinh_nghiem", "email_zoom", "so_lop_toi_da", "tam_nghi_den",
+                  "muc_tieu_buoi_thang"]
+        labels = {"trinh_do": "Học vấn / bằng cấp", "truong_hoc": "Trường", "kinh_nghiem": "Giới thiệu với phụ huynh"}
+        widgets = {"kinh_nghiem": forms.Textarea(attrs={"rows": 3}),
+                   "tam_nghi_den": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
+        help_texts = {"email_zoom": "Email tài khoản Zoom cá nhân (nếu có). Để trống nếu chưa có.",
+                      "tam_nghi_den": "Trong thời gian tạm nghỉ, trung tâm không gửi lời mời mới cho bạn."}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["so_dien_thoai"].initial = self.instance.user.so_dien_thoai
+        for ten in ("so_lop_toi_da", "muc_tieu_buoi_thang"):
+            self.fields[ten].required = False
+
+    def clean(self):
+        d = super().clean()
+        for ten in ("so_lop_toi_da", "muc_tieu_buoi_thang"):  # không gửi → giữ giá trị cũ
+            if d.get(ten) in (None, ""):
+                d[ten] = getattr(self.instance, ten)
+        return d
 
     def save(self, commit=True):
         ho_so = super().save(commit)
-        ho_so.user.so_dien_thoai = self.cleaned_data["so_dien_thoai"]
-        if commit:
+        if commit and "so_dien_thoai" in self.data:
+            ho_so.user.so_dien_thoai = self.cleaned_data["so_dien_thoai"]
             ho_so.user.save(update_fields=["so_dien_thoai"])
         return ho_so
-
-
-class DangKyMonForm(BootstrapMixin, forms.Form):
-    mon_hoc = forms.ModelChoiceField(label="Môn học", queryset=MonHoc.objects.none(), empty_label="— Chọn môn —")
-    cap_do = forms.CharField(label="Cấp độ dạy", max_length=100,
-                             widget=forms.TextInput(attrs={"placeholder": "VD: Lớp 6–9, IELTS 6.5"}))
-
-    def __init__(self, *args, ho_so=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Ẩn môn đã duyệt hoặc đang chờ; môn bị từ chối vẫn được đăng ký lại.
-        da_co = ho_so.mon_day.exclude(trang_thai=MonGiaSu.TrangThai.TU_CHOI).values("mon_hoc") if ho_so else []
-        self.fields["mon_hoc"].queryset = MonHoc.objects.exclude(pk__in=da_co)
 
 
 class LichRanhForm(BootstrapMixin, forms.ModelForm):

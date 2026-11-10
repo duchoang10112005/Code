@@ -57,7 +57,8 @@ class PB04GiaSuTest(DuLieu):
         mg = MonGiaSu.objects.create(ho_so=self.ho_so, mon_hoc=self.toan)
         self.dang_nhap(self.gs)
         self.client.post(reverse("ho_so_rut_mon", args=[mg.pk]))
-        self.assertFalse(MonGiaSu.objects.filter(pk=mg.pk).exists())
+        mg.refresh_from_db()
+        self.assertEqual(mg.trang_thai, MonGiaSu.TrangThai.DA_RUT)  # HS-08: giữ bản ghi
 
     def test_PB24_gia_su_khong_dung_vao_mon_cua_nguoi_khac(self):
         mg = MonGiaSu.objects.create(ho_so=self.ho_so2, mon_hoc=self.toan)
@@ -80,9 +81,9 @@ class PB04GiaSuTest(DuLieu):
         url = reverse("ho_so_them_lich")
         self.client.post(url, {"thu": 0, "tu_gio": "18:00", "den_gio": "20:00"})
         r = self.client.post(url, {"thu": 0, "tu_gio": "19:00", "den_gio": "21:00"})
-        self.assertContains(r, "bị trùng")
+        self.assertContains(r, "bị trùng", status_code=400)
         r = self.client.post(url, {"thu": 1, "tu_gio": "20:00", "den_gio": "18:00"})
-        self.assertContains(r, "Giờ kết thúc phải sau giờ bắt đầu")
+        self.assertContains(r, "Giờ kết thúc phải sau giờ bắt đầu", status_code=400)
         self.client.post(url, {"thu": 0, "tu_gio": "20:00", "den_gio": "21:00"})  # sát nhau thì hợp lệ
         self.assertEqual(self.ho_so.lich_ranh.count(), 2)
 
