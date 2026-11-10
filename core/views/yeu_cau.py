@@ -247,29 +247,66 @@ def dong(request, pk):
 # =============================================================================
 @vai_tro_required(ADMIN, TUYEN_SINH)
 def hoc_vien_danh_sach(request):
+    return _trang_hoc_vien(request)
+
+
+def _trang_hoc_vien(request, form_sua=None, chon_pk=None):
+    """Tuyển sinh › Học viên: tab theo tình trạng suy ra, lọc môn / Tôi phụ trách, khung chi tiết bên phải."""
+    from core.models import BuoiHoc, MonHoc
+    from core.services import hoc_vien as dv_hv
     q = request.GET.get("q", "").strip()
-    qs = HocVien.objects.annotate(so_yeu_cau=Count("yeu_cau")).order_by("ho_ten")
-    if q:
-        qs = qs.filter(Q(ho_ten__icontains=q) | Q(ten_phu_huynh__icontains=q) | Q(sdt_phu_huynh__icontains=q))
-    trang = Paginator(qs, 20).get_page(request.GET.get("page"))
-    return render(request, "core/hoc_vien/danh_sach.html", {"trang": trang, "q": q})
+    mon = request.GET.get("mon", "")
+    mon = int(mon) if mon.isdigit() else None
+    toi = request.GET.get("toi") == "1"
+    tat_ca = dv_hv.ds_hoc_vien(q, mon, request.user if toi else None)
+    dem = {"": len(tat_ca)}
+    for k, _, _ in dv_hv.TINH_TRANG:
+        dem[k] = sum(1 for x in tat_ca if x["tt"][0] == k)
+    tab = request.GET.get("tinh_trang", "")
+    tab = tab if tab in dem else ""
+    loc = [x for x in tat_ca if not tab or x["tt"][0] == tab]
+    trang = Paginator(loc, 20).get_page(request.GET.get("page"))
+    chon_pk = str(chon_pk or request.GET.get("chon", ""))
+    chon = next((x for x in trang if str(x["hv"].pk) == chon_pk), None)
+    if chon is None and chon_pk:
+        chon = next((x for x in tat_ca if str(x["hv"].pk) == chon_pk), None)
+    if chon is None and trang.object_list:
+        chon = trang.object_list[0]
+    if chon:
+        hv = chon["hv"]
+        chon["ds_yc"] = sorted(hv.yeu_cau.all(), key=lambda y: y.tao_luc, reverse=True)
+        chon["buoi"] = list(BuoiHoc.objects.filter(hoc_vien=hv).order_by("-bat_dau")[:4])
+        if request.user.la_tuyen_sinh and form_sua is None:
+            form_sua = HocVienForm(instance=hv, prefix="hv")
+    from core.models import KhoaHoc
+    sap_het = [k for k in KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC) if k.sap_het_buoi]
+    qs_loc = request.GET.copy()
+    for k in ("chon", "page"):
+        qs_loc.pop(k, None)
+    return render(request, "core/hoc_vien/danh_sach.html", {
+        "trang": trang, "chon": chon, "q": q, "mon": mon, "toi": toi, "tab": tab,
+        "ds_tab": [("", "Tất cả", dem[""])] + [(k, n, dem[k]) for k, n, _ in dv_hv.TINH_TRANG],
+        "ds_mon": MonHoc.objects.order_by("ten"), "loc_qs": qs_loc.urlencode(),
+        "kpi": {"tong": HocVien.objects.count(), "dang_hoc": dem["dang_hoc"] if not (q or mon or toi) else None,
+                "dang_tim": (dem["dang_tim"] + dem["hoc_thu"]) if not (q or mon or toi) else None,
+                "sap_het": len(sap_het)},
+        "form_sua": form_sua, "mo_sua": form_sua is not None and form_sua.is_bound,
+    }, status=400 if form_sua is not None and form_sua.is_bound else 200)
 
 
 @vai_tro_required(ADMIN, TUYEN_SINH)
 def hoc_vien_chi_tiet(request, pk):
+    """GET → danh sách với khung chi tiết của học viên này. POST (Tuyển sinh) → sửa thông tin."""
     hv = get_object_or_404(HocVien, pk=pk)
-    form = None
-    if request.user.la_tuyen_sinh:
-        form = HocVienForm(request.POST or None, instance=hv, prefix="hv")
-        if request.method == "POST" and form.is_valid():
+    if request.method == "POST" and request.user.la_tuyen_sinh:
+        form = HocVienForm(request.POST, instance=hv, prefix="hv")
+        if form.is_valid():
             form.save()
             ghi_nhat_ky(request.user, "Sửa thông tin học viên", hv.ho_ten, ", ".join(form.changed_data))
             messages.success(request, "Đã lưu thông tin học viên.")
-            return redirect("hoc_vien_chi_tiet", pk=pk)
-    return render(request, "core/hoc_vien/chi_tiet.html", {
-        "hv": hv, "form": form,
-        "ds_yeu_cau": hv.yeu_cau.select_related("mon_hoc", "gia_su").order_by("-tao_luc"),
-    })
+            return redirect(f"{reverse('hoc_vien_danh_sach')}?chon={pk}")
+        return _trang_hoc_vien(request, form_sua=form, chon_pk=pk)
+    return redirect(f"{reverse('hoc_vien_danh_sach')}?chon={pk}")
 
 
 # =============================================================================
