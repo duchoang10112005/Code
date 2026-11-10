@@ -30,7 +30,7 @@ class PB01DangNhapTest(TestCase):
 
     def test_PB01_sai_mat_khau_bi_tu_choi(self):
         r = self.client.post(reverse("dang_nhap"), {"username": "gs", "password": "sai"})
-        self.assertContains(r, "Sai tên đăng nhập hoặc mật khẩu")
+        self.assertContains(r, "Email hoặc mật khẩu chưa đúng")
 
     def test_PB01_tai_khoan_bi_khoa_khong_dang_nhap_duoc(self):
         self.gs.is_active = False

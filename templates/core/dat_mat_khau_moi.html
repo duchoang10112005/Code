@@ -1,0 +1,32 @@
+{% extends "giao_dien/cong_khai.html" %}
+{% block title %}Đặt mật khẩu mới{% endblock %}
+{% block content %}
+<form method="post" novalidate data-dat-mk>
+  {% csrf_token %}
+  <div>
+    <span class="chip" style="background:#EAF2FF;color:#1D4ED8"><span class="d" style="background:#3B82F6"></span>Lần đăng nhập đầu tiên</span>
+    <h2 id="tieu-de-form" style="margin-top:12px;font-size:24px;line-height:32px">Đặt mật khẩu mới</h2>
+    <p class="muted" style="margin:6px 0 0;font-size:14px;line-height:22px">Mật khẩu tạm chỉ dùng một lần. Hãy đặt mật khẩu riêng của bạn.</p>
+  </div>
+  <div class="field">
+    <label for="{{ form.new_password1.id_for_label }}">{{ form.new_password1.label }}</label>
+    {{ form.new_password1 }}
+    {% if form.new_password1.errors %}<span id="{{ form.new_password1.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ form.new_password1.errors|join:" " }}</span>{% endif %}
+  </div>
+  <ul class="dieu-kien" aria-label="Điều kiện mật khẩu" data-dieu-kien>
+    <li data-dk="dai"><i class="bi bi-circle" aria-hidden="true"></i>Ít nhất 8 ký tự</li>
+    <li data-dk="hoa"><i class="bi bi-circle" aria-hidden="true"></i>Có chữ hoa</li>
+    <li data-dk="so"><i class="bi bi-circle" aria-hidden="true"></i>Có chữ số</li>
+    <li><i class="bi bi-info-circle" aria-hidden="true"></i>Khác mật khẩu tạm</li>
+  </ul>
+  <div class="field">
+    <label for="{{ form.new_password2.id_for_label }}">{{ form.new_password2.label }}</label>
+    {{ form.new_password2 }}
+    <span class="err" role="alert" data-chua-khop hidden><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Hai mật khẩu chưa khớp.</span>
+    {% if form.new_password2.errors %}<span id="{{ form.new_password2.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ form.new_password2.errors|join:" " }}</span>{% endif %}
+  </div>
+  <button type="submit" class="btn pri lon">Lưu và tiếp tục</button>
+</form>
+<form method="post" action="{% url 'dang_xuat' %}" style="margin-top:12px">{% csrf_token %}<button class="link-btn" style="color:#646B85">Đăng xuất</button></form>
+{% endblock %}
+{% block scripts %}{% include "giao_dien/_dieu_kien_mat_khau.html" with o1=form.new_password1.auto_id o2=form.new_password2.auto_id %}{% endblock %}

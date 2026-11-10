@@ -1,11 +1,30 @@
-{% extends "base.html" %}
-{% block title %}Đổi mật khẩu · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% block title %}Đổi mật khẩu{% endblock %}
+{% block tieu_de_trang %}Đổi mật khẩu{% endblock %}
 {% block content %}
-<div class="dau-trang"><h1>Đổi mật khẩu</h1></div>
-<div class="card" style="max-width:480px"><div class="card-body">
-  <form method="post" novalidate>{% csrf_token %}
-    {% include "partials/form_fields.html" %}
-    <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu mật khẩu mới</button>
+<div class="head"><div><h2 class="h2">Đổi mật khẩu</h2><p class="lead">Mật khẩu mới dùng cho lần đăng nhập sau trên mọi máy.</p></div></div>
+<div class="card" style="max-width:520px">
+  <form method="post" novalidate class="card-b stack-16" style="padding:20px 24px">
+    {% csrf_token %}
+    {% if form.errors %}<div class="banner tom-tat-loi" tabindex="-1" role="alert" style="background:#FDECEC;border-color:#F8C9CA"><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle" aria-hidden="true"></i></span><span>Còn {{ form.errors|length }} mục cần sửa.</span></div>{% endif %}
+    {% for f in form %}
+    <div class="field">
+      <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+      <div class="o-mat-khau">{{ f }}<button type="button" class="icon-btn sm" data-hien-mat-khau="#{{ f.auto_id }}" aria-label="Hiện mật khẩu" aria-pressed="false"><i class="bi bi-eye"></i></button></div>
+      {% if f.errors %}<span id="{{ f.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ f.errors|join:" " }}</span>{% endif %}
+      {% if f.name == "new_password1" %}
+      <ul class="dieu-kien" style="margin-top:4px" aria-label="Điều kiện mật khẩu" data-dieu-kien>
+        <li data-dk="dai"><i class="bi bi-circle" aria-hidden="true"></i>Ít nhất 8 ký tự</li>
+        <li data-dk="hoa"><i class="bi bi-circle" aria-hidden="true"></i>Có chữ hoa</li>
+        <li data-dk="so"><i class="bi bi-circle" aria-hidden="true"></i>Có chữ số</li>
+        <li><i class="bi bi-info-circle" aria-hidden="true"></i>Khác mật khẩu hiện tại</li>
+      </ul>
+      {% endif %}
+      {% if f.name == "new_password2" %}<span class="err" role="alert" data-chua-khop hidden><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Hai mật khẩu chưa khớp.</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="actions" style="justify-content:flex-start"><button type="submit" class="btn pri">Lưu mật khẩu mới</button><a href="{% url 'trang_chu' %}" class="btn">Hủy</a></div>
   </form>
-</div></div>
+</div>
 {% endblock %}
+{% block scripts %}{% include "giao_dien/_dieu_kien_mat_khau.html" with o1=form.new_password1.auto_id o2=form.new_password2.auto_id %}{% endblock %}

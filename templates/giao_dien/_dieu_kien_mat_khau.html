@@ -1,0 +1,20 @@
+<script>
+/* Đánh dấu điều kiện mật khẩu khi gõ + báo hai ô chưa khớp (server vẫn kiểm tra lại). */
+(function () {
+  var o1 = document.getElementById("{{ o1 }}"), o2 = document.getElementById("{{ o2 }}");
+  var ds = document.querySelector("[data-dieu-kien]"), loi = document.querySelector("[data-chua-khop]");
+  if (!o1 || !ds) { return; }
+  var dk = { dai: function (v) { return v.length >= 8; }, hoa: function (v) { return /[A-ZÀ-Ỹ]/.test(v); }, so: function (v) { return /\d/.test(v); } };
+  function cap() {
+    Object.keys(dk).forEach(function (k) {
+      var li = ds.querySelector('[data-dk="' + k + '"]'), ok = dk[k](o1.value);
+      li.classList.toggle("dat", ok);
+      li.querySelector(".bi").className = "bi " + (ok ? "bi-check-circle-fill" : "bi-circle");
+    });
+    var lech = o2.value.length > 0 && o1.value !== o2.value;
+    if (loi) { loi.hidden = !lech; }
+    o2.setAttribute("aria-invalid", String(lech));
+  }
+  o1.addEventListener("input", cap); o2.addEventListener("input", cap); cap();
+})();
+</script>

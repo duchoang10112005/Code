@@ -48,6 +48,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "core.middleware.ChanTaiKhoanBiKhoaMiddleware",
+    "core.middleware.BatDoiMatKhauMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -87,6 +88,8 @@ AUTH_USER_MODEL = "core.User"
 LOGIN_URL = "dang_nhap"
 LOGIN_REDIRECT_URL = "trang_chu"
 LOGOUT_REDIRECT_URL = "dang_nhap"
+
+AUTHENTICATION_BACKENDS = ["core.auth.DangNhapLinhHoatBackend"]
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

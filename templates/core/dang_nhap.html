@@ -1,22 +1,81 @@
-{% extends "base.html" %}
-{% block title %}Đăng nhập · {{ TEN_HE_THONG }}{% endblock %}
-{% block body_class %}trang-bia{% endblock %}
-{% block public_content %}
-<div class="row justify-content-center">
-  <div class="col-sm-9 col-md-6 col-lg-4">
-    <div class="nhan-bia nhan-bia-lon">
-      <b>SỔ LIÊN LẠC</b>
-      <span>{{ TEN_HE_THONG }}</span>
-      <span>Dành cho Admin, Nhân viên tuyển sinh và Gia sư</span>
+{% extends "giao_dien/cong_khai.html" %}
+{% block title %}Đăng nhập{% endblock %}
+{% block content %}
+<form method="post" novalidate data-form-dang-nhap>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <div>
+    <h2 id="tieu-de-form">Đăng nhập</h2>
+    <p class="muted" style="margin:6px 0 0;font-size:14px;line-height:22px">Dùng tài khoản trung tâm cấp cho bạn.</p>
+  </div>
+
+  {% if form.non_field_errors %}
+    {% if form.tai_khoan_bi_khoa %}
+    <div role="alert" class="banner" style="background:#F7F8FC;border-color:#E6E9F2;align-items:flex-start">
+      <span class="ic" style="color:#4A5068"><i class="bi bi-lock" aria-hidden="true"></i></span>
+      <div><div class="b6">Tài khoản đã bị khóa</div><div style="font-size:13px;line-height:20px;color:#4A5068;margin-top:2px">{{ form.non_field_errors.0 }}</div></div>
     </div>
-    <div class="trang-giay p-4">
-      <h1 class="h1-trang">Đăng nhập</h1>
-      <form method="post" novalidate>{% csrf_token %}
-        {% include "partials/form_fields.html" %}
-        <input type="hidden" name="next" value="{{ next }}">
-        <button class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Đăng nhập</button>
-      </form>
+    {% else %}
+    <div role="alert" class="banner" style="background:#FDECEC;border-color:#F8C9CA;align-items:flex-start">
+      <span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle" aria-hidden="true"></i></span>
+      <div><div class="b6" style="color:#7A1F23">Email hoặc mật khẩu chưa đúng</div><div style="font-size:13px;line-height:20px;color:#4A5068;margin-top:2px">{{ form.non_field_errors.0 }}</div></div>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="field">
+    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+    {{ form.username }}
+    {% for e in form.username.errors %}<span id="{{ form.username.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    <div class="row"><label for="{{ form.password.id_for_label }}" class="lbl">Mật khẩu</label>
+      <button type="button" class="link-btn" style="margin-left:auto" aria-expanded="false" aria-controls="quen-mk" data-quen-mk>Quên mật khẩu?</button></div>
+    <div class="o-mat-khau">
+      {{ form.password }}
+      <button type="button" class="icon-btn sm" data-hien-mat-khau="#{{ form.password.auto_id }}" aria-label="Hiện mật khẩu" aria-pressed="false"><i class="bi bi-eye"></i></button>
+    </div>
+    {% for e in form.password.errors %}<span id="{{ form.password.auto_id }}_loi" class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</span>{% endfor %}
+    <div id="quen-mk" class="banner" hidden style="background:#F5F6FF;border-color:#DCDFFB;align-items:flex-start;padding:10px 12px">
+      <span class="ic" style="width:24px;height:24px;color:#4F46E5;font-size:12px"><i class="bi bi-info-circle" aria-hidden="true"></i></span>
+      <span style="font-size:13px;line-height:20px;color:#4A5068">Liên hệ Quản trị viên{% if lien_he_qtv %} <b class="b5" style="color:#1E2235">{{ lien_he_qtv.ho_ten }}{% if lien_he_qtv.so_dien_thoai %} · {{ lien_he_qtv.so_dien_thoai }}{% endif %}</b>{% endif %} để nhận mật khẩu tạm qua email.</span>
     </div>
   </div>
-</div>
+
+  <label class="row" style="gap:8px;cursor:pointer;font-size:14px"><input type="checkbox" name="ghi_nho" value="1"{% if ghi_nho %} checked{% endif %} style="width:16px;height:16px;margin:0;accent-color:#6366F1">Ghi nhớ đăng nhập trên máy này</label>
+  <button type="submit" class="btn pri lon" data-dang-gui="Đang đăng nhập…">Đăng nhập</button>
+
+  {% if tai_khoan_mau %}
+  <div style="padding-top:16px;border-top:1px dashed #E6E9F2">
+    <div class="sm muted" style="margin-bottom:8px">Bản demo · điền nhanh tài khoản mẫu</div>
+    <div class="row" style="flex-wrap:wrap">
+      {% for t in tai_khoan_mau %}<button type="button" class="btn sm" data-dien="{{ t.username }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ t.mau }}"></span>{{ t.nhan }}</button>{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
+{% block scripts %}
+{% if mat_khau_mau %}{{ mat_khau_mau|json_script:"mk-mau" }}{% endif %}
+<script>
+(function () {
+  var f = document.querySelector("[data-form-dang-nhap]");
+  var q = f.querySelector("[data-quen-mk]"), hop = document.getElementById("quen-mk");
+  q.addEventListener("click", function () { hop.hidden = !hop.hidden; q.setAttribute("aria-expanded", String(!hop.hidden)); });
+  var mk = document.getElementById("mk-mau");
+  f.querySelectorAll("[data-dien]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      f.username.value = b.dataset.dien;
+      if (mk) { f.password.value = JSON.parse(mk.textContent); }
+      f.password.focus();
+    });
+  });
+  /* Kiểm tra rỗng phía client (SD-01) – server vẫn kiểm tra lại. */
+  f.addEventListener("submit", function (e) {
+    var thieu = !f.username.value.trim() ? f.username : (!f.password.value ? f.password : null);
+    if (thieu) { e.preventDefault(); e.stopImmediatePropagation(); thieu.setAttribute("aria-invalid", "true"); thieu.focus(); }
+  }, true);
+})();
+</script>
 {% endblock %}

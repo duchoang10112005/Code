@@ -1,6 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
+from core.api import chung as api_chung
 from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, quy_chuan, tai_khoan, yeu_cau
 
 urlpatterns = [
@@ -80,6 +81,11 @@ urlpatterns = [
     path("doi-soat/gia-su/<int:pk>/dieu-chinh/", thu_lao.them_dieu_chinh, name="doi_soat_dieu_chinh"),
     path("doi-soat/gia-su/<int:pk>/kiem-tra/", thu_lao.kiem_tra, name="doi_soat_kiem_tra"),
     path("doi-soat/gia-su/<int:pk>/chot/", thu_lao.chot, name="doi_soat_chot"),
+
+    # API JSON cho giao diện mới (01 · mục 3)
+    path("api/thong-bao/", api_chung.thong_bao, name="api_thong_bao"),
+    path("api/thong-bao/da-doc/", api_chung.thong_bao_da_doc, name="api_thong_bao_da_doc"),
+    path("api/tim-kiem/", api_chung.tim_kiem, name="api_tim_kiem"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

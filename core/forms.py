@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.password_validation import validate_password
 
 from .models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, MonGiaSu, MonHoc, User, YeuCauHocTap
@@ -46,26 +46,105 @@ class BootstrapMixin:
                     w.attrs["aria-describedby"] = " ".join(mo_ta)
 
 
-class DangNhapForm(BootstrapMixin, AuthenticationForm):
+class GsoMixin:
+    """Giao diện mới: ô nhập dùng class .inp của gso.css, lỗi gắn aria-invalid + aria-describedby."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in self.fields.values():
+            w = f.widget
+            if not isinstance(w, (forms.CheckboxInput, forms.CheckboxSelectMultiple, forms.RadioSelect)):
+                w.attrs.setdefault("class", "inp")
+            choices = getattr(f, "choices", None)
+            if choices and not isinstance(f, forms.ModelChoiceField):
+                ds = list(choices)
+                if ds and ds[0][0] == "" and str(ds[0][1]).lower().startswith(("-", "select")):
+                    f.choices = [("", "— Chọn —")] + ds[1:]
+
+    def full_clean(self):
+        super().full_clean()
+        for ten in self.errors:
+            if ten in self.fields and self[ten].auto_id:
+                w = self.fields[ten].widget
+                w.attrs["aria-invalid"] = "true"
+                w.attrs["aria-describedby"] = f"{self[ten].auto_id}_loi"
+
+
+class DangNhapForm(GsoMixin, AuthenticationForm):
+    """Đăng nhập bằng tên đăng nhập, email hoặc SĐT (SD-01)."""
+
     error_messages = {
-        "invalid_login": "Sai tên đăng nhập hoặc mật khẩu.",
-        "inactive": "Tài khoản đã bị khóa. Vui lòng liên hệ Admin.",
+        "invalid_login": "Email hoặc mật khẩu chưa đúng. Kiểm tra lại và thử lần nữa.",
+        "inactive": "Tài khoản đã bị khóa.",
     }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = "Email hoặc số điện thoại"
+        self.fields["username"].widget.attrs.update({"placeholder": "ten@giasuonline.vn", "autofocus": True})
+        self.fields["username"].max_length = 150
+        self.fields["username"].error_messages["required"] = "Nhập email hoặc số điện thoại."
+        self.fields["password"].error_messages["required"] = "Nhập mật khẩu."
+        self.tai_khoan_bi_khoa = None
 
     def clean(self):
         try:
             return super().clean()
         except forms.ValidationError:
-            # Đúng mật khẩu nhưng tài khoản bị khóa → báo rõ lý do (PB-01).
-            username, password = self.cleaned_data.get("username"), self.cleaned_data.get("password")
-            u = User.objects.filter(username=username).first()
-            if u and not u.is_active and u.check_password(password):
-                raise forms.ValidationError(self.error_messages["inactive"], code="inactive")
+            # Đúng mật khẩu nhưng tài khoản bị khóa → báo rõ lý do (PB-01, SD-01).
+            from core.auth import tim_tai_khoan
+            u = tim_tai_khoan(self.cleaned_data.get("username"))
+            if u and not u.is_active and u.check_password(self.cleaned_data.get("password") or ""):
+                self.tai_khoan_bi_khoa = u
+                ly_do = f": {u.ly_do_khoa}" if u.ly_do_khoa else ""
+                raise forms.ValidationError(f"Tài khoản đã bị khóa{ly_do}. Liên hệ Quản trị viên để được mở khóa.",
+                                            code="inactive")
             raise
 
 
-class DoiMatKhauForm(BootstrapMixin, PasswordChangeForm):
-    pass
+def kiem_tra_mat_khau_moi(user, mat_khau):
+    """Điều kiện hiển thị trên màn đổi mật khẩu: ≥ 8 ký tự, có chữ hoa, có chữ số, khác mật khẩu hiện tại."""
+    loi = []
+    if len(mat_khau) < 8:
+        loi.append("Mật khẩu cần ít nhất 8 ký tự.")
+    if not any(c.isupper() for c in mat_khau):
+        loi.append("Mật khẩu cần có chữ hoa.")
+    if not any(c.isdigit() for c in mat_khau):
+        loi.append("Mật khẩu cần có chữ số.")
+    if user.check_password(mat_khau):
+        loi.append("Mật khẩu mới phải khác mật khẩu hiện tại.")
+    if loi:
+        raise forms.ValidationError(loi)
+
+
+class _QuyTacMatKhau:
+    def clean_new_password1(self):
+        mk = self.cleaned_data.get("new_password1") or ""
+        kiem_tra_mat_khau_moi(self.user, mk)
+        return mk
+
+
+class DoiMatKhauForm(_QuyTacMatKhau, GsoMixin, PasswordChangeForm):
+    """Tự đổi mật khẩu (từ menu cá nhân)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["old_password"].label = "Mật khẩu hiện tại"
+        self.fields["new_password1"].label = "Mật khẩu mới"
+        self.fields["new_password1"].help_text = ""
+        self.fields["new_password2"].label = "Nhập lại mật khẩu mới"
+
+
+class DatMatKhauBatBuocForm(_QuyTacMatKhau, GsoMixin, SetPasswordForm):
+    """Lần đăng nhập đầu / sau khi QTV đặt lại mật khẩu: không hỏi lại mật khẩu tạm (SD-02)."""
+
+    error_messages = {"password_mismatch": "Hai mật khẩu chưa khớp."}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["new_password1"].label = "Mật khẩu mới"
+        self.fields["new_password1"].help_text = ""
+        self.fields["new_password2"].label = "Nhập lại mật khẩu mới"
 
 
 class TaoTaiKhoanForm(BootstrapMixin, forms.ModelForm):
