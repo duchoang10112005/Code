@@ -531,3 +531,25 @@ class LocBuoiForm(BootstrapMixin, forms.Form):
                             widget=forms.DateInput(attrs={"type": "month"}, format="%Y-%m"))
     trang_thai = forms.ChoiceField(label="Trạng thái", required=False,
                                    choices=[("", "Mọi trạng thái")] + list(BuoiHoc.TrangThai.choices))
+
+
+class DangKyGiaSuForm(GsoMixin, forms.Form):
+    """Gia sư tự đăng ký qua link mời (SD-04)."""
+
+    ho_ten = forms.CharField(label="Họ tên", max_length=150)
+    email = forms.EmailField(label="Email")
+    so_dien_thoai = forms.CharField(label="Số điện thoại / Zalo", max_length=20)
+    truong_hoc = forms.CharField(label="Trường / học vấn", max_length=200, required=False,
+                                 widget=forms.TextInput(attrs={"placeholder": "VD: SV năm 4 Sư phạm Toán · ĐHSP Đà Nẵng"}))
+    mat_khau = forms.CharField(label="Mật khẩu", widget=forms.PasswordInput)
+    nhap_lai = forms.CharField(label="Nhập lại mật khẩu", widget=forms.PasswordInput)
+
+    def clean(self):
+        d = super().clean()
+        mk = d.get("mat_khau") or ""
+        if mk and mk != d.get("nhap_lai"):
+            self.add_error("nhap_lai", "Hai mật khẩu chưa khớp.")
+        if mk:
+            if len(mk) < 8 or not any(c.isupper() for c in mk) or not any(c.isdigit() for c in mk):
+                self.add_error("mat_khau", "Mật khẩu cần ít nhất 8 ký tự, có chữ hoa và chữ số.")
+        return d

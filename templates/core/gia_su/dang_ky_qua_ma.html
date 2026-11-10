@@ -1,0 +1,41 @@
+{% extends "giao_dien/cong_khai.html" %}
+{% block title %}Đăng ký làm gia sư{% endblock %}
+{% block content %}
+{% if het_hieu_luc %}
+<div style="display:flex;flex-direction:column;gap:16px">
+  <h2 id="tieu-de-form">Link mời đã hết hiệu lực</h2>
+  <div role="alert" class="banner" style="background:#FFF4E5;border-color:#FFD9A8;align-items:flex-start">
+    <span class="ic" style="color:#B45309"><i class="bi bi-link-45deg" aria-hidden="true"></i></span>
+    <span style="font-size:13px;line-height:20px;color:#4A5068">Link này không còn dùng được. Hãy nhờ nhân viên tuyển sinh đã mời bạn gửi link mới.</span>
+  </div>
+  <a class="btn" href="{% url 'dang_nhap' %}">Về trang đăng nhập</a>
+</div>
+{% else %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div>
+    <h2 id="tieu-de-form">Đăng ký làm gia sư</h2>
+    <p class="muted" style="margin:6px 0 0;font-size:14px;line-height:22px">Bạn được <b class="b5" style="color:#1E2235">{{ ma_moi.tuyen_sinh.ho_ten }}</b> mời tham gia. Sau khi tạo tài khoản, hãy khai báo giờ rảnh và đăng ký môn dạy để trung tâm duyệt.</p>
+  </div>
+  {% if form.non_field_errors %}<div role="alert" class="banner" style="background:#FDECEC;border-color:#F8C9CA"><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle"></i></span><span style="font-size:13px">{{ form.non_field_errors.0 }}</span></div>{% endif %}
+  {% for f in form %}
+  <div class="field">
+    <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span style="color:#C2292E">*</span>{% endif %}</label>
+    {% if f.name == "mat_khau" or f.name == "nhap_lai" %}
+    <div class="o-mat-khau">{{ f }}<button type="button" class="icon-btn sm" data-hien-mat-khau="#{{ f.auto_id }}" aria-label="Hiện mật khẩu" aria-pressed="false"><i class="bi bi-eye"></i></button></div>
+    {% else %}{{ f }}{% endif %}
+    {% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</span>{% endfor %}
+    {% if f.name == "nhap_lai" %}<span class="err" data-chua-khop hidden><i class="bi bi-exclamation-circle"></i>Hai mật khẩu chưa khớp.</span>{% endif %}
+  </div>
+  {% if f.name == "mat_khau" %}<ul class="dieu-kien" aria-label="Điều kiện mật khẩu" data-dieu-kien>
+    <li data-dk="dai"><i class="bi bi-circle" aria-hidden="true"></i>Ít nhất 8 ký tự</li>
+    <li data-dk="hoa"><i class="bi bi-circle" aria-hidden="true"></i>Có chữ hoa</li>
+    <li data-dk="so"><i class="bi bi-circle" aria-hidden="true"></i>Có chữ số</li>
+  </ul>{% endif %}
+  {% endfor %}
+  <button type="submit" class="btn pri lon" data-dang-gui="Đang tạo tài khoản…">Tạo tài khoản</button>
+  <div class="sm muted" style="text-align:center">Đã có tài khoản? <a href="{% url 'dang_nhap' %}">Đăng nhập</a></div>
+</form>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if form %}{% include "giao_dien/_dieu_kien_mat_khau.html" with o1=form.mat_khau.auto_id o2=form.nhap_lai.auto_id %}{% endif %}{% endblock %}

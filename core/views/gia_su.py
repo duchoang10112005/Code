@@ -211,8 +211,53 @@ def danh_sach(request):
             qs = qs.filter(pk__in=LichRanh.objects.filter(thu=int(d["thu"])).values("ho_so"))
         if d["cho_duyet"]:
             qs = qs.filter(so_cho_duyet__gt=0)
-    trang = Paginator(qs, 20).get_page(request.GET.get("page"))
-    return render(request, "core/gia_su/danh_sach.html", {"trang": trang, "form": form})
+    from datetime import date
+    from django.db.models import F
+    from core.models import KhoaHoc, MonHoc
+    qs = qs.annotate(so_khoa=Count("user__khoa_hoc_phu_trach", distinct=True,
+                                   filter=Q(user__khoa_hoc_phu_trach__trang_thai=KhoaHoc.TrangThai.DANG_HOC)))
+    if request.GET.get("toi") == "1":
+        qs = qs.filter(nguoi_moi=request.user)
+    HS = HoSoGiaSu.TrangThai
+    nghi = Q(trang_thai=HS.TAM_NGUNG) | Q(tam_nghi_den__gte=date.today())
+    nhom = {"": qs, "cho_duyet_hs": qs.filter(trang_thai=HS.CHO_DUYET), "tam_nghi": qs.filter(nghi),
+            "kin_lich": qs.filter(trang_thai=HS.HOAT_DONG, so_khoa__gte=F("so_lop_toi_da")).exclude(nghi),
+            "dang_nhan": qs.filter(trang_thai=HS.HOAT_DONG, so_khoa__lt=F("so_lop_toi_da")).exclude(nghi)}
+    tab = request.GET.get("tinh_trang", "") if request.GET.get("tinh_trang", "") in nhom else ""
+    dem = {k: v.count() for k, v in nhom.items()}
+    trang = Paginator(nhom[tab], 20).get_page(request.GET.get("page"))
+    dong = [{"hs": hs, "cs": dv.chi_so_gia_su(hs),
+             "mon": [m for m in hs.mon_day.all() if m.trang_thai == MonGiaSu.TrangThai.DA_DUYET]} for hs in trang]
+    chon = next((x for x in dong if str(x["hs"].pk) == request.GET.get("chon")), dong[0] if dong else None)
+    if chon:
+        from core.services.yeu_cau import KHUNG
+        hs = chon["hs"]
+        ranh = {f"{t}-{k}" for t, k in hs.lich_ranh.exclude(khung="").values_list("thu", "khung")}
+        day = dv.khung_dang_day(hs)
+        chon["luoi"] = [{"ten": {"SANG": "Sáng", "CHIEU": "Chiều", "TOI_SOM": "Tối sớm", "TOI": "Tối"}[k],
+                         "o": ["day" if f"{t}-{k}" in day else ("ranh" if f"{t}-{k}" in ranh else "") for t in range(7)]}
+                        for k in KHUNG]
+        chon["so_ranh"] = len(ranh)
+        chon["ds_mon"] = hs.mon_day.select_related("mon_hoc").exclude(trang_thai=MonGiaSu.TrangThai.DA_RUT)
+        chon["lop"] = KhoaHoc.objects.filter(gia_su=hs.user, trang_thai=KhoaHoc.TrangThai.DANG_HOC).select_related(
+            "hoc_vien", "yeu_cau__mon_hoc")
+    tong = HoSoGiaSu.objects.filter(user__vai_tro=User.VaiTro.GIA_SU)
+    return render(request, "core/gia_su/danh_sach.html", {
+        "trang": trang, "form": form, "dong": dong, "chon": chon, "tab": tab, "dem": dem,
+        "ds_mon": MonHoc.objects.order_by("ten"), "toi": request.GET.get("toi") == "1",
+        "kpi": {"hoat_dong": tong.filter(trang_thai=HS.HOAT_DONG).count(), "con_nhan": dem["dang_nhan"],
+                "cho_duyet": tong.filter(trang_thai=HS.CHO_DUYET).count()},
+        "loc_qs": _qs_tru(request, "chon"),
+        "ds_tab": [(k, n, dem[k]) for k, n in (("", "Tất cả"), ("dang_nhan", "Đang nhận lớp"), ("kin_lich", "Kín lịch"),
+                                                ("tam_nghi", "Tạm nghỉ"), ("cho_duyet_hs", "Chờ duyệt hồ sơ"))],
+    })
+
+
+def _qs_tru(request, *bo):
+    q = request.GET.copy()
+    for k in bo:
+        q.pop(k, None)
+    return q.urlencode()
 
 
 @vai_tro_required(ADMIN, TUYEN_SINH)
@@ -261,3 +306,29 @@ def doi_trang_thai(request, pk):
         except ValidationError as e:
             messages.error(request, _loi(e))
     return redirect("gia_su_chi_tiet", pk=pk)
+
+
+# =============================================================================
+# SD-04 – Mời gia sư đăng ký qua link
+# =============================================================================
+def dang_ky_qua_ma(request, ma):
+    """Trang công khai: gia sư mở link mời của Tuyển sinh để tự tạo tài khoản."""
+    from django.contrib.auth import login
+    from core.forms import DangKyGiaSuForm
+    from core.models import MaMoiGiaSu
+    ma_moi = MaMoiGiaSu.objects.select_related("tuyen_sinh").filter(ma=ma).first()
+    if not ma_moi or not ma_moi.con_hieu_luc:
+        return render(request, "core/gia_su/dang_ky_qua_ma.html", {"het_hieu_luc": True}, status=404)
+    form = DangKyGiaSuForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            u = dv.dang_ky_tai_khoan(ma_moi, form.cleaned_data)
+        except ValidationError as e:
+            loi = e.message_dict if hasattr(e, "error_dict") else {"__all__": e.messages}
+            for k, v in loi.items():
+                form.add_error(k if k in form.fields else None, v)
+        else:
+            login(request, u, backend="core.auth.DangNhapLinhHoatBackend")
+            messages.success(request, "Chào mừng bạn! Hãy cập nhật giờ rảnh và đăng ký môn dạy để trung tâm duyệt hồ sơ.")
+            return redirect("ho_so_cua_toi")
+    return render(request, "core/gia_su/dang_ky_qua_ma.html", {"form": form, "ma_moi": ma_moi})
