@@ -19,9 +19,8 @@ def thong_tin_chung(request):
     if user.la_admin:
         hh["so_mon_cho_duyet"] = MonGiaSu.objects.filter(
             trang_thai=MonGiaSu.TrangThai.CHO_DUYET, ho_so__user__vai_tro="GIA_SU").count()
-        hh["so_can_xem_xet"] = (BuoiHoc.objects.filter(trang_thai="DANG_XEM_XET").count()
-                                + DoiGiaSu.objects.filter(trang_thai="CHO_DUYET").count()
-                                + YeuCauXuLy.objects.filter(trang_thai=YeuCauXuLy.TrangThai.CHO_XU_LY).count())
+        from core.services.xem_xet import tat_ca
+        hh["so_can_xem_xet"] = len(tat_ca())
     elif user.la_tuyen_sinh:
         YC = YeuCauHocTap.TrangThai
         hh["so_yeu_cau_can_xu_ly"] = (

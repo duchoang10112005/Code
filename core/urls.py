@@ -90,6 +90,7 @@ urlpatterns = [
     path("xem-xet/", ngoai_le.xem_xet, name="xem_xet"),
     path("xem-xet/buoi/<int:pk>/<str:hanh_dong>/", ngoai_le.xu_ly_buoi, name="xem_xet_buoi"),
     path("xem-xet/doi-gia-su/<int:pk>/", ngoai_le.duyet_doi_gia_su, name="duyet_doi_gia_su"),
+    path("xem-xet/<str:loai>/<int:pk>/<str:hanh_dong>/", ngoai_le.xu_ly_muc, name="xem_xet_xu_ly"),
     path("khoa-hoc/<int:pk>/doi-gia-su/", ngoai_le.doi_gia_su, name="khoa_hoc_doi_gia_su"),
     path("khoa-hoc/<int:pk>/sua-so-buoi/", ngoai_le.sua_so_buoi, name="khoa_hoc_sua_so_buoi"),
     path("yeu-cau/<int:pk>/gan-thang/", ngoai_le.gan_thang, name="yeu_cau_gan_thang"),

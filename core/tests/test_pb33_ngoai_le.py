@@ -93,7 +93,7 @@ class XemXetBuoiTest(NgoaiLe):
         self.dang_nhap(self.nvts)
         self.assertEqual(self.client.get(reverse("xem_xet")).status_code, 403)
         self.dang_nhap(self.admin)
-        b = self.buoi_khong_dat()
+        b = self.buoi_qua_han()  # QTV xử lý buổi tự hủy; buổi hậu kiểm có vấn đề do Tuyển sinh (Q1)
         r = self.client.get(reverse("xem_xet"))
         self.assertContains(r, b.ma)
 

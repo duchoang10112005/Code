@@ -49,6 +49,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "core.middleware.ChanTaiKhoanBiKhoaMiddleware",
     "core.middleware.BatDoiMatKhauMiddleware",
+    "core.middleware.GhiSuCoMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 

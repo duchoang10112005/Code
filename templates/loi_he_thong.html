@@ -1,0 +1,11 @@
+{% extends "giao_dien/khung.html" %}
+{% block title %}Lỗi hệ thống{% endblock %}
+{% block tieu_de_trang %}Lỗi hệ thống{% endblock %}
+{% block content %}
+<div class="trang-loi">
+  <span class="dlg-ic" style="background:#FDECEC;color:#C2292E"><i class="bi bi-cpu" aria-hidden="true"></i></span>
+  <h1>Hệ thống vừa gặp lỗi</h1>
+  <p class="muted" style="margin:0">Hệ thống đã ghi lại lỗi và báo Quản trị viên. Bản nháp đánh giá của bạn vẫn còn; nếu lỗi xảy ra khi xác nhận buổi học, hạn xác nhận đã được cộng thêm 24 giờ.</p>
+  <a href="{% url 'trang_chu' %}" class="btn pri"><i class="bi bi-house-door" aria-hidden="true"></i>Về trang chủ</a>
+</div>
+{% endblock %}

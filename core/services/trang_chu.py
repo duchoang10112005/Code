@@ -419,3 +419,99 @@ def _lich_thang_tu_cham(thang, hom_nay, cham):
         d += timedelta(days=1)
     truoc = (dau - timedelta(days=1)).replace(day=1)
     return {"o": o, "tieu_de": f"Tháng {th}/{nam}", "truoc": f"{truoc:%Y-%m}", "sau": f"{cuoi + timedelta(days=1):%Y-%m}"}
+
+
+# =============================================================================
+# Trang chủ Quản trị viên: ngoại lệ cần quyết định
+# =============================================================================
+def quan_tri(user, thang=None, now=None):
+    from django.db.models import Sum
+    from django.urls import reverse
+    from core.models import DoiSoatThang, HoSoGiaSu, KhoaHoc, NhatKy, ThuLao
+    from core.services import thu_lao as dv_tl
+    from core.services import xem_xet as dv_xx
+    from core.services.buoi_hoc import quet_han
+
+    quet_han()
+    now = now or timezone.now()
+    hom_nay = timezone.localdate(now)
+    thang = thang or hom_nay.replace(day=1)
+    tq = dv_xx.tong_quan_trang_chu(now)
+    ngay_chot = settings.NGHIEP_VU.get("NGAY_CHOT_THU_LAO", 15)
+    nhom = []
+    if tq["cho_lau"]:
+        nhom.append({"ten": "Yêu cầu chờ quá 24 giờ", "goi_y": "Gán thẳng gia sư", "icon": "bi-hourglass-split",
+                     "mau": "#C2292E", "nen": "#FDECEC", "vien": "#F8C9CA", "cham": "#E5484D", "muc": [
+            {"ma": y.ma, "ten": f"{y.hoc_vien.ho_ten} · {y.mon_hoc} {y.trinh_do}",
+             "mo_ta": "Đang mời gia sư, chưa ai nhận" if y.trang_thai == "DANG_TIM" else "Chưa gửi lời mời",
+             "chip": f"Chờ {int((now - y.tao_luc).total_seconds() // 3600)} giờ", "mau_chip": "do",
+             "han": f"tạo {timezone.localtime(y.tao_luc):%d/%m · %H:%M}", "han_do": True, "nut": "Gán gia sư",
+             "url": reverse("yeu_cau_chi_tiet", args=[y.pk])} for y in tq["cho_lau"]]})
+    if tq["mo_lai_loi"]:
+        nhom.append({"ten": "Mở lại buổi · lỗi hệ thống", "goi_y": "", "icon": "bi-camera-video", "mau": "#C2410C",
+                     "nen": "#FFF4E5", "vien": "#FFD9A8", "cham": "#F59E0B", "muc": [
+            {"ma": x["ma"], "ten": x["tieu_de"], "mo_ta": x["mo_ta"], "chip": x["nhan"],
+             "mau_chip": "xam" if x["loai"] == "tu_huy" else "do",
+             "han": (f"còn {max((x['han'] - now).days, 0)} ngày mở lại" if x["loai"] == "tu_huy" and x["han"]
+                     else x["cho"]), "han_do": False, "nut": "Xem xét",
+             "url": reverse("xem_xet") + f"?chon={x['key']}"} for x in tq["mo_lai_loi"]]})
+    if tq["cho_duyet"]:
+        nhom.append({"ten": "Chờ duyệt", "goi_y": "", "icon": "bi-check2-square", "mau": "#4F46E5", "nen": "#F5F6FF",
+                     "vien": "#DCDFFB", "cham": "#6366F1", "muc": [
+            {"ma": x["ma"], "ten": x["tieu_de"], "mo_ta": x["mo_ta"], "chip": "Chờ duyệt", "mau_chip": "xanh",
+             "han": x["cho"], "han_do": False, "nut": "Duyệt",
+             "url": x.get("url") or reverse("xem_xet") + f"?chon={x['key']}"} for x in tq["cho_duyet"]]})
+    if tq["cho_chot"]:
+        muc = []
+        for t in tq["cho_chot"]:
+            th = t["thang"]
+            tong = len(dv_tl.tong_hop(th))
+            han = dv_tl.thang_sau(th).replace(day=min(ngay_chot, 28))
+            muc.append({"ma": f"T{th.month}/{th.year}", "ten": f"Thù lao tháng {th.month}",
+                        "mo_ta": f"{tong} gia sư · {len(t['ds'])} đã kiểm tra, chờ chốt",
+                        "chip": f"Đã kiểm tra {len(t['ds'])}/{tong}", "mau_chip": "xanh_la",
+                        "han": f"hạn chốt {han:%d/%m}", "han_do": han <= hom_nay, "nut": "Chốt tháng",
+                        "url": reverse("doi_soat") + f"?thang={th:%Y-%m}"})
+        nhom.append({"ten": "Thù lao chờ chốt", "goi_y": "", "icon": "bi-lock", "mau": "#0F766E", "nen": "#E6FAF7",
+                     "vien": "#B5EDE3", "cham": "#14B8A6", "muc": muc})
+
+    # Lịch: hạn chốt thù lao (xanh ngọc), hạn mở lại buổi tự hủy (đỏ)
+    cham, sap_toi = {}, []
+    han_chot = hom_nay.replace(day=min(ngay_chot, 28))
+    if han_chot < hom_nay:
+        han_chot = dv_tl.thang_sau(hom_nay.replace(day=1)).replace(day=min(ngay_chot, 28))
+    thang_truoc = (han_chot.replace(day=1) - timedelta(days=1)).replace(day=1)
+    cham.setdefault(han_chot, []).append("#14B8A6")
+    tong_tr = dv_tl.tong_hop(thang_truoc)
+    sap_toi.append({"luc": han_chot, "mau": "#14B8A6", "ten": f"Hạn chốt thù lao T{thang_truoc.month}",
+                    "phu": f"{len(tong_tr)} gia sư · " + f"{sum(d.tong for d in tong_tr):,}đ".replace(",", ".")})
+    for x in tq["mo_lai_loi"]:
+        if x["loai"] in ("tu_huy", "mo_lai") and x["han"]:
+            d = timezone.localtime(x["han"]).date()
+            cham.setdefault(d, []).append("#E5484D")
+            sap_toi.append({"luc": d, "mau": "#E5484D", "ten": f"Hết hạn mở lại {x['ma']}", "phu": x["tieu_de"]})
+    sap_toi.sort(key=lambda x: x["luc"])
+    so_cho_lau = len(tq["cho_lau"])
+    chip = []
+    if so_cho_lau:
+        chip.append({"icon": "bi-hourglass-split", "mau": "#C2292E", "chu": f"{so_cho_lau} yêu cầu chờ quá 24 giờ"})
+    if tq["cho_duyet"]:
+        chip.append({"icon": "bi-check2-square", "mau": "#4F46E5", "chu": f"{len(tq['cho_duyet'])} mục chờ duyệt"})
+    chip.append({"icon": "bi-lock", "mau": "#0F766E", "chu": f"Hạn chốt thù lao {han_chot:%d/%m}"})
+    so_nl = sum(len(g["muc"]) for g in nhom)
+    th_nay = hom_nay.replace(day=1)
+    return {
+        "loi_chao": _loi_chao(now, user.ho_ten), "chip": chip, "nhom_viec": nhom, "so_viec": so_nl,
+        "cheer": (f"Có {so_nl} ngoại lệ cần bạn quyết định." if so_nl else "Không có ngoại lệ nào đang chờ.")
+        + (f" {so_cho_lau} yêu cầu đã chờ quá 24 giờ, nên xử lý trước." if so_cho_lau else ""),
+        "lich": _lich_thang_tu_cham(thang, hom_nay, cham), "sap_toi": sap_toi[:4],
+        "nhat_ky": NhatKy.objects.select_related("nguoi_thuc_hien").order_by("-thoi_diem")[:3],
+        "tong_quan": {"thang": th_nay.month,
+                      "gia_su": HoSoGiaSu.objects.filter(trang_thai=HoSoGiaSu.TrangThai.HOAT_DONG,
+                                                         user__is_active=True, user__vai_tro="GIA_SU").count(),
+                      "khoa": KhoaHoc.objects.filter(trang_thai=KhoaHoc.TrangThai.DANG_HOC).count(),
+                      "buoi": BuoiHoc.objects.filter(bat_dau__date__gte=th_nay, bat_dau__date__lt=dv_tl.thang_sau(th_nay))
+                      .exclude(trang_thai=TT.DA_HUY).count(),
+                      "tam_tinh": ThuLao.objects.filter(thang=th_nay, trang_thai=ThuLao.TrangThai.TAM_TINH)
+                      .aggregate(s=Sum("so_tien"))["s"] or 0},
+    }
