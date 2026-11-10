@@ -1,13 +1,119 @@
-{% extends "base.html" %}
-{% block title %}Thu nhập · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Thu nhập{% endblock %}
+{% block tieu_de_trang %}Thu nhập{% endblock %}
 {% block content %}
-<div class="dau-trang">
-  <div><h1>Thu nhập tháng {{ thang|date:"m/Y" }}</h1><p class="mo-ta">Thù lao được ghi tự động khi bạn xác nhận buổi học; trung tâm đối soát và chốt cuối tháng.</p></div>
-  <nav class="d-flex gap-2" aria-label="Chọn tháng">
-    <a class="btn btn-outline-secondary" href="?thang={{ thang_truoc|date:'Y-m' }}"><i class="bi bi-chevron-left" aria-hidden="true"></i>Tháng {{ thang_truoc|date:"m/Y" }}</a>
-    <a class="btn btn-outline-secondary" href="?thang={{ thang_sau|date:'Y-m' }}">Tháng {{ thang_sau|date:"m/Y" }}<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+<div class="head">
+  <div><h2 class="h2">Thu nhập tháng {{ thang|date:"m/Y" }}</h2>
+    <p class="lead">Thù lao tính theo buổi bạn đã xác nhận hoàn tất. Tuyển sinh kiểm tra, Quản trị viên chốt vào đầu tháng sau rồi chi trả.</p></div>
+  <nav class="tab-thang" style="margin-left:auto" aria-label="Chọn tháng">
+    {% for t in tab_thang %}<a href="?thang={{ t.thang|date:'Y-m' }}"{% if t.thang == thang %} aria-current="page"{% endif %}>T{{ t.thang|date:"n/Y" }}<small>{{ t.nhan }}</small></a>{% endfor %}
   </nav>
 </div>
-{% include "core/thu_lao/_tong_thang.html" %}
-{% include "core/thu_lao/_bang_buoi.html" %}
+
+<section class="card" style="overflow:hidden">
+  <div class="tong-tn">
+    <div class="trai">
+      <div class="sm b5" style="color:#C2410C">{% if trang_thai_thang == "DA_CHOT" or trang_thai_thang == "DA_CHI_TRA" %}Tổng đã chốt{% else %}Tạm tính đến hôm nay{% endif %}</div>
+      <div class="so-lon">{{ tong.tong|tien }}</div>
+      <div class="sm" style="color:#4A5068">{{ so_buoi_duoc }} buổi được tính{% if cho_xac_nhan %} · còn {{ cho_xac_nhan|length }} buổi chờ xác nhận{% endif %}{% if tong.so_tam_giu %} · {{ tong.so_tam_giu }} buổi tạm giữ ({{ tong.tam_giu|tien }}){% endif %}{% if tong.dieu_chinh %} · điều chỉnh {{ tong.dieu_chinh|tien }}{% endif %}</div>
+      <div class="row sm muted" style="margin-top:14px;padding-top:12px;border-top:1px dashed #F3D5C8;gap:14px">
+        <span class="row" style="gap:6px"><i class="bi bi-calendar-check" aria-hidden="true"></i>{% if doi_soat.chi_tra_luc %}Đã chi trả {{ doi_soat.chi_tra_luc|date:"d/m/Y" }}{% if doi_soat.chung_tu %} · {{ doi_soat.chung_tu }}{% endif %}{% elif doi_soat.chot_luc %}Đã chốt {{ doi_soat.chot_luc|date:"d/m/Y" }}, chờ chi trả{% else %}Chi trả sau khi Quản trị viên chốt tháng{% endif %}</span>
+      </div>
+    </div>
+    <div style="padding:20px 24px">
+      <div class="row" style="margin-bottom:12px"><b class="b6">6 tháng gần nhất</b><span class="sm muted" style="margin-left:auto">đơn vị: triệu đồng</span></div>
+      <div class="bieu-do">{% for c in cot %}<div{% if c.thang == thang %} class="nay"{% endif %}><span>{{ c.trieu }}</span><span class="cot" style="height:{{ c.cao }}px"></span><span>T{{ c.thang|date:"n" }}</span></div>{% endfor %}</div>
+    </div>
+  </div>
+  <div class="buoc-tren" style="border-top:1px solid #EEF0F5;border-radius:0">
+    {% for st in buoc_tn %}
+    <div class="{{ st.lop }}"><span class="c">{% if st.lop == 'xong' %}<i class="bi bi-check2"></i>{% else %}{{ forloop.counter }}{% endif %}</span><div><b>{{ st.ten }}</b><small>{{ st.phu }}</small></div></div>
+    {% endfor %}
+  </div>
+</section>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:20px;align-items:start">
+<div class="stack">
+  <section class="card" style="overflow:hidden">
+    <div class="card-h"><h3>Theo lớp</h3></div>
+    {% if theo_lop %}
+    <div class="gt-h" style="--cols:minmax(0,1.4fr) 60px 100px minmax(0,1fr) 110px"><span>Lớp</span><span class="r">Buổi</span><span class="r">Đơn giá</span><span>Tỷ trọng</span><span class="r">Thành tiền</span></div>
+    {% for x in theo_lop %}
+    <div class="gt-r" style="--cols:minmax(0,1.4fr) 60px 100px minmax(0,1fr) 110px">
+      <span class="who"><span class="av" style="width:30px;height:30px;font-size:11px;background:#EEF0FF;color:#4F46E5">{{ x.khoa.hoc_vien.ho_ten|slice:":1" }}{{ x.khoa.hoc_vien.ho_ten.split|last|slice:":1" }}</span><span style="min-width:0"><b class="ell">{{ x.khoa.yeu_cau.mon_hoc }} {{ x.khoa.yeu_cau.trinh_do }}</b><small class="ell">{{ x.khoa.hoc_vien.ho_ten }} · {{ x.khoa.thoi_luong_phut }} phút</small></span></span>
+      <span class="r">{{ x.so }}</span><span class="r sm">{{ x.don_gia|tien }}</span>
+      <span class="tien-do" style="height:6px"><span class="da" style="width:{{ x.ty_le }}%;background:#6366F1"></span></span>
+      <span class="r b6">{{ x.tien|tien }}</span>
+    </div>
+    {% endfor %}
+    {% else %}<div class="empty">Chưa có buổi nào được tính trong tháng này.</div>{% endif %}
+  </section>
+
+  <section class="card" style="overflow:hidden" data-chi-tiet>
+    <div class="card-h"><h3>Chi tiết từng buổi</h3>
+      <div class="tabs" style="margin-left:auto" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-loc-nhom="">Tất cả<span class="cnt">{{ dem.tat_ca }}</span></button>
+        <button type="button" role="tab" aria-selected="false" data-loc-nhom="duoc">Được tính<span class="cnt">{{ dem.duoc }}</span></button>
+        <button type="button" role="tab" aria-selected="false" data-loc-nhom="cho">Chờ · tạm giữ<span class="cnt">{{ dem.cho }}</span></button>
+        <button type="button" role="tab" aria-selected="false" data-loc-nhom="huy">Đã hủy<span class="cnt">{{ dem.huy }}</span></button>
+      </div></div>
+    {% if dong %}
+    <div class="gt-h" style="--cols:96px minmax(0,1.4fr) 80px minmax(0,1.2fr) 100px"><span>Ngày</span><span>Lớp · buổi</span><span>Thời lượng</span><span>Trạng thái</span><span class="r">Thù lao</span></div>
+    {% for d in dong %}
+    <a class="gt-r" data-nhom="{{ d.nhom }}" href="{% url 'buoi_chi_tiet' d.b.pk %}" style="--cols:96px minmax(0,1.4fr) 80px minmax(0,1.2fr) 100px;color:inherit;text-decoration:none">
+      <span><b class="b5" style="display:block">{{ d.b.bat_dau|thu_ngan }} {{ d.b.bat_dau|date:"d/m" }}</b><span class="sm muted">{{ d.b.bat_dau|time:"H:i" }}</span></span>
+      <span style="min-width:0"><b class="b5 ell" style="display:block">{{ d.b.yeu_cau.mon_hoc }} · {{ d.b.hoc_vien.ho_ten }}</b><span class="sm muted">{{ d.b.ma }} · {{ d.nhan }}</span></span>
+      <span class="sm">{{ d.b.thoi_luong_phut }} phút</span>
+      <span><span class="chip {{ d.mau }}"><span class="d"></span>{{ d.trang_thai }}</span>{% if d.ghi_chu %}<span class="sm" style="display:block;margin-top:3px;color:{% if d.nhom == 'huy' %}#C2292E{% else %}#646B85{% endif %}">{{ d.ghi_chu }}</span>{% endif %}</span>
+      <span class="r b6"{% if d.cho_xn or d.nhom == 'huy' %} style="color:#9AA1B8"{% endif %}>{{ d.so_tien|tien }}</span>
+    </a>
+    {% endfor %}
+    {% for x in tong.ds_dieu_chinh %}
+    <div class="gt-r" data-nhom="duoc" style="--cols:96px minmax(0,1.4fr) 80px minmax(0,1.2fr) 100px">
+      <span class="sm">{{ x.tao_luc|date:"d/m" }}</span><span><b class="b5">Điều chỉnh</b><span class="sm muted" style="display:block">{{ x.ly_do|truncatechars:70 }}</span></span><span></span>
+      <span><span class="chip tim"><span class="d"></span>Điều chỉnh</span></span><span class="r b6">{{ x.so_tien|tien }}</span></div>
+    {% endfor %}
+    {% else %}<div class="empty">Tháng này chưa có buổi học nào.</div>{% endif %}
+  </section>
+</div>
+
+<aside class="stack sticky" style="gap:16px">
+  {% if cho_xac_nhan %}{% with b=cho_xac_nhan.0 %}
+  <section class="card" style="background:#FFFBF3;border-color:#FDE2BF">
+    <div class="card-b stack" style="gap:10px">
+      <div class="row b6"><i class="bi bi-hourglass-split" style="color:#B45309" aria-hidden="true"></i>Chưa được tính</div>
+      <p style="margin:0;font-size:13px;line-height:20px;color:#4A5068">Buổi <b class="b5">{{ b.yeu_cau.mon_hoc }} · {{ b.hoc_vien.ho_ten }}</b> {{ b.bat_dau|date:"d/m" }} chưa xác nhận hoàn tất. Xác nhận trước <b class="b5">{{ b.han_xac_nhan|date:"H:i d/m" }}</b> để được tính <b class="b5">{{ b.thu_lao_du_kien|tien }}</b>.</p>
+      <a class="btn pri" href="{% url 'buoi_chi_tiet' b.pk %}"><i class="bi bi-clipboard-check" aria-hidden="true"></i>Đánh giá buổi học</a>
+    </div>
+  </section>
+  {% endwith %}{% endif %}
+  <section class="card">
+    <div class="card-h"><h3>Trạng thái thù lao</h3></div>
+    <div class="card-b stack" style="gap:12px;font-size:13px;line-height:19px;color:#4A5068">
+      <div style="display:grid;grid-template-columns:96px 1fr;gap:10px"><span><span class="chip xanh_la"><span class="d"></span>Tạm tính</span></span><span>Buổi đã xác nhận hoàn tất, sẽ được kiểm tra khi chốt tháng.</span></div>
+      <div style="display:grid;grid-template-columns:96px 1fr;gap:10px"><span><span class="chip cam"><span class="d"></span>Tạm giữ</span></span><span>Hậu kiểm có điểm cần xem lại. Tuyển sinh phụ trách sẽ liên hệ bạn.</span></div>
+      <div style="display:grid;grid-template-columns:96px 1fr;gap:10px"><span><span class="chip tim"><span class="d"></span>Đã đối soát</span></span><span>Tháng đã chốt, số tiền không thay đổi nữa.</span></div>
+      <div style="display:grid;grid-template-columns:96px 1fr;gap:10px"><span><span class="chip do"><span class="d"></span>Đã hủy</span></span><span>Buổi tự hủy hoặc bị hủy, không tính thù lao.</span></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-b stack" style="gap:10px">
+      <b class="b6">Thắc mắc về thù lao?</b>
+      <p class="muted" style="margin:0;font-size:13px;line-height:19px">Liên hệ Tuyển sinh trước khi tháng được chốt. Sau khi chốt, khoản chênh lệch sẽ được điều chỉnh ở tháng kế tiếp.</p>
+      {% if lien_he %}<div class="row" style="padding:10px 12px;border:1px solid #E6E9F2;border-radius:8px"><i class="bi bi-person-badge" aria-hidden="true"></i><span><b class="b5">{{ lien_he.ho_ten }}</b>{% if lien_he.so_dien_thoai %} · {{ lien_he.so_dien_thoai }}{% endif %}<span class="sm muted" style="display:block">{{ lien_he.email }}</span></span></div>{% endif %}
+    </div>
+  </section>
+</aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll("[data-loc-nhom]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    document.querySelectorAll("[data-loc-nhom]").forEach(function (x) { x.setAttribute("aria-selected", String(x === b)); });
+    document.querySelectorAll("[data-chi-tiet] [data-nhom]").forEach(function (r) { r.hidden = !!b.dataset.locNhom && r.dataset.nhom !== b.dataset.locNhom; });
+  });
+});
+</script>
 {% endblock %}

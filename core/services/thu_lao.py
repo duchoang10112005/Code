@@ -7,7 +7,7 @@
 """
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -33,7 +33,8 @@ def thang_sau(thang):
 
 
 def da_chot(gia_su, thang):
-    return DoiSoatThang.objects.filter(gia_su=gia_su, thang=dau_thang(thang), trang_thai=DS.DA_CHOT).exists()
+    return DoiSoatThang.objects.filter(gia_su=gia_su, thang=dau_thang(thang),
+                                       trang_thai__in=[DS.DA_CHOT, DS.DA_CHI_TRA]).exists()
 
 
 def thang_ghi_nhan(gia_su, ngay):
@@ -62,8 +63,8 @@ class DongTong:
 
     @property
     def trang_thai(self):
-        if self.doi_soat and self.doi_soat.trang_thai == DS.DA_CHOT:
-            return "DA_CHOT"
+        if self.doi_soat and self.doi_soat.trang_thai in (DS.DA_CHOT, DS.DA_CHI_TRA):
+            return self.doi_soat.trang_thai
         if self.doi_soat:
             return "DA_KIEM_TRA" if self.doi_soat.tong_tien == self.tong else "CAN_KIEM_TRA_LAI"
         return "CHUA_KIEM_TRA"
@@ -162,3 +163,85 @@ def chot(admin, gia_su, thang):
               f"tổng {dinh_dang_tien(d.tong)}" + (f" (gồm điều chỉnh {dinh_dang_tien(d.dieu_chinh)})" if d.dieu_chinh else "")
               + ".\nXem chi tiết ở mục Thu nhập.")
     return d
+
+
+# =============================================================================
+# Trang Thu nhập của gia sư (SD-29)
+# =============================================================================
+NHAN_THANG = {"DANG_MO": "Đang mở", "CHUA_KIEM_TRA": "Đang mở", "DA_KIEM_TRA": "Đã kiểm tra",
+              "CAN_KIEM_TRA_LAI": "Đang mở", "DA_CHOT": "Đã chốt", "DA_CHI_TRA": "Đã chi trả"}
+
+
+def trang_thai_thang(gia_su, thang):
+    ds = DoiSoatThang.objects.filter(gia_su=gia_su, thang=dau_thang(thang)).first()
+    return ds.trang_thai if ds else "DANG_MO"
+
+
+def thu_nhap_gia_su(gia_su, thang):
+    """Dữ liệu trang Thu nhập: tổng, từng buổi (kể cả chờ xác nhận, tự hủy), theo lớp, 6 tháng gần nhất."""
+    from core.models import BuoiHoc
+    from core.services.buoi_hoc import nhan_buoi
+
+    thang = dau_thang(thang)
+    den = thang_sau(thang)
+    now = timezone.now()
+    tong = (tong_hop(thang, gia_su) or [DongTong(gia_su=gia_su)])[0]
+    dong = []
+    for tl in ThuLao.objects.filter(gia_su=gia_su, thang=thang).select_related(
+            "buoi_hoc__yeu_cau__mon_hoc", "buoi_hoc__hoc_vien", "buoi_hoc__khoa_hoc"):
+        b = tl.buoi_hoc
+        nhom = {TL.TAM_TINH: "duoc", TL.DA_DOI_SOAT: "duoc", TL.TAM_GIU: "cho", TL.HUY: "huy"}[tl.trang_thai]
+        dong.append({"b": b, "nhan": nhan_buoi(b), "trang_thai": tl.get_trang_thai_display(), "nhom": nhom,
+                     "mau": {"duoc": "xanh_la", "cho": "cam", "huy": "do"}[nhom] if tl.trang_thai != TL.DA_DOI_SOAT else "tim",
+                     "so_tien": tl.so_tien if tl.trang_thai != TL.HUY else 0, "ghi_chu": ""})
+    trong_thang = BuoiHoc.objects.filter(gia_su=gia_su, loai=BuoiHoc.Loai.CHINH_THUC, bat_dau__date__gte=thang,
+                                         bat_dau__date__lt=den).select_related("yeu_cau__mon_hoc", "hoc_vien", "khoa_hoc")
+    cho = list(trong_thang.filter(trang_thai=BuoiHoc.TrangThai.DA_LEN_LICH, ket_thuc_luc__lte=now,
+                                  han_xac_nhan__gte=now))
+    for b in cho:
+        dong.append({"b": b, "nhan": nhan_buoi(b), "trang_thai": "Chờ bạn xác nhận", "nhom": "cho", "mau": "xam",
+                     "so_tien": b.thu_lao_du_kien, "cho_xn": True,
+                     "ghi_chu": f"Xác nhận trước {timezone.localtime(b.han_xac_nhan):%H:%M %d/%m}"})
+    for b in trong_thang.filter(trang_thai=BuoiHoc.TrangThai.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.QUA_HAN):
+        dong.append({"b": b, "nhan": nhan_buoi(b), "trang_thai": "Đã hủy", "nhom": "huy", "mau": "do", "so_tien": 0,
+                     "ghi_chu": "Tự hủy · quá hạn xác nhận"})
+    dong.sort(key=lambda x: x["b"].bat_dau)
+
+    lop = {}
+    for d in dong:
+        if d["nhom"] != "duoc":
+            continue
+        k = d["b"].khoa_hoc
+        x = lop.setdefault(k.pk, {"khoa": k, "so": 0, "tien": 0, "don_gia": d["so_tien"]})
+        x["so"] += 1
+        x["tien"] += d["so_tien"]
+    cao = max([x["tien"] for x in lop.values()], default=0) or 1
+    theo_lop = sorted(lop.values(), key=lambda x: -x["tien"])
+    for x in theo_lop:
+        x["ty_le"] = round(x["tien"] * 100 / cao)
+
+    cot, t = [], thang
+    for _ in range(6):
+        tt = (tong_hop(t, gia_su) or [DongTong(gia_su=gia_su)])[0]
+        cot.append({"thang": t, "tien": tt.tong})
+        t = dau_thang(t - timedelta(days=1))
+    cot.reverse()
+    cao6 = max([c["tien"] for c in cot], default=0) or 1
+    for c in cot:
+        c["cao"] = max(round(c["tien"] * 64 / cao6), 4)
+        c["trieu"] = f"{c['tien'] / 1_000_000:.2f}".replace(".", ",")
+
+    tab_thang = []
+    t = dau_thang(timezone.localdate())
+    for _ in range(3):
+        tab_thang.append({"thang": t, "nhan": NHAN_THANG[trang_thai_thang(gia_su, t)]})
+        t = dau_thang(t - timedelta(days=1))
+    tab_thang.reverse()
+    ds = DoiSoatThang.objects.filter(gia_su=gia_su, thang=thang).first()
+    return {
+        "thang": thang, "tong": tong, "dong": dong, "theo_lop": theo_lop, "cot": cot, "tab_thang": tab_thang,
+        "trang_thai_thang": trang_thai_thang(gia_su, thang), "doi_soat": ds, "cho_xac_nhan": cho,
+        "dem": {"tat_ca": len(dong), "duoc": sum(1 for d in dong if d["nhom"] == "duoc"),
+                "cho": sum(1 for d in dong if d["nhom"] == "cho"), "huy": sum(1 for d in dong if d["nhom"] == "huy")},
+        "so_buoi_duoc": sum(1 for d in dong if d["nhom"] == "duoc"),
+    }

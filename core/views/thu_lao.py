@@ -36,13 +36,20 @@ def _theo_hoc_vien(ds):
 
 @vai_tro_required(GIA_SU)
 def thu_nhap(request):
-    thang = _thang(request)
-    tong = (dv.tong_hop(thang, request.user) or [dv.DongTong(gia_su=request.user)])[0]
-    return render(request, "core/thu_lao/thu_nhap.html", {
-        "thang": thang, "thang_truoc": dv.dau_thang(thang - timedelta(days=1)),
-        "thang_sau": dv.thang_sau(thang), "tong": tong,
-        "nhom": _theo_hoc_vien(_thu_lao_trong_thang(request.user, thang)),
-    })
+    """Gia sư – Thu nhập theo tháng (SD-29)."""
+    ctx = dv.thu_nhap_gia_su(request.user, _thang(request))
+    ho_so = getattr(request.user, "ho_so_gia_su", None)
+    ctx["lien_he"] = getattr(ho_so, "nguoi_moi", None)
+    # Dải 4 bước: bước hiện tại là bước tiếp theo cần làm.
+    hien_tai = {"DANG_MO": 0, "DA_KIEM_TRA": 2, "DA_CHOT": 3, "DA_CHI_TRA": 4}.get(ctx["trang_thai_thang"], 0)
+    ds = ctx["doi_soat"]
+    buoc = [("Ghi nhận buổi dạy", "Đang diễn ra trong tháng" if hien_tai == 0 else "Đã khóa số buổi"),
+            ("Tuyển sinh kiểm tra", f"{ds.kiem_tra_luc:%d/%m}" if ds and ds.kiem_tra_luc else "Đầu tháng sau"),
+            ("Quản trị viên chốt", f"{ds.chot_luc:%d/%m}" if ds and ds.chot_luc else "Sau khi kiểm tra"),
+            ("Chi trả", f"{ds.chi_tra_luc:%d/%m}" if ds and ds.chi_tra_luc else "Sau khi chốt")]
+    ctx["buoc_tn"] = [{"ten": t, "phu": p, "lop": "xong" if i < hien_tai else ("dang" if i == hien_tai else "")}
+                      for i, (t, p) in enumerate(buoc)]
+    return render(request, "core/thu_lao/thu_nhap.html", ctx)
 
 
 @vai_tro_required(ADMIN, TUYEN_SINH)

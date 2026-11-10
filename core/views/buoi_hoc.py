@@ -52,7 +52,10 @@ def danh_sach(request):
     cho_xac_nhan = [b for b in goc.filter(trang_thai=TT.DA_LEN_LICH, bat_dau__lte=now).order_by("bat_dau")
                     if b.cho_xac_nhan]
     return render(request, "core/buoi_hoc/danh_sach.html", {
-        "form": form, "thang": thang, "ds": trong_thang,
+        "form": form, "thang": thang,
+        "ds": [{"b": b, "nhan": dv.nhan_buoi(b), "tt": b.trang_thai_hien_thi} for b in trong_thang],
+        "thang_truoc": (thang - timedelta(days=1)).replace(day=1), "thang_sau": den, "trang_thai": trang_thai,
+        "ds_trang_thai": BuoiHoc.TrangThai.choices,
         "cho_xac_nhan": cho_xac_nhan,
         "sap_toi": goc.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now).order_by("bat_dau")[:10],
         "co_lop": bool(dv.khoa_co_the_xep(u) or dv.yeu_cau_co_the_hoc_thu(u)),

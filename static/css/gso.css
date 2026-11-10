@@ -403,3 +403,18 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .o-zoom{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);border-top:1px solid #EEF0F5;border-bottom:1px solid #EEF0F5}
 .o-zoom>div{padding:12px 16px;min-width:0}.o-zoom>div+div{border-left:1px solid #EEF0F5}
 .o-zoom small{display:block;font-size:12px;color:#646B85;margin-bottom:4px}
+
+/* Thu nhập */
+.tong-tn{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);overflow:hidden}
+.tong-tn .trai{padding:22px 24px;background:radial-gradient(120% 140% at 0% 0%,#FFE6DC 0%,rgba(255,230,220,0) 60%),#FFF8F5;border-right:1px solid #F3E4DE}
+.tong-tn .so-lon{font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:44px;margin:6px 0}
+.bieu-do{display:flex;align-items:flex-end;gap:16px;height:120px;padding:0 4px}
+.bieu-do>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;color:#646B85}
+.bieu-do .cot{width:100%;max-width:44px;border-radius:6px 6px 2px 2px;background:#E1E4EC}
+.bieu-do .nay .cot{background:repeating-linear-gradient(45deg,#C7CBF9,#C7CBF9 4px,#A5B4FC 4px,#A5B4FC 8px)}
+.bieu-do .nay{color:#1E2235;font-weight:600}
+.tab-thang{display:inline-flex;gap:2px;padding:3px;background:#EEF0F5;border-radius:10px}
+.tab-thang a{display:inline-flex;align-items:center;gap:10px;height:34px;padding:0 14px;border-radius:8px;color:#4A5068;font-weight:500;text-decoration:none;white-space:nowrap}
+.tab-thang a small{font-size:11px;color:#4F46E5;font-weight:500}
+.tab-thang a[aria-current=page]{background:#fff;color:#1E2235;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.tab-thang a[aria-current=page] small{background:#E6FAF7;color:#0F766E;padding:1px 6px;border-radius:8px}

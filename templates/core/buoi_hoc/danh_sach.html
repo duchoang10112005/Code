@@ -1,70 +1,56 @@
-{% extends "base.html" %}
-{% load giao_dien %}
-{% block title %}Buổi học của tôi · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Buổi học{% endblock %}
+{% block tieu_de_trang %}Buổi học{% endblock %}
 {% block content %}
-<div class="dau-trang">
-  <div><h1>Buổi học của tôi</h1><p class="mo-ta">Tạo buổi, mở phòng Zoom và xác nhận sau mỗi buổi dạy</p></div>
-  {% if co_lop %}<a href="{% url 'buoi_tao' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi học</a>{% endif %}
-</div>
+<div class="head"><div><h2 class="h2">Buổi học</h2><p class="lead">Buổi sắp dạy, buổi chờ xác nhận và lịch sử theo tháng. Quá 12 giờ sau buổi chưa xác nhận, buổi sẽ tự hủy.</p></div>
+  {% if co_lop %}<a class="btn pri" style="margin-left:auto" href="{% url 'buoi_tao' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi học</a>{% endif %}</div>
 
 {% if cho_xac_nhan %}
-<section class="nhom gap" aria-labelledby="n-cho-xn">
-  <div class="nhom-dau"><h2 id="n-cho-xn"><i class="bi bi-check2-circle" aria-hidden="true"></i>Chờ bạn xác nhận <span class="dem-nhom">{{ cho_xac_nhan|length }}</span></h2></div>
-  <div class="trang-giay">
-    {% for b in cho_xac_nhan %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'buoi_chi_tiet' b.pk %}"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</a>
-      <div class="noi-dung-dong">{{ b.bat_dau|date:"H:i d/m" }} · {{ b.thoi_luong_phut }} phút<small>{{ b.get_loai_display }}</small></div>
-      <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Còn {{ b.han_xac_nhan|con_lai }} để xác nhận, quá hạn buổi sẽ bị hủy và không tính thù lao.</p>
-      <a class="btn btn-sm btn-primary" href="{% url 'buoi_chi_tiet' b.pk %}#xac-nhan"><i class="bi bi-check2-circle" aria-hidden="true"></i>Xác nhận</a>
-    </div>
-    {% endfor %}
+<section class="card" style="overflow:hidden;border-color:#FDE2BF">
+  <div class="nhom-viec" style="--cham:#FF7A59;background:#FFF4EF;border-color:#FBD9C9;color:#C2410C"><i class="bi bi-lightning-charge" aria-hidden="true"></i>Chờ bạn xác nhận<span class="so">{{ cho_xac_nhan|length }}</span></div>
+  {% for b in cho_xac_nhan %}
+  <div class="gt-r" style="--cols:110px minmax(0,1fr) 190px 120px">
+    <span><b class="b5" style="display:block">{{ b.bat_dau|thu_ngan }} {{ b.bat_dau|date:"d/m" }}</b><span class="sm muted">{{ b.bat_dau|time:"H:i" }}</span></span>
+    <span><b class="b5" style="display:block">{{ b.yeu_cau.mon_hoc }} · {{ b.hoc_vien.ho_ten }}</b><span class="sm muted">{{ b.ma }}</span></span>
+    <span class="sm" style="color:#C2410C"><i class="bi bi-stopwatch" aria-hidden="true"></i> Hạn {{ b.han_xac_nhan|date:"H:i d/m" }} · <span data-dem-nguoc="{{ b.han_xac_nhan|date:'c' }}" data-kieu="chu"></span></span>
+    <span class="r" style="display:flex"><a class="btn nhe" href="{% url 'buoi_chi_tiet' b.pk %}">Đánh giá</a></span>
   </div>
+  {% endfor %}
 </section>
 {% endif %}
 
-<section class="nhom" aria-labelledby="n-sap-toi">
-  <div class="nhom-dau"><h2 id="n-sap-toi"><i class="bi bi-calendar-event" aria-hidden="true"></i>Buổi sắp tới <span class="dem-nhom">{{ sap_toi|length }}</span></h2></div>
-  <div class="trang-giay">
-    {% for b in sap_toi %}
-    <div class="dong-viec">
-      <a class="nhan-vo" href="{% url 'buoi_chi_tiet' b.pk %}"><span class="ma">{{ b.ma }}</span><br><b>{{ b.hoc_vien.ho_ten }}</b> · {{ b.yeu_cau.mon_hoc }}</a>
-      <div class="noi-dung-dong">{{ b.bat_dau|date:"H:i" }} · {{ b.bat_dau|date:"d/m/Y" }}<small>{{ b.get_loai_display }} · {{ b.thoi_luong_phut }} phút</small></div>
-      {% if b.trang_thai == "LOI_ZOOM" %}<p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Chưa có phòng Zoom, mở buổi và bấm Thử lại.</p>
-      {% else %}<p class="loi-phe yen">{% nhan_trang_thai b "trang_thai" %}</p>{% endif %}
-      <a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a>
-    </div>
-    {% empty %}
-    <p class="trang-rong m-0">Chưa có buổi nào sắp tới.{% if co_lop %} <a href="{% url 'buoi_tao' %}">Tạo buổi học</a>{% endif %}</p>
-    {% endfor %}
-  </div>
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>Sắp tới</h3></div>
+  {% for b in sap_toi %}
+  <a class="gt-r" style="--cols:110px minmax(0,1fr) 150px 30px;color:inherit;text-decoration:none" href="{% url 'buoi_chi_tiet' b.pk %}">
+    <span><b class="b5" style="display:block">{{ b.bat_dau|thu_ngan }} {{ b.bat_dau|date:"d/m" }}</b><span class="sm muted">{{ b.bat_dau|time:"H:i" }}–{{ b.ket_thuc|time:"H:i" }}</span></span>
+    <span><b class="b5" style="display:block">{{ b.yeu_cau.mon_hoc }} · {{ b.hoc_vien.ho_ten }}</b><span class="sm muted">{{ b.ma }}{% if b.khoa_hoc %} · {{ b.khoa_hoc.ma }}{% else %} · Học thử{% endif %}</span></span>
+    <span>{% include "giao_dien/_chip_buoi.html" with tt=b.trang_thai_hien_thi %}</span>
+    <i class="bi bi-chevron-right muted" aria-hidden="true"></i>
+  </a>
+  {% empty %}<div class="empty">Chưa có buổi nào được xếp lịch.</div>{% endfor %}
 </section>
 
-<section class="nhom" aria-labelledby="n-thang">
-  <div class="nhom-dau"><h2 id="n-thang"><i class="bi bi-calendar3" aria-hidden="true"></i>Trong tháng {{ thang|date:"m/Y" }} <span class="dem-nhom">{{ ds|length }}</span></h2></div>
-  <form class="row g-2 mb-3 align-items-end" method="get" role="search">
-    <div class="col-md-3"><label class="form-label" for="{{ form.thang.id_for_label }}">Tháng</label>{{ form.thang }}</div>
-    <div class="col-md-3"><label class="form-label" for="{{ form.trang_thai.id_for_label }}">Trạng thái</label>{{ form.trang_thai }}</div>
-    <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel" aria-hidden="true"></i>Lọc</button></div>
-  </form>
-  <div class="trang-giay"><div class="table-responsive"><table class="table table-hover">
-    <thead><tr><th>Mã</th><th>Thời gian</th><th>Học viên · môn</th><th>Loại</th><th class="cot-so">Buổi thứ</th><th>Trạng thái</th><th class="cot-so">Thù lao</th><th class="cot-thao-tac"></th></tr></thead>
-    <tbody>
-    {% for b in ds %}
-      <tr>
-        <td><b>{{ b.ma }}</b></td>
-        <td class="so">{{ b.bat_dau|date:"H:i d/m" }}</td>
-        <td>{{ b.hoc_vien.ho_ten }}<div class="small text-muted">{{ b.yeu_cau.mon_hoc }}</div></td>
-        <td class="small">{{ b.get_loai_display }}</td>
-        <td class="cot-so">{{ b.so_thu_tu|default:"—" }}</td>
-        <td>{% nhan_trang_thai b "trang_thai" %}{% if b.trang_thai == "DA_HUY" %}<div class="small text-muted">{{ b.get_ly_do_huy_display }}</div>{% endif %}</td>
-        <td class="cot-so">{% if b.thu_lao_du_kien %}{{ b.thu_lao_du_kien|tien }}{% else %}—{% endif %}</td>
-        <td class="cot-thao-tac"><a class="btn btn-sm btn-outline-primary" href="{% url 'buoi_chi_tiet' b.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="8"><div class="trang-rong py-3"><i class="bi bi-calendar-x" aria-hidden="true"></i>Không có buổi học nào trong tháng này.</div></td></tr>
-    {% endfor %}
-    </tbody>
-  </table></div></div>
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>Tháng {{ thang|date:"m/Y" }}</h3>
+    <a class="icon-btn sm" style="margin-left:auto" href="?thang={{ thang_truoc|date:'Y-m' }}{% if trang_thai %}&trang_thai={{ trang_thai }}{% endif %}" aria-label="Tháng trước"><i class="bi bi-chevron-left"></i></a>
+    <a class="icon-btn sm" href="?thang={{ thang_sau|date:'Y-m' }}{% if trang_thai %}&trang_thai={{ trang_thai }}{% endif %}" aria-label="Tháng sau"><i class="bi bi-chevron-right"></i></a>
+    <form method="get" class="row"><input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+      <select name="trang_thai" class="inp" style="width:180px;height:32px" onchange="this.form.submit()" aria-label="Lọc trạng thái"><option value="">Mọi trạng thái</option>{% for v, n in ds_trang_thai %}<option value="{{ v }}"{% if v == trang_thai %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></form>
+  </div>
+  {% if ds %}
+  <div class="gt-h" style="--cols:110px minmax(0,1fr) 130px 150px minmax(0,1fr) 30px"><span>Ngày</span><span>Lớp · học viên</span><span>Buổi</span><span>Trạng thái</span><span>Nội dung</span><span></span></div>
+  {% for x in ds %}
+  <a class="gt-r" style="--cols:110px minmax(0,1fr) 130px 150px minmax(0,1fr) 30px;color:inherit;text-decoration:none" href="{% url 'buoi_chi_tiet' x.b.pk %}">
+    <span><b class="b5" style="display:block">{{ x.b.bat_dau|thu_ngan }} {{ x.b.bat_dau|date:"d/m" }}</b><span class="sm muted">{{ x.b.bat_dau|time:"H:i" }}</span></span>
+    <span style="min-width:0"><b class="b5 ell" style="display:block">{{ x.b.yeu_cau.mon_hoc }} · {{ x.b.hoc_vien.ho_ten }}</b><span class="sm muted">{{ x.b.ma }}</span></span>
+    <span class="sm">{{ x.nhan }}</span>
+    <span>{% include "giao_dien/_chip_buoi.html" with tt=x.tt %}</span>
+    <span class="sm muted ell">{{ x.b.noi_dung|default:"—" }}</span>
+    <i class="bi bi-chevron-right muted" aria-hidden="true"></i>
+  </a>
+  {% endfor %}
+  {% else %}<div class="empty">Không có buổi nào trong tháng này{% if trang_thai %} với trạng thái đã chọn{% endif %}.</div>{% endif %}
 </section>
 {% endblock %}

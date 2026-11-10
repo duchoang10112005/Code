@@ -154,5 +154,17 @@ def lop_cua_toi(request):
 
 @vai_tro_required(GIA_SU)
 def khoa_cua_toi(request, pk):
-    khoa = get_object_or_404(KhoaHoc.objects.select_related("hoc_vien", "yeu_cau__mon_hoc"), pk=pk, gia_su=request.user)
-    return _trang_chi_tiet(request, khoa, la_gia_su=True)
+    """Gia sư xem một khóa mình dạy: tiến độ, lịch cố định, các buổi (không có học phí, SĐT phụ huynh)."""
+    from core.services.buoi_hoc import link_lop, nhan_buoi
+    khoa = get_object_or_404(KhoaHoc.objects.select_related("hoc_vien", "yeu_cau__mon_hoc", "tuyen_sinh_phu_trach"),
+                             pk=pk, gia_su=request.user)
+    ds = list(khoa.buoi_hoc.filter(gia_su=request.user).order_by("-bat_dau"))
+    xep = khoa.so_buoi_dang_len_lich
+    return render(request, "core/khoa_hoc/khoa_cua_toi.html", {
+        "khoa": khoa, "ds_buoi": [{"b": b, "nhan": nhan_buoi(b), "tt": b.trang_thai_hien_thi} for b in ds],
+        "link_lop": link_lop(khoa, request), "xep": xep,
+        "w_da": round(khoa.so_buoi_da_dung * 100 / khoa.so_buoi_dang_ky),
+        "w_xep": round(xep * 100 / khoa.so_buoi_dang_ky),
+        "lich": ", ".join(f"{['T2','T3','T4','T5','T6','T7','CN'][int(x['thu'])]} {x['gio']}"
+                          for x in (khoa.lich_co_dinh or []) if "thu" in x and "gio" in x),
+    })

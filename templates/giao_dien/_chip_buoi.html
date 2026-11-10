@@ -1,0 +1,2 @@
+{# Chip trạng thái hiển thị của buổi học. Dùng: include với tt=buoi.trang_thai_hien_thi #}
+{% with k=tt.0 %}<span class="chip {% if k == 'cho_xac_nhan' or k == 'dang_xem_xet' %}cam{% elif k == 'sap_tu_huy' or k == 'loi_zoom' or k == 'tu_huy' or k == 'qua_han' %}do{% elif k == 'hoan_tat' %}xanh_la{% elif k == 'dang_hoc' or k == 'sap_dien_ra' %}tim{% else %}xam{% endif %}"><span class="d"></span>{{ tt.1 }}</span>{% endwith %}

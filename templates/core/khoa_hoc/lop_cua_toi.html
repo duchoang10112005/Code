@@ -1,53 +1,39 @@
-{% extends "base.html" %}
-{% load giao_dien %}
-{% block title %}Lớp của tôi · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Lớp của tôi{% endblock %}
+{% block tieu_de_trang %}Lớp của tôi{% endblock %}
 {% block content %}
-<div class="dau-trang">
-  <div><h1>Lớp của tôi</h1><p class="mo-ta">Các lớp bạn đã nhận và khóa học bạn đang phụ trách</p></div>
-</div>
+<div class="head"><div><h2 class="h2">Lớp của tôi</h2><p class="lead">Các lớp bạn đã nhận: lớp chờ trung tâm chốt và các khóa học đang dạy.</p></div>
+  <a class="btn pri" style="margin-left:auto" href="{% url 'buoi_tao' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi học</a></div>
 
-<div class="card mb-4">
-  <div class="card-header"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Lớp đã nhận, chờ chốt hình thức học</div>
-  <div class="table-responsive"><table class="table">
-    <thead><tr><th>Lớp</th><th>Học viên</th><th>Thời gian mong muốn</th><th>Tình trạng</th></tr></thead>
-    <tbody>
-    {% for yc, buoi_thu in cho_chot %}
-      <tr>
-        <td class="fw-semibold">{{ yc.mon_hoc }} · {{ yc.trinh_do }}<div class="small text-muted so">{{ yc.ma }}</div></td>
-        <td>{{ yc.hoc_vien.ho_ten }}{% if yc.hoc_vien.lop %}<div class="small text-muted">{{ yc.hoc_vien.lop }}</div>{% endif %}</td>
-        <td class="small">{{ yc.ten_thu_mong_muon }} · {{ yc.lich_mong_muon }}</td>
-        <td class="small">
-          {% if yc.trang_thai == "HOC_THU_XONG" %}{% nhan_trang_thai yc "trang_thai" %}<div class="text-muted mt-1">Phụ huynh đồng ý học tiếp — trung tâm đang mở khóa.</div>
-          {% elif buoi_thu %}{% nhan_trang_thai buoi_thu "trang_thai" %}<div class="text-muted mt-1">Buổi học thử {{ buoi_thu.bat_dau|date:"H:i d/m" }} — chờ trung tâm chốt với phụ huynh.</div>
-          {% else %}<span class="text-muted">Chờ trung tâm chốt: đăng ký thẳng hoặc học thử.</span> <a href="{% url 'buoi_tao' %}?yc={{ yc.pk }}" class="d-block mt-1">Trung tâm báo học thử? Tạo buổi học thử</a>{% endif %}
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="4"><div class="trang-rong py-3"><i class="bi bi-inbox" aria-hidden="true"></i>Không có lớp nào đang chờ chốt.</div></td></tr>
-    {% endfor %}
-    </tbody>
-  </table></div>
-</div>
+{% if cho_chot %}
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>Lớp mới nhận · chờ trung tâm chốt</h3><span class="cnt">{{ cho_chot|length }}</span></div>
+  <div class="gt-h" style="--cols:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) 130px"><span>Lớp · học viên</span><span>Trạng thái</span><span>Buổi học thử</span><span class="r">Hành động</span></div>
+  {% for yc, bt in cho_chot %}
+  <div class="gt-r" style="--cols:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) 130px">
+    <span style="min-width:0"><b class="b5 ell" style="display:block">{{ yc.mon_hoc }} {{ yc.trinh_do }}</b><span class="sm muted">{{ yc.ma }} · {{ yc.hoc_vien.ho_ten }}</span></span>
+    <span><span class="chip {% if yc.trang_thai == 'HOC_THU_XONG' %}xanh_la{% else %}xanh{% endif %}"><span class="d"></span>{% if yc.dang_ky_thang %}Đăng ký thẳng{% else %}{{ yc.get_trang_thai_display }}{% endif %}</span></span>
+    <span class="sm">{% if bt %}<a href="{% url 'buoi_chi_tiet' bt.pk %}">{{ bt.ma }}</a> · {{ bt.bat_dau|date:"H:i d/m" }} · {{ bt.trang_thai_hien_thi.1 }}{% elif yc.dang_ky_thang %}<span class="muted">Không học thử – chờ mở khóa</span>{% else %}<span class="muted">Chưa có</span>{% endif %}</span>
+    <span class="r" style="display:flex">{% if not bt and not yc.dang_ky_thang and yc.trang_thai == 'DA_PHAN_CONG' %}<a class="btn nhe" href="{% url 'buoi_tao' %}?yeu_cau={{ yc.pk }}">Tạo buổi học thử</a>{% elif bt %}<a class="btn nhe" href="{% url 'buoi_chi_tiet' bt.pk %}">Xem buổi</a>{% endif %}</span>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
 
-<div class="card">
-  <div class="card-header"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Khóa học đang phụ trách</div>
-  <div class="table-responsive"><table class="table table-hover">
-    <thead><tr><th>Mã</th><th>Môn · học viên</th><th>Tiến độ</th><th class="cot-so">Còn lại</th><th class="cot-so">Thù lao/buổi</th><th>Trạng thái</th><th class="cot-thao-tac"></th></tr></thead>
-    <tbody>
-    {% for k in ds_khoa %}
-      <tr>
-        <td class="so fw-semibold">{{ k.ma }}</td>
-        <td>{{ k.yeu_cau.mon_hoc }}<div class="small text-muted">{{ k.hoc_vien.ho_ten }}</div></td>
-        <td>{% include "partials/tien_do_khoa.html" with khoa=k %}</td>
-        <td class="cot-so">{{ k.so_buoi_con_lai }}</td>
-        <td class="cot-so">{{ k.thu_lao_moi_buoi|tien }}</td>
-        <td>{% nhan_trang_thai k "trang_thai" %}</td>
-        <td class="cot-thao-tac">{% if k.trang_thai == "DANG_HOC" and k.so_buoi_co_the_xep %}<a class="btn btn-sm btn-primary" href="{% url 'buoi_tao' %}?khoa={{ k.pk }}"><i class="bi bi-calendar-plus" aria-hidden="true"></i>Tạo buổi</a> {% endif %}<a class="btn btn-sm btn-outline-primary" href="{% url 'khoa_cua_toi' k.pk %}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở</a></td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="7"><div class="trang-rong py-3"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>Bạn chưa phụ trách khóa học nào.</div></td></tr>
-    {% endfor %}
-    </tbody>
-  </table></div>
-</div>
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>Khóa học</h3><span class="cnt">{{ ds_khoa|length }}</span></div>
+  {% if ds_khoa %}
+  <div class="gt-h" style="--cols:minmax(0,1.4fr) 120px minmax(0,1fr) 70px 110px"><span>Khóa · học viên</span><span>Trạng thái</span><span>Tiến độ</span><span class="r">Buổi</span><span class="r"></span></div>
+  {% for k in ds_khoa %}
+  <a class="gt-r" style="--cols:minmax(0,1.4fr) 120px minmax(0,1fr) 70px 110px;color:inherit;text-decoration:none" href="{% url 'khoa_cua_toi' k.pk %}">
+    <span class="who"><span class="av" style="width:32px;height:32px;font-size:11px;background:#EEF0FF;color:#4F46E5">{{ k.hoc_vien.ho_ten|slice:":1" }}{{ k.hoc_vien.ho_ten.split|last|slice:":1" }}</span><span style="min-width:0"><b class="ell">{{ k.yeu_cau.mon_hoc }} {{ k.yeu_cau.trinh_do }}</b><small class="ell">{{ k.ma }} · {{ k.hoc_vien.ho_ten }} · {{ k.thoi_luong_phut }} phút</small></span></span>
+    <span><span class="chip {% if k.trang_thai == 'DANG_HOC' %}{% if k.sap_het_buoi %}cam{% else %}xanh_la{% endif %}{% elif k.trang_thai == 'TAM_DUNG' %}cam{% elif k.trang_thai == 'HUY' %}do{% else %}xam{% endif %}"><span class="d"></span>{% if k.sap_het_buoi %}Sắp hết buổi{% else %}{{ k.get_trang_thai_display }}{% endif %}</span></span>
+    <span class="tien-do"><span class="da" style="width:{{ k.phan_tram }}%"></span></span>
+    <span class="r b6">{{ k.so_buoi_da_dung }}/{{ k.so_buoi_dang_ky }}</span>
+    <span class="r sm" style="color:#4F46E5">Xem khóa <i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+  </a>
+  {% endfor %}
+  {% else %}<div class="empty"><span class="ring"><i class="bi bi-collection" aria-hidden="true"></i></span>Chưa có khóa học nào. Khóa sẽ hiện ở đây khi trung tâm mở khóa cho lớp bạn đã nhận.</div>{% endif %}
+</section>
 {% endblock %}

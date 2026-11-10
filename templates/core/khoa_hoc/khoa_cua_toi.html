@@ -1,0 +1,52 @@
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}{{ khoa.ma }}{% endblock %}
+{% block crumb %}<a href="{% url 'lop_cua_toi' %}">Lớp của tôi</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>{{ khoa.ma }}</h1>{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="row" style="padding:20px 24px;gap:14px">
+    <span class="av" style="width:48px;height:48px;border-radius:12px;font-size:16px;background:#EEF0FF;color:#4F46E5">{{ khoa.hoc_vien.ho_ten|slice:":1" }}{{ khoa.hoc_vien.ho_ten.split|last|slice:":1" }}</span>
+    <div style="flex:1;min-width:0"><div class="sm muted">{{ khoa.ma }} · {{ khoa.yeu_cau.ma }}</div>
+      <div class="row"><h2 style="margin:0;font-size:20px;font-weight:600">{{ khoa.yeu_cau.mon_hoc }} {{ khoa.yeu_cau.trinh_do }} · {{ khoa.hoc_vien.ho_ten }}</h2>
+        <span class="chip {% if khoa.trang_thai == 'DANG_HOC' %}xanh_la{% elif khoa.trang_thai == 'TAM_DUNG' %}cam{% elif khoa.trang_thai == 'HUY' %}do{% else %}xam{% endif %}"><span class="d"></span>{{ khoa.get_trang_thai_display }}</span></div></div>
+    {% if khoa.trang_thai == 'DANG_HOC' and khoa.so_buoi_co_the_xep %}<a class="btn pri" href="{% url 'buoi_tao' %}?khoa={{ khoa.pk }}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi học</a>{% endif %}
+  </div>
+  {% if khoa.trang_thai == 'TAM_DUNG' %}<div class="banner" style="margin:0 24px 16px;background:#FFF4E5;border-color:#FDE2BF"><span class="ic" style="color:#B45309"><i class="bi bi-pause-circle"></i></span><span style="font-size:13px">Khóa đang tạm dừng{% if khoa.ghi_chu %}: {{ khoa.ghi_chu }}{% endif %}. Bạn không tạo được buổi mới cho tới khi Tuyển sinh cho học tiếp.</span></div>{% endif %}
+  <div class="kpis" style="border-top:1px solid #EEF0F5">
+    <div class="kpi"><div class="v">{{ khoa.so_buoi_da_dung }}/{{ khoa.so_buoi_dang_ky }}</div><div class="l">Buổi đã học</div></div>
+    <div class="kpi"><div class="v">{{ xep }}</div><div class="l">Đã xếp lịch</div></div>
+    <div class="kpi"><div class="v">{{ khoa.so_buoi_co_the_xep }}</div><div class="l">Còn chưa xếp</div></div>
+    <div class="kpi"><div class="v">{{ khoa.thu_lao_moi_buoi|tien }}</div><div class="l">Thù lao / buổi</div></div>
+  </div>
+  <div style="padding:0 24px 16px"><div class="tien-do" style="height:8px"><span class="da" style="width:{{ w_da }}%"></span><span class="xep" style="width:{{ w_xep }}%"></span></div></div>
+  <div class="info" style="border-top:1px solid #EEF0F5">
+    <dl>
+      <div><dt>Thời lượng</dt><dd>{{ khoa.thoi_luong_phut }} phút / buổi</dd></div>
+      <div><dt>Lịch cố định</dt><dd>{{ lich|default:"—" }}</dd></div>
+      <div><dt>Link lớp cố định</dt><dd class="row"><a class="ell" href="{{ link_lop }}" target="_blank" rel="noopener">{{ link_lop }}</a><button type="button" class="icon-btn sm" data-sao-chep="{{ link_lop }}" data-thong-bao="Đã sao chép link lớp" aria-label="Sao chép link lớp"><i class="bi bi-copy"></i></button></dd></div>
+    </dl>
+    <dl>
+      <div><dt>Mục tiêu</dt><dd>{{ khoa.yeu_cau.muc_tieu }}</dd></div>
+      <div><dt>Nhóm Zalo lớp</dt><dd>{{ khoa.zalo_nhom|default:"—" }}</dd></div>
+      {% if khoa.ghi_chu_phu_huynh %}<div><dt>Ghi chú phụ huynh</dt><dd>{{ khoa.ghi_chu_phu_huynh }}</dd></div>{% endif %}
+      {% if khoa.tuyen_sinh_phu_trach %}<div><dt>Tuyển sinh phụ trách</dt><dd>{{ khoa.tuyen_sinh_phu_trach.ho_ten }}{% if khoa.tuyen_sinh_phu_trach.so_dien_thoai %} · {{ khoa.tuyen_sinh_phu_trach.so_dien_thoai }}{% endif %}</dd></div>{% endif %}
+    </dl>
+  </div>
+</section>
+
+<section class="card" style="overflow:hidden">
+  <div class="card-h"><h3>Các buổi học</h3><span class="cnt">{{ ds_buoi|length }}</span></div>
+  {% if ds_buoi %}
+  <div class="gt-h" style="--cols:110px minmax(0,1fr) 150px minmax(0,1.2fr) 30px"><span>Ngày</span><span>Buổi</span><span>Trạng thái</span><span>Nội dung</span><span></span></div>
+  {% for x in ds_buoi %}
+  <a class="gt-r" style="--cols:110px minmax(0,1fr) 150px minmax(0,1.2fr) 30px;color:inherit;text-decoration:none" href="{% url 'buoi_chi_tiet' x.b.pk %}">
+    <span><b class="b5" style="display:block">{{ x.b.bat_dau|thu_ngan }} {{ x.b.bat_dau|date:"d/m" }}</b><span class="sm muted">{{ x.b.bat_dau|time:"H:i" }}–{{ x.b.ket_thuc|time:"H:i" }}</span></span>
+    <span><b class="b5" style="display:block">{{ x.nhan }}</b><span class="sm muted">{{ x.b.ma }}</span></span>
+    <span>{% include "giao_dien/_chip_buoi.html" with tt=x.tt %}</span>
+    <span class="sm muted ell">{{ x.b.noi_dung|default:"—" }}</span>
+    <i class="bi bi-chevron-right muted" aria-hidden="true"></i>
+  </a>
+  {% endfor %}
+  {% else %}<div class="empty">Khóa chưa có buổi nào. Bấm Tạo buổi học để xếp lịch.</div>{% endif %}
+</section>
+{% endblock %}
