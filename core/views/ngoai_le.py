@@ -2,6 +2,7 @@
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -57,13 +58,28 @@ def duyet_doi_gia_su(request, pk):
 @require_POST
 def doi_gia_su(request, pk):
     khoa = get_object_or_404(KhoaHoc.objects.select_related("gia_su", "yeu_cau"), pk=pk)
+    from core.models import User
+    gs_moi = None
+    if request.POST.get("gia_su_moi"):
+        gs_moi = User.objects.filter(pk=request.POST["gia_su_moi"], vai_tro=User.VaiTro.GIA_SU, is_active=True).first()
+        if not gs_moi:
+            messages.error(request, "Gia sư mới không hợp lệ.")
+            return redirect(f"{reverse('khoa_hoc_chi_tiet', args=[pk])}?mo=doi-gs")
     try:
-        dn = dv.de_nghi_doi_gia_su(request.user, khoa, request.POST.get("ly_do", ""), request.POST.get("ghi_chu", ""))
-    except ValidationError as e:
-        messages.error(request, _loi(e))
-        return redirect("khoa_hoc_chi_tiet", pk=pk)
+        dn = dv.de_nghi_doi_gia_su(request.user, khoa, request.POST.get("ly_do", ""), request.POST.get("ghi_chu", ""),
+                                   gia_su_moi=gs_moi, thu_lao_moi=request.POST.get("thu_lao_moi") or None,
+                                   da_dong_y=bool(request.POST.get("da_dong_y")))
+    except (ValidationError, ValueError) as e:
+        messages.error(request, _loi(e) if isinstance(e, ValidationError) else "Thù lao không hợp lệ.")
+        return redirect(f"{reverse('khoa_hoc_chi_tiet', args=[pk])}?mo=doi-gs")
     if dn.trang_thai == DoiGiaSu.TrangThai.CHO_DUYET:
-        messages.success(request, "Đã gửi đề nghị đổi gia sư. Khóa đã đổi gia sư trước đây nên cần Admin duyệt.")
+        messages.success(request, "Đã gửi đề xuất đổi gia sư, chờ Quản trị viên duyệt. Trong lúc chờ, các buổi vẫn do "
+                                  f"{khoa.gia_su.ho_ten} dạy.")
+        return redirect("khoa_hoc_chi_tiet", pk=pk)
+    if gs_moi:
+        dn.refresh_from_db()
+        messages.success(request, f"Đã đổi gia sư sang {gs_moi.ho_ten}, chuyển {dn.so_buoi_chuyen} buổi đã xếp. "
+                                  "Nhớ báo phụ huynh và đổi nhóm Zalo lớp.")
         return redirect("khoa_hoc_chi_tiet", pk=pk)
     messages.success(request, "Đã đổi gia sư: khóa tạm dừng, chọn gia sư mới và gửi lời mời bên dưới. "
                               "Khi có người nhận, khóa tự học tiếp với số buổi còn lại.")

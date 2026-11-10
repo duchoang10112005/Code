@@ -56,3 +56,14 @@ def sdt(so):
     if s.startswith("84"):
         s = "0" + s[2:]
     return f"{s[:4]} {s[4:7]} {s[7:]}".strip() if len(s) == 10 else (so or "")
+
+
+@register.filter
+def chu_dau(ten, so=2):
+    """"Vật lý" → "VL", "Toán" → "TO": chữ cái đầu mỗi từ (một từ thì lấy 2 chữ đầu)."""
+    tu = [t for t in str(ten or "").split() if t]
+    if not tu:
+        return ""
+    if len(tu) == 1:
+        return tu[0][:so].upper()
+    return "".join(t[0] for t in tu[:so]).upper()

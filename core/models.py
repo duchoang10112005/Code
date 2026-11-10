@@ -549,6 +549,24 @@ class KhoaHoc(models.Model):
         return round(self.so_buoi_da_dung * 100 / self.so_buoi_dang_ky) if self.so_buoi_dang_ky else 0
 
     @property
+    def mo_ta_lich(self):
+        """"T2 19:00 · T6 15:00"; cùng giờ thì gộp: "T2, T6 · 18:00"."""
+        ten = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+        ds = []
+        for x in self.lich_co_dinh or []:
+            try:
+                ds.append((int(x["thu"]), str(x["gio"])))
+            except (KeyError, TypeError, ValueError):
+                continue
+        ds.sort()
+        if not ds:
+            return ""
+        gio = {g for _, g in ds}
+        if len(gio) == 1 and len(ds) > 1:
+            return ", ".join(ten[t] for t, _ in ds) + f" · {ds[0][1]}"
+        return " · ".join(f"{ten[t]} {g}" for t, g in ds)
+
+    @property
     def tong_hoc_phi(self):
         return self.so_buoi_dang_ky * self.hoc_phi_moi_buoi
 

@@ -173,7 +173,10 @@ def sua_so_buoi(admin, khoa, so_moi, ly_do):
         trang_thai = KH.DANG_HOC
     elif trang_thai == KH.DANG_HOC and so_moi == khoa.so_buoi_da_dung:
         trang_thai = KH.HOAN_THANH
+    from core.models import GiaHanKhoa
     KhoaHoc.objects.filter(pk=khoa.pk).update(so_buoi_dang_ky=so_moi, trang_thai=trang_thai)
+    GiaHanKhoa.objects.create(khoa_hoc=khoa, loai=GiaHanKhoa.Loai.SUA_NHAP_NHAM, so_buoi_cu=cu, so_buoi_moi=so_moi,
+                              ly_do=ly_do, tao_boi=admin)
     ghi_nhat_ky(admin, "Admin sửa số buổi đăng ký", khoa.ma, f"{cu} → {so_moi}. {ly_do}")
     khoa.refresh_from_db()
     return khoa
@@ -182,7 +185,24 @@ def sua_so_buoi(admin, khoa, so_moi, ly_do):
 # =============================================================================
 # 3. Đổi gia sư (NVTS thực hiện, Admin duyệt từ lần thứ 2)
 # =============================================================================
-def de_nghi_doi_gia_su(nguoi, khoa, ly_do, ghi_chu=""):
+def _kiem_tra_gs_moi(khoa, gia_su_moi):
+    from core.models import HoSoGiaSu
+    if gia_su_moi.pk == khoa.gia_su_id:
+        raise ValidationError({"gia_su_moi": "Gia sư mới phải khác gia sư hiện tại."})
+    if not la_du_dieu_kien(gia_su_moi, khoa.yeu_cau.mon_hoc):
+        raise ValidationError({"gia_su_moi": f"{gia_su_moi.ho_ten} chưa được duyệt môn {khoa.yeu_cau.mon_hoc}."})
+    hs = HoSoGiaSu.objects.filter(user=gia_su_moi).first()
+    if hs and hs.dang_tam_nghi:
+        raise ValidationError({"gia_su_moi": f"{gia_su_moi.ho_ten} đang tạm nghỉ nhận lớp."})
+
+
+def goi_y_gia_su_moi(khoa):
+    """Ứng viên đổi gia sư: đã duyệt môn, khác gia sư hiện tại; xếp theo điểm khớp của yêu cầu gốc (SD-06)."""
+    from core.services.yeu_cau import de_xuat_gia_su
+    return [x for x in de_xuat_gia_su(khoa.yeu_cau) if x["ho_so"].user_id != khoa.gia_su_id and not x["tam_nghi"]]
+
+
+def de_nghi_doi_gia_su(nguoi, khoa, ly_do, ghi_chu="", gia_su_moi=None, thu_lao_moi=None, da_dong_y=False):
     if ly_do not in DoiGiaSu.LyDo.values:
         raise ValidationError("Chọn lý do đổi gia sư.")
     ghi_chu = (ghi_chu or "").strip()[:300]
@@ -193,12 +213,25 @@ def de_nghi_doi_gia_su(nguoi, khoa, ly_do, ghi_chu=""):
         raise ValidationError("Chỉ đổi gia sư cho khóa đang học hoặc tạm dừng.")
     if khoa.lich_su_doi_gia_su.filter(trang_thai=DoiGiaSu.TrangThai.CHO_DUYET).exists():
         raise ValidationError("Khóa này đang có đề nghị đổi gia sư chờ Admin duyệt.")
+    if gia_su_moi is not None:
+        _kiem_tra_gs_moi(khoa, gia_su_moi)
+        if not da_dong_y:
+            raise ValidationError({"da_dong_y": "Xác nhận gia sư mới đã đồng ý nhận lớp (qua Zalo)."})
+        thu_lao_moi = int(thu_lao_moi or khoa.thu_lao_moi_buoi)
+        if not 0 < thu_lao_moi <= khoa.hoc_phi_moi_buoi:
+            raise ValidationError({"thu_lao_moi": "Thù lao phải lớn hơn 0 và không vượt học phí mỗi buổi."})
     da_doi = khoa.lich_su_doi_gia_su.filter(trang_thai=DoiGiaSu.TrangThai.DA_THUC_HIEN).count()
     can_duyet = da_doi >= 1 and not nguoi.la_admin
     dn = DoiGiaSu.objects.create(khoa_hoc=khoa, gia_su_cu=khoa.gia_su, ly_do=ly_do, ghi_chu=ghi_chu, tao_boi=nguoi,
+                                 gia_su_moi=gia_su_moi, thu_lao_moi=thu_lao_moi if gia_su_moi else None,
+                                 gia_su_moi_dong_y=bool(gia_su_moi and da_dong_y),
                                  trang_thai=DoiGiaSu.TrangThai.CHO_DUYET if can_duyet else DoiGiaSu.TrangThai.DA_THUC_HIEN)
     if can_duyet:
-        ghi_nhat_ky(nguoi, "Đề nghị đổi gia sư (chờ Admin duyệt)", khoa.ma, f"Lần đổi thứ {da_doi + 1}. {dn.get_ly_do_display()}")
+        ghi_nhat_ky(nguoi, "Đề nghị đổi gia sư (chờ Admin duyệt)", khoa.ma, f"Lần đổi thứ {da_doi + 1}. {dn.get_ly_do_display()}"
+                    + (f" → {gia_su_moi.ho_ten}" if gia_su_moi else ""))
+        from core.services.thong_bao import thong_bao_quan_tri
+        thong_bao_quan_tri("Đề nghị đổi gia sư chờ duyệt", f"{khoa.ma}" + (f" → {gia_su_moi.ho_ten}" if gia_su_moi else ""),
+                           reverse_lazy_url("khoa_hoc_chi_tiet", khoa.pk), "XEM_XET")
         return dn
     _thuc_hien_doi(nguoi, dn)
     return dn
@@ -215,14 +248,59 @@ def duyet_doi_gia_su(admin, dn, dong_y, ghi_chu=""):
         if dn.tao_boi:
             gui_email(dn.tao_boi, f"Đề nghị đổi gia sư {dn.khoa_hoc.ma} bị từ chối", f"Lý do: {ghi_chu}")
         return dn
+    if dn.gia_su_moi_id:
+        _kiem_tra_gs_moi(dn.khoa_hoc, dn.gia_su_moi)
     DoiGiaSu.objects.filter(pk=dn.pk).update(duyet_boi=admin, duyet_luc=now)
     dn.refresh_from_db()
     _thuc_hien_doi(admin, dn)
     return dn
 
 
+def _chuyen_sang_gs_moi(nguoi, dn):
+    """SD-25 (Q2): chuyển các buổi đã xếp sang gia sư mới; buổi trùng lịch gia sư mới thì hủy."""
+    from core.services.buoi_hoc import _buoi_trung_gio
+    from core.services.thong_bao import thong_bao
+    khoa, gs_cu, gs_moi, now = dn.khoa_hoc, dn.gia_su_cu, dn.gia_su_moi, timezone.now()
+    thu_lao = dn.thu_lao_moi or khoa.thu_lao_moi_buoi
+    with transaction.atomic():
+        tuong_lai = list(khoa.buoi_hoc.filter(gia_su=gs_cu, trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now))
+        trung, chuyen = [], []
+        for b in tuong_lai:
+            if any(x.gia_su_id == gs_moi.pk for x in _buoi_trung_gio(b.bat_dau, b.ket_thuc_luc, b.pk)):
+                trung.append(b)
+            else:
+                chuyen.append(b)
+        BuoiHoc.objects.filter(pk__in=[b.pk for b in trung]).update(
+            trang_thai=TT.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.ADMIN_HUY,
+            kiem_tra_ghi_chu="Đổi gia sư – trùng lịch gia sư mới", cap_nhat_luc=now)
+        BuoiHoc.objects.filter(pk__in=[b.pk for b in chuyen]).update(gia_su=gs_moi, thu_lao_du_kien=thu_lao, cap_nhat_luc=now)
+        KhoaHoc.objects.filter(pk=khoa.pk).update(gia_su=gs_moi, thu_lao_moi_buoi=thu_lao)
+        YeuCauHocTap.objects.filter(pk=khoa.yeu_cau_id).update(gia_su=gs_moi, cap_nhat_luc=now)
+        DoiGiaSu.objects.filter(pk=dn.pk).update(trang_thai=DoiGiaSu.TrangThai.DA_THUC_HIEN, so_buoi_chuyen=len(chuyen))
+        ghi_nhat_ky(nguoi, "Đổi gia sư", khoa.ma,
+                    f"{gs_cu.ho_ten} → {gs_moi.ho_ten}; {dn.get_ly_do_display()}. {dn.ghi_chu}".strip()
+                    + f"; chuyển {len(chuyen)} buổi" + (f", hủy {len(trung)} buổi trùng lịch" if trung else ""))
+        transaction.on_commit(lambda: [_xoa_zoom(b) for b in trung])
+    gui_email(gs_cu, f"Thay đổi gia sư khóa {khoa.ma}",
+              f"Trung tâm đã chuyển khóa {khoa.yeu_cau.mon_hoc} của học viên {khoa.hoc_vien} sang gia sư khác. "
+              "Các buổi đã dạy vẫn được tính thù lao bình thường.\nCảm ơn bạn đã đồng hành cùng học viên.")
+    gui_email(gs_moi, f"Bạn nhận khóa {khoa.ma}",
+              f"Bạn nhận khóa {khoa.ma} ({khoa.yeu_cau.mon_hoc} · {khoa.hoc_vien}), {len(chuyen)} buổi đã xếp được chuyển "
+              f"sang bạn. Thù lao {thu_lao:,}đ/buổi. Vào mục Lớp của tôi để xem lịch.".replace(",", "."))
+    if khoa.tuyen_sinh_phu_trach_id:
+        thong_bao(khoa.tuyen_sinh_phu_trach, f"Đã đổi gia sư {khoa.ma}", "Báo phụ huynh và đổi nhóm Zalo lớp.",
+                  reverse_lazy_url("khoa_hoc_chi_tiet", khoa.pk), "KHOA_HOC")
+
+
+def reverse_lazy_url(ten, pk):
+    from django.urls import reverse
+    return reverse(ten, args=[pk])
+
+
 def _thuc_hien_doi(nguoi, dn):
-    """Hủy buổi tương lai của gia sư cũ, tạm dừng khóa, đưa yêu cầu về Đang tìm (giữ nguyên số buổi còn lại)."""
+    """Có gia sư mới → chuyển buổi (SD-25). Chưa có → luồng dự phòng: hủy buổi tương lai, tạm dừng, mời lại."""
+    if dn.gia_su_moi_id:
+        return _chuyen_sang_gs_moi(nguoi, dn)
     khoa, gs_cu, now = dn.khoa_hoc, dn.gia_su_cu, timezone.now()
     with transaction.atomic():
         tuong_lai = list(khoa.buoi_hoc.filter(gia_su=gs_cu, trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now))

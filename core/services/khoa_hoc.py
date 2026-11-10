@@ -16,6 +16,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from core.models import BuoiHoc, KhoaHoc, LoiMoi, NhacViec, YeuCauHocTap
@@ -185,6 +186,7 @@ def tao_khoa_hoc(nvts, yc, du_lieu):
 CHUYEN_HOP_LE = {
     KH.TAM_DUNG: {KH.DANG_HOC},
     KH.DANG_HOC: {KH.TAM_DUNG},
+    KH.HOAN_THANH: {KH.DANG_HOC},  # đánh dấu hoàn thành sớm (SD-23)
     KH.HUY: {KH.DANG_HOC, KH.TAM_DUNG},
 }
 
@@ -193,8 +195,8 @@ def doi_trang_thai_khoa(nvts, khoa, moi, ly_do=""):
     ly_do = (ly_do or "").strip()[:300]
     if moi not in CHUYEN_HOP_LE:
         raise ValidationError("Trạng thái không hợp lệ.")
-    if moi in (KH.TAM_DUNG, KH.HUY) and not ly_do:
-        raise ValidationError("Cần ghi lý do tạm dừng / hủy khóa.")
+    if moi in (KH.TAM_DUNG, KH.HUY, KH.HOAN_THANH) and not ly_do:
+        raise ValidationError("Cần ghi lý do tạm dừng / hủy / hoàn thành sớm.")
     if moi == KH.DANG_HOC and not YeuCauHocTap.objects.filter(pk=khoa.yeu_cau_id, trang_thai=YC.CHINH_THUC).exists():
         raise ValidationError("Khóa đang chờ gia sư mới nhận lớp; khóa sẽ tự học tiếp khi có gia sư nhận.")
     cu = khoa.get_trang_thai_display()
@@ -203,12 +205,13 @@ def doi_trang_thai_khoa(nvts, khoa, moi, ly_do=""):
     now = timezone.now()
     sap_toi = []
     with transaction.atomic():
+        them = {"hoan_thanh_luc": now} if moi == KH.HOAN_THANH else {}
         n = KhoaHoc.objects.filter(pk=khoa.pk, trang_thai__in=CHUYEN_HOP_LE[moi]).update(
-            trang_thai=moi, ghi_chu=ly_do)
+            trang_thai=moi, ghi_chu=ly_do, **them)
         if n == 0:
             raise ValidationError(f"Không chuyển được từ \"{cu}\" sang \"{KH(moi).label}\".")
         # Tạm dừng / hủy: các buổi CHƯA diễn ra bị hủy (buổi đã dạy nhưng chưa xác nhận vẫn được xác nhận).
-        if moi in (KH.TAM_DUNG, KH.HUY):
+        if moi in (KH.TAM_DUNG, KH.HUY, KH.HOAN_THANH):
             sap_toi = list(khoa.buoi_hoc.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now))
             BuoiHoc.objects.filter(pk__in=[b.pk for b in sap_toi]).update(
                 trang_thai=BuoiHoc.TrangThai.DA_HUY, ly_do_huy=BuoiHoc.LyDoHuy.ADMIN_HUY,
@@ -228,3 +231,52 @@ def doi_trang_thai_khoa(nvts, khoa, moi, ly_do=""):
               f"Khóa {khoa} chuyển sang trạng thái {khoa.get_trang_thai_display()}." + (f"\nLý do: {ly_do}" if ly_do else "")
               + (f"\n{len(sap_toi)} buổi sắp tới đã được hủy, phòng Zoom đã xóa." if sap_toi else ""))
     return khoa
+
+
+# =============================================================================
+# SD-24 – Gia hạn thêm buổi (Tuyển sinh, chỉ tăng)
+# =============================================================================
+def gia_han(nvts, khoa, so_buoi_them, ly_do, hoc_phi_moi_buoi=None):
+    from core.models import GiaHanKhoa, NhacViec
+    ly_do = (ly_do or "").strip()[:300]
+    if not ly_do:
+        raise ValidationError({"ly_do": "Nhập lý do gia hạn."})
+    try:
+        so_buoi_them = int(so_buoi_them)
+    except (TypeError, ValueError):
+        raise ValidationError({"so_buoi_them": "Số buổi không hợp lệ."})
+    if not 1 <= so_buoi_them <= 100:
+        raise ValidationError({"so_buoi_them": "Gia hạn từ 1 đến 100 buổi."})
+    if hoc_phi_moi_buoi not in (None, ""):
+        hoc_phi_moi_buoi = int(hoc_phi_moi_buoi)
+        if hoc_phi_moi_buoi < khoa.thu_lao_moi_buoi:
+            raise ValidationError({"hoc_phi_moi_buoi": "Học phí không được thấp hơn thù lao gia sư."})
+    else:
+        hoc_phi_moi_buoi = None
+    now = timezone.now()
+    with transaction.atomic():
+        k = KhoaHoc.objects.select_for_update().get(pk=khoa.pk)
+        if k.trang_thai not in (KH.DANG_HOC, KH.HOAN_THANH):
+            raise ValidationError("Chỉ gia hạn khóa đang học hoặc đã hoàn thành.")
+        cu = k.so_buoi_dang_ky
+        k.so_buoi_dang_ky = cu + so_buoi_them
+        if k.trang_thai == KH.HOAN_THANH:
+            k.trang_thai, k.hoan_thanh_luc = KH.DANG_HOC, None
+        if hoc_phi_moi_buoi:
+            k.hoc_phi_moi_buoi = hoc_phi_moi_buoi
+        k.save(update_fields=["so_buoi_dang_ky", "trang_thai", "hoan_thanh_luc", "hoc_phi_moi_buoi"])
+        GiaHanKhoa.objects.create(khoa_hoc=k, loai=GiaHanKhoa.Loai.GIA_HAN, so_buoi_cu=cu, so_buoi_moi=k.so_buoi_dang_ky,
+                                  hoc_phi_moi_buoi=hoc_phi_moi_buoi, ly_do=ly_do, tao_boi=nvts)
+        NhacViec.objects.filter(khoa_hoc=k, loai=NhacViec.Loai.HOI_GIA_HAN, xong_luc__isnull=True).update(xong_luc=now)
+        ghi_nhat_ky(nvts, "Gia hạn khóa học", k.ma, f"{cu} → {k.so_buoi_dang_ky} buổi. {ly_do}")
+    gui_email(k.gia_su, f"{k.ma} được gia hạn thêm {so_buoi_them} buổi",
+              f"Khóa {k.ma} ({k.yeu_cau.mon_hoc} · {k.hoc_vien}) được gia hạn thêm {so_buoi_them} buổi, "
+              f"tổng {k.so_buoi_dang_ky} buổi. Bạn có thể tạo tiếp các buổi học.")
+    khoa.refresh_from_db()
+    return khoa
+
+
+def yc_cho_mo_khoa():
+    """Yêu cầu đã chốt đăng ký (học thử đồng ý, hoặc đăng ký thẳng) nhưng chưa mở khóa."""
+    return YeuCauHocTap.objects.filter(
+        Q(trang_thai=YC.HOC_THU_XONG, ket_qua_hoc_thu=KQ.DONG_Y) | Q(trang_thai=YC.DA_PHAN_CONG, dang_ky_thang=True))

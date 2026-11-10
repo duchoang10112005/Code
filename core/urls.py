@@ -63,6 +63,7 @@ urlpatterns = [
     path("khoa-hoc/", khoa_hoc.danh_sach, name="khoa_hoc_danh_sach"),
     path("khoa-hoc/<int:pk>/", khoa_hoc.chi_tiet, name="khoa_hoc_chi_tiet"),
     path("khoa-hoc/<int:pk>/trang-thai/", khoa_hoc.doi_trang_thai, name="khoa_hoc_doi_trang_thai"),
+    path("khoa-hoc/<int:pk>/gia-han/", khoa_hoc.gia_han, name="khoa_hoc_gia_han"),
     path("lop-cua-toi/", khoa_hoc.lop_cua_toi, name="lop_cua_toi"),
     path("lop-cua-toi/khoa/<int:pk>/", khoa_hoc.khoa_cua_toi, name="khoa_cua_toi"),
 
