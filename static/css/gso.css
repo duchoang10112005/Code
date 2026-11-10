@@ -443,3 +443,17 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .chi-so .vong{transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
 @keyframes gso-nhay{0%{color:#4F46E5;transform:translateY(-2px)}100%{color:inherit;transform:none}}
 .vua-doi{display:inline-block;animation:gso-nhay .8s ease}
+
+/* Tab gạch chân (danh sách Tuyển sinh) */
+.tab-gach{display:flex;gap:24px;border-bottom:1px solid #E6E9F2}
+.tab-gach a{display:inline-flex;align-items:center;gap:8px;padding:8px 0 10px;color:#4A5068;font-weight:500;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab-gach a:hover{color:#1E2235;text-decoration:none}
+.tab-gach a[aria-current=page]{color:#1E2235;border-bottom-color:#6366F1}
+.tab-gach a[aria-current=page] .cnt{background:#EEF0FF;color:#4F46E5}
+.o-khung{display:block;cursor:pointer}
+.o-khung input{position:absolute;opacity:0;pointer-events:none}
+.o-khung span[aria-hidden]{height:34px;border:1px solid #E6E9F2;border-radius:8px;display:grid;place-items:center;color:#C4C9D6;background:#fff;transition:all .12s}
+.o-khung:hover span[aria-hidden]{border-color:#C7CBF9;color:#6366F1}
+.o-khung input:checked+span{background:#EEF0FF;border-color:#A5B4FC;color:#4F46E5}
+.o-khung input:checked+span .bi::before{content:"\f26e"}
+.o-khung input:focus-visible+span{outline:2px solid #6366F1;outline-offset:2px}

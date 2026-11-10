@@ -10,6 +10,8 @@ database chỉ cho đúng một câu UPDATE khớp điều kiện, nên hai gia 
 cũng chỉ một người được phân công — kể cả trên SQLite (không có khóa dòng).
 """
 
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
@@ -17,12 +19,13 @@ from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import BuoiHoc, HoSoGiaSu, KhoaHoc, LoiMoi, MonGiaSu, User, YeuCauHocTap
+from core.models import BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LoiMoi, MonGiaSu, User, YeuCauHocTap
 from core.services.nhat_ky import ghi_nhat_ky
 from core.services.thong_bao import gui_email
 
 YC = YeuCauHocTap.TrangThai
 LM = LoiMoi.TrangThai
+KQ = YeuCauHocTap.KetQuaHocThu
 
 
 # =============================================================================
@@ -77,7 +80,9 @@ def huy_loi_moi_cua_gia_su(user, ly_do, mon_hoc=None):
 # =============================================================================
 @transaction.atomic
 def tao_yeu_cau(nvts, hoc_vien, du_lieu):
-    """hoc_vien: HocVien đã lưu (mới hoặc có sẵn). du_lieu: cleaned_data của YeuCauForm."""
+    """hoc_vien: HocVien đã lưu (mới hoặc có sẵn). du_lieu: cleaned_data của YeuCauForm (SD-05)."""
+    if hoc_vien.tuyen_sinh_phu_trach_id is None:
+        HocVien.objects.filter(pk=hoc_vien.pk).update(tuyen_sinh_phu_trach=nvts)
     yc = YeuCauHocTap.objects.create(hoc_vien=hoc_vien, tao_boi=nvts, trang_thai=YC.MOI, **du_lieu)
     ghi_nhat_ky(nvts, "Tiếp nhận yêu cầu học tập", str(yc), f"Học viên {hoc_vien}, môn {yc.mon_hoc}")
     return yc
@@ -86,33 +91,55 @@ def tao_yeu_cau(nvts, hoc_vien, du_lieu):
 # =============================================================================
 # 3.2 Đề xuất gia sư phù hợp (theo quy tắc, không dùng AI – PB-05)
 # =============================================================================
-def de_xuat_gia_su(yeu_cau):
-    """Trả về danh sách dict đã sắp xếp: trùng nhiều ngày rảnh trước → đang dạy ít khóa trước → tên."""
-    quet_loi_moi_het_han()
-    thu_can = set(yeu_cau.thu_mong_muon or [])
-    ds = (gia_su_du_dieu_kien(yeu_cau.mon_hoc)
-          .annotate(so_khoa=Count("user__khoa_hoc_phu_trach",
-                                  filter=Q(user__khoa_hoc_phu_trach__trang_thai=KhoaHoc.TrangThai.DANG_HOC),
-                                  distinct=True))
-          .prefetch_related("lich_ranh", "mon_day__mon_hoc"))
-    loi_moi = {lm.gia_su_id: lm for lm in yeu_cau.loi_moi.order_by("gui_luc")}  # lời mời gần nhất mỗi gia sư
+def _ds_ung_vien(mon_hoc):
+    return (gia_su_du_dieu_kien(mon_hoc)
+            .annotate(so_khoa=Count("user__khoa_hoc_phu_trach",
+                                    filter=Q(user__khoa_hoc_phu_trach__trang_thai=KhoaHoc.TrangThai.DANG_HOC),
+                                    distinct=True))
+            .prefetch_related("lich_ranh", "mon_day__mon_hoc", "mon_day__cap_do_duyet"))
 
+
+def cham_diem(hs, mon_hoc_id, cap_do_id, khung_can, thu_can):
+    """Điểm khớp 0–100 (chỉ để sắp xếp / giải thích, không phải AI – PB-05):
+    40 đúng môn + 20 đúng cấp độ + 30 × tỉ lệ khung giờ trùng + 10 nếu còn chỗ nhận lớp."""
+    mon = next(m for m in hs.mon_day.all() if m.mon_hoc_id == mon_hoc_id)
+    duyet = {c.pk for c in mon.cap_do_duyet.all()}
+    dung_cap_do = True if not cap_do_id or not duyet else cap_do_id in duyet
+    ranh_khung = {f"{l.thu}-{l.khung}" for l in hs.lich_ranh.all() if l.khung}
+    thu_ranh = {l.thu for l in hs.lich_ranh.all()}
+    if khung_can:
+        trung, can = len(set(khung_can) & ranh_khung), len(set(khung_can))
+    else:
+        trung, can = len(set(thu_can) & thu_ranh), len(set(thu_can))
+    con_cho = hs.so_khoa < (hs.so_lop_toi_da or 4)
+    diem = 40 + (20 if dung_cap_do else 0) + (round(30 * trung / can) if can else 0) + (10 if con_cho else 0)
+    return {"mon": mon, "diem": diem, "trung": trung, "can": can, "dung_cap_do": dung_cap_do, "con_cho": con_cho,
+            "thu_trung": sorted(thu_ranh & set(thu_can)), "tam_nghi": hs.dang_tam_nghi,
+            "chi_tiet": {"dung_mon": True, "dung_cap_do": dung_cap_do, "trung_gio": f"{trung}/{can}",
+                         "dang_nhan_lop": con_cho}}
+
+
+def de_xuat_gia_su(yeu_cau):
+    """SD-06: danh sách gia sư đủ điều kiện kèm điểm khớp, sắp giảm dần (tạm nghỉ vẫn hiện, gắn cờ, xếp cuối)."""
+    quet_loi_moi_het_han()
+    loi_moi = {lm.gia_su_id: lm for lm in yeu_cau.loi_moi.order_by("gui_luc")}  # lời mời gần nhất mỗi gia sư
     ket_qua = []
-    for hs in ds:
-        thu_ranh = {l.thu for l in hs.lich_ranh.all()}
-        mon = next(m for m in hs.mon_day.all() if m.mon_hoc_id == yeu_cau.mon_hoc_id)
+    for hs in _ds_ung_vien(yeu_cau.mon_hoc):
+        d = cham_diem(hs, yeu_cau.mon_hoc_id, yeu_cau.cap_do_id, yeu_cau.khung_mong_muon, yeu_cau.thu_mong_muon or [])
         lm = loi_moi.get(hs.user_id)
-        ket_qua.append({
-            "ho_so": hs,
-            "mon": mon,
-            "lich_ranh": list(hs.lich_ranh.all()),
-            "thu_trung": sorted(thu_ranh & thu_can),
-            "so_khoa": hs.so_khoa,
-            "loi_moi": lm,
-            "dang_cho": bool(lm and lm.trang_thai == LM.CHO),
-        })
-    ket_qua.sort(key=lambda x: (-len(x["thu_trung"]), x["so_khoa"], x["ho_so"].user.ho_ten))
+        d.update({"ho_so": hs, "lich_ranh": list(hs.lich_ranh.all()), "so_khoa": hs.so_khoa, "loi_moi": lm,
+                  "dang_cho": bool(lm and lm.trang_thai == LM.CHO)})
+        ket_qua.append(d)
+    ket_qua.sort(key=lambda x: (x["tam_nghi"], -x["diem"], x["so_khoa"], x["ho_so"].user.ho_ten))
+    if ket_qua and not ket_qua[0]["tam_nghi"]:
+        ket_qua[0]["khop_nhat"] = True
     return ket_qua
+
+
+def dem_gia_su_phu_hop(mon_hoc, cap_do_id=None, khung=None):
+    """Đếm nhanh cho khung "Xem trước" khi tạo yêu cầu: (đủ điều kiện, trùng ≥ 1 khung giờ)."""
+    ds = [cham_diem(hs, mon_hoc.pk, cap_do_id, khung or [], []) for hs in _ds_ung_vien(mon_hoc) if not hs.dang_tam_nghi]
+    return len(ds), sum(1 for d in ds if d["trung"] and d["dung_cap_do"])
 
 
 # =============================================================================
@@ -285,3 +312,60 @@ def dong_yeu_cau(nvts, yeu_cau, ly_do):
         LoiMoi.objects.filter(yeu_cau=yeu_cau, trang_thai=LM.CHO).update(trang_thai=LM.VOIDED, phan_hoi_luc=now)
         ghi_nhat_ky(nvts, "Đóng yêu cầu học tập", str(yeu_cau), ly_do)
     yeu_cau.refresh_from_db()
+
+
+# =============================================================================
+# Cột "Bước tiếp theo" trên danh sách / trang chủ Tuyển sinh
+# =============================================================================
+def _con(td):
+    phut = max(int(td.total_seconds() // 60), 0)
+    g, p = divmod(phut, 60)
+    return f"{g} giờ {p} phút" if g and p else (f"{g} giờ" if g else f"{p} phút")
+
+
+def buoc_tiep_theo(yc, now=None):
+    """dict: chu, icon, mau (xanh|cam|do|xanh_la|xam), url (tùy chọn) – việc kế tiếp Tuyển sinh cần làm."""
+    from django.urls import reverse
+    now = now or timezone.now()
+    ct = reverse("yeu_cau_chi_tiet", args=[yc.pk])
+    if yc.trang_thai == YC.MOI:
+        n = gia_su_du_dieu_kien(yc.mon_hoc).count()
+        return {"chu": f"Tìm gia sư · có {n} gia sư phù hợp" if n else "Chưa có gia sư đủ điều kiện môn này",
+                "icon": "bi-arrow-right-circle", "mau": "xanh" if n else "do", "url": ct}
+    if yc.trang_thai == YC.DANG_TIM:
+        cho = [lm.het_han_luc for lm in yc.loi_moi.all() if lm.trang_thai == LM.CHO and lm.het_han_luc > now]
+        if cho:
+            con = min(cho) - now
+            return {"chu": f"Chờ gia sư nhận · còn {_con(con)}", "icon": "bi-stopwatch",
+                    "mau": "cam" if con < timedelta(hours=6) else "xam"}
+        het = sum(1 for lm in yc.loi_moi.all() if lm.trang_thai in (LM.HET_HAN, LM.REJECTED))
+        return {"chu": f"Mời lại · {het} lời mời đã hết hạn / từ chối" if het else "Mời thêm gia sư",
+                "icon": "bi-exclamation-circle", "mau": "do", "url": ct}
+    if yc.trang_thai == YC.DA_PHAN_CONG:
+        if yc.dang_ky_thang:
+            return {"chu": "Mở khóa học (đăng ký thẳng)", "icon": "bi-arrow-right-circle", "mau": "xanh", "url": ct}
+        if yc.ket_qua_hoc_thu == KQ.CAN_THEM_THOI_GIAN and yc.nhac_goi_lai_luc:
+            return {"chu": f"Gọi lại phụ huynh · hạn {timezone.localtime(yc.nhac_goi_lai_luc):%d/%m}",
+                    "icon": "bi-telephone", "mau": "do" if yc.nhac_goi_lai_luc < now else "cam", "url": ct}
+        thu = [b for b in yc.buoi_hoc.all() if b.loai == BuoiHoc.Loai.HOC_THU and b.gia_su_id == yc.gia_su_id
+               and b.trang_thai != BuoiHoc.TrangThai.DA_HUY]
+        if any(b.trang_thai == BuoiHoc.TrangThai.HOAN_TAT for b in thu):
+            return {"chu": "Ghi kết quả học thử", "icon": "bi-arrow-right-circle", "mau": "xanh", "url": ct}
+        if thu:
+            bd = timezone.localtime(min(thu, key=lambda b: b.bat_dau).bat_dau)
+            return {"chu": f"Học thử {['T2','T3','T4','T5','T6','T7','CN'][bd.weekday()]} {bd:%d/%m %H:%M}",
+                    "icon": "bi-calendar3", "mau": "xam"}
+        return {"chu": "Chờ gia sư tạo buổi học thử", "icon": "bi-calendar3", "mau": "xam"}
+    if yc.trang_thai == YC.HOC_THU_XONG:
+        return {"chu": "Mở khóa học", "icon": "bi-arrow-right-circle", "mau": "xanh", "url": ct}
+    if yc.trang_thai == YC.CHINH_THUC:
+        k = getattr(yc, "khoa_hoc", None)
+        return {"chu": f"Đã mở {k.ma}" if k else "Đã mở khóa", "icon": "bi-check-circle", "mau": "xanh_la",
+                "url": reverse("khoa_hoc_chi_tiet", args=[k.pk]) if k else None}
+    return {"chu": f"Đóng: {yc.ly_do_dong[:60]}" if yc.ly_do_dong else "Đã đóng", "icon": "bi-dot", "mau": "xam"}
+
+
+MAU_TRANG_THAI_YC = {"MOI": "xanh", "DANG_TIM": "cam", "DA_PHAN_CONG": "xanh_la", "HOC_THU_XONG": "tim",
+                     "CHINH_THUC": "xanh_la", "DONG": "xam"}
+LY_DO_DONG = ["Phụ huynh không còn nhu cầu", "Không tìm được gia sư phù hợp", "Học phí chưa phù hợp",
+              "Phụ huynh không liên lạc được", "Trùng yêu cầu khác", "Lý do khác"]

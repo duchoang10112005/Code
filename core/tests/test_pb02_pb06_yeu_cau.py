@@ -54,7 +54,7 @@ class PB02TiepNhanTest(DuLieu):
     def du_lieu_tao(self, **kw):
         d = {"hv-ho_ten": "Bé Mới", "hv-lop": "Lớp 5", "hv-ten_phu_huynh": "Mẹ Bé",
              "hv-sdt_phu_huynh": "0935 111 222", "mon_hoc": self.toan.pk, "trinh_do": "Lớp 5",
-             "muc_tieu": "Củng cố", "thu_mong_muon": ["1", "3"], "lich_mong_muon": "Chiều"}
+             "muc_tieu": "Củng cố", "khung_mong_muon": ["1-CHIEU", "3-CHIEU"]}
         d.update(kw)
         return d
 
@@ -71,14 +71,14 @@ class PB02TiepNhanTest(DuLieu):
     def test_BRULE07_thieu_thong_tin_bat_buoc_thi_khong_tao(self):
         self.dang_nhap(self.nvts)
         so_truoc = YeuCauHocTap.objects.count()
-        r = self.client.post(reverse("yeu_cau_tao"), self.du_lieu_tao(muc_tieu="", thu_mong_muon=[]))
-        self.assertContains(r, "Chọn ít nhất một thứ trong tuần")
+        r = self.client.post(reverse("yeu_cau_tao"), self.du_lieu_tao(muc_tieu="", khung_mong_muon=[]), )
+        self.assertContains(r, "Chọn ít nhất 1 ô khung giờ", status_code=400)  # YC-01
         self.assertEqual(YeuCauHocTap.objects.count(), so_truoc)
 
     def test_BRULE08_sdt_phu_huynh_sai_thi_bao_loi(self):
         self.dang_nhap(self.nvts)
         r = self.client.post(reverse("yeu_cau_tao"), self.du_lieu_tao(**{"hv-sdt_phu_huynh": "12345"}))
-        self.assertContains(r, "Số điện thoại không hợp lệ")
+        self.assertContains(r, "Số điện thoại không hợp lệ", status_code=400)
         self.assertFalse(HocVien.objects.filter(ho_ten="Bé Mới").exists())
 
     def test_PB02_chon_hoc_vien_co_san_khong_tao_trung(self):
@@ -283,3 +283,56 @@ class SuaLoiCodeReviewYeuCauTest(DuLieu):
     def test_PB03_email_loi_moi_co_link_day_du(self):
         self.assertIn("http://", mail.outbox[0].body)
         self.assertIn("/loi-moi/", mail.outbox[0].body)
+
+
+class DiemKhopTest(DuLieu):
+    """SD-06: điểm khớp 0–100 + cờ tạm nghỉ; SD-05: API tìm học viên, đếm gia sư."""
+
+    def setUp(self):
+        super().setUp()
+        from core.models import CapDo
+        self.cap9 = CapDo.objects.create(mon_hoc=self.toan, ten="Lớp 8–9")
+        for hs in HoSoGiaSu.objects.all():
+            hs.lich_ranh.all().delete()
+        hs_b = self.gs_b.ho_so_gia_su
+        for t in (1, 3, 5):
+            LichRanh.objects.create(ho_so=hs_b, thu=t, khung="TOI", tu_gio=time(19), den_gio=time(21))
+        hs_b.mon_day.get().cap_do_duyet.add(self.cap9)
+        self.yc.cap_do, self.yc.khung_mong_muon = self.cap9, ["1-TOI", "3-TOI", "5-TOI"]
+        self.yc.save()
+
+    def test_YC04_dung_mon_cap_do_trung_3_3_con_cho_la_100(self):
+        ds = dv.de_xuat_gia_su(self.yc)
+        b = next(d for d in ds if d["ho_so"].user == self.gs_b)
+        self.assertEqual((b["diem"], b["chi_tiet"]["trung_gio"]), (100, "3/3"))
+        self.assertTrue(ds[0].get("khop_nhat") and ds[0]["ho_so"].user == self.gs_b)
+
+    def test_YC03_gia_su_tam_nghi_gan_co_va_xep_cuoi(self):
+        from datetime import date, timedelta
+        hs = self.gs_b.ho_so_gia_su
+        hs.tam_nghi_den = date.today() + timedelta(days=3)
+        hs.save()
+        ds = dv.de_xuat_gia_su(self.yc)
+        self.assertTrue(ds[-1]["tam_nghi"])
+        self.assertEqual(ds[-1]["ho_so"].user, self.gs_b)
+
+    def test_api_tim_hoc_vien_va_dem_gia_su(self):
+        self.dang_nhap(self.nvts)
+        j = self.client.get(reverse("api_tim_hoc_vien"), {"q": "hoc vien"}).json()
+        self.assertEqual(j["data"]["ds"][0]["pk"], self.hv.pk)
+        j = self.client.get(reverse("api_dem_gia_su"), {"mon": self.toan.pk, "cap_do": self.cap9.pk,
+                                                         "khung": ["1-TOI"]}).json()
+        self.assertEqual((j["data"]["tong"], j["data"]["khop"]), (2, 1))
+        self.dang_nhap(self.gs_a)
+        self.assertEqual(self.client.get(reverse("api_tim_hoc_vien"), {"q": "hoc"}).status_code, 403)
+
+    def test_tao_yeu_cau_sinh_lich_mong_muon_tu_luoi(self):
+        self.dang_nhap(self.nvts)
+        self.client.post(reverse("yeu_cau_tao"), {
+            "hoc_vien": self.hv.pk, "mon_hoc": self.toan.pk, "cap_do": self.cap9.pk, "muc_tieu": "Thi vào 10",
+            "khung_mong_muon": ["5-SANG", "1-TOI", "3-TOI"]})
+        yc = YeuCauHocTap.objects.latest("pk")
+        self.assertEqual(yc.khung_mong_muon, ["1-TOI", "3-TOI", "5-SANG"])
+        self.assertEqual(yc.thu_mong_muon, [1, 3, 5])
+        self.assertEqual(yc.lich_mong_muon, "T7 08:00–11:00 · T3, T5 19:00–21:00")
+        self.assertEqual(yc.trinh_do, "Lớp 8–9")

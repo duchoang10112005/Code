@@ -113,8 +113,8 @@ class SuaDuLieuTest(NgoaiLe):
     def test_admin_sua_yeu_cau_da_khoa_phai_ghi_ly_do(self):
         self.dang_nhap(self.admin)
         url = reverse("yeu_cau_sua", args=[self.yc.pk])
-        du_lieu = {"mon_hoc": self.toan.pk, "trinh_do": "Lớp 10", "muc_tieu": "Thi 10", "thu_mong_muon": [0],
-                   "lich_mong_muon": "Tối"}
+        du_lieu = {"mon_hoc": self.toan.pk, "trinh_do": "Lớp 10", "muc_tieu": "Thi 10", "khung_mong_muon": ["0-TOI"]}
+
         r = self.client.post(url, du_lieu)
         self.assertContains(r, "Cần ghi lý do sửa")
         r = self.client.post(url, {**du_lieu, "ly_do": "Nhập sai trình độ"})

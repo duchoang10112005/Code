@@ -266,10 +266,11 @@ class LocGiaSuForm(BootstrapMixin, forms.Form):
 # ---------------------------------------------------------------------------
 # Phần 3 – Học viên, yêu cầu học tập (PB-02, PB-03, PB-19)
 # ---------------------------------------------------------------------------
-class HocVienForm(BootstrapMixin, forms.ModelForm):
+class HocVienForm(GsoMixin, forms.ModelForm):
     class Meta:
         model = HocVien
-        fields = ["ho_ten", "lop", "ten_phu_huynh", "sdt_phu_huynh", "dong_y_ghi_hinh", "ghi_chu"]
+        fields = ["ho_ten", "lop", "gioi_tinh", "truong", "ten_phu_huynh", "sdt_phu_huynh", "dong_y_ghi_hinh", "ghi_chu"]
+        labels = {"sdt_phu_huynh": "SĐT / Zalo phụ huynh", "lop": "Lớp hiện tại"}
         widgets = {"ghi_chu": forms.Textarea(attrs={"rows": 2})}
         help_texts = {
             "sdt_phu_huynh": "Số Zalo của phụ huynh để nhận đánh giá buổi học. VD: 0905 123 456",
@@ -290,30 +291,70 @@ class ChonHocVienForm(BootstrapMixin, forms.Form):
     )
 
 
-class YeuCauForm(BootstrapMixin, forms.ModelForm):
-    thu_mong_muon = forms.TypedMultipleChoiceField(
-        label="Các thứ muốn học", choices=LichRanh.Thu.choices, coerce=int,
-        widget=forms.CheckboxSelectMultiple,
-        error_messages={"required": "Chọn ít nhất một thứ trong tuần."},
-    )
+KHUNG_CHOICES = [(f"{t}-{k}", f"{t}-{k}") for t in range(7) for k in ("SANG", "CHIEU", "TOI_SOM", "TOI")]
+
+
+class YeuCauForm(GsoMixin, forms.ModelForm):
+    """Tạo / sửa yêu cầu (SD-05): lưới 7 ngày × 4 khung giờ → khung_mong_muon (+ thu_mong_muon, lich_mong_muon tự sinh)."""
+
+    khung_mong_muon = forms.MultipleChoiceField(
+        label="Lịch mong muốn", choices=KHUNG_CHOICES, widget=forms.CheckboxSelectMultiple,
+        error_messages={"required": "Chọn ít nhất 1 ô khung giờ trên lưới."})
 
     class Meta:
         model = YeuCauHocTap
-        fields = ["mon_hoc", "trinh_do", "muc_tieu", "thu_mong_muon", "lich_mong_muon"]
-        labels = {"lich_mong_muon": "Khung giờ mong muốn"}
-        widgets = {
-            "muc_tieu": forms.Textarea(attrs={"rows": 3}),
-            "trinh_do": forms.TextInput(attrs={"placeholder": "VD: Lớp 9, mất gốc hình học"}),
-            "lich_mong_muon": forms.TextInput(attrs={"placeholder": "VD: Buổi tối 19h–21h"}),
-        }
+        fields = ["mon_hoc", "cap_do", "trinh_do", "muc_tieu", "khung_mong_muon", "ghi_chu", "thu_lao_du_kien"]
+        labels = {"muc_tieu": "Mục tiêu học tập", "trinh_do": "Trình độ hiện tại",
+                  "thu_lao_du_kien": "Thù lao dự kiến / buổi (đ)"}
+        widgets = {"muc_tieu": forms.Textarea(attrs={"rows": 2, "placeholder": "VD: Lấy lại gốc đại số, đạt 8 điểm học kỳ I"}),
+                   "ghi_chu": forms.Textarea(attrs={"rows": 2, "placeholder": "VD: Học viên hơi nhút nhát, ưu tiên gia sư kiên nhẫn"})}
 
     def __init__(self, *args, khoa_mon=False, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["mon_hoc"].empty_label = "— Chọn môn —"
+        from core.models import CapDo
+        self.fields["mon_hoc"].empty_label = "Chọn môn"
+        self.fields["mon_hoc"].queryset = MonHoc.objects.filter(dang_mo=True).order_by("ten")
+        self.fields["cap_do"].queryset = CapDo.objects.filter(dang_mo=True).select_related("mon_hoc")
+        self.fields["cap_do"].empty_label = "Chọn cấp độ"
+        self.fields["trinh_do"].required = False
+        self.fields["thu_lao_du_kien"].help_text = "Gia sư thấy trong lời mời. Để trống = thỏa thuận khi mở khóa."
         if khoa_mon:
-            # Đã gửi lời mời theo môn này → không cho đổi môn nữa.
             self.fields["mon_hoc"].disabled = True
             self.fields["mon_hoc"].help_text = "Không đổi được môn vì đã gửi lời mời cho gia sư."
+
+    def clean(self):
+        d = super().clean()
+        mon, cap = d.get("mon_hoc"), d.get("cap_do")
+        if cap and mon and cap.mon_hoc_id not in (None, mon.pk):
+            self.add_error("cap_do", "Cấp độ không thuộc môn đã chọn.")
+        if not cap and not (d.get("trinh_do") or "").strip():
+            self.add_error("cap_do", "Chọn cấp độ.")
+        if cap and not (d.get("trinh_do") or "").strip():
+            d["trinh_do"] = cap.ten
+        khung = d.get("khung_mong_muon") or []
+        d["khung_mong_muon"] = sorted(khung, key=lambda x: (int(x.split("-")[0]), ["SANG", "CHIEU", "TOI_SOM", "TOI"].index(x.split("-")[1])))
+        d["thu_mong_muon"] = sorted({int(x.split("-")[0]) for x in khung})
+        d["lich_mong_muon"] = mo_ta_khung(d["khung_mong_muon"])[:200]
+        return d
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        obj.thu_mong_muon = self.cleaned_data["thu_mong_muon"]
+        obj.lich_mong_muon = self.cleaned_data["lich_mong_muon"]
+        if commit:
+            obj.save()
+        return obj
+
+
+def mo_ta_khung(khung):
+    """["1-TOI","3-TOI","5-SANG"] → "T3, T5 19:00–21:00 · T7 08:00–11:00"."""
+    gio = {"SANG": "08:00–11:00", "CHIEU": "14:00–17:00", "TOI_SOM": "17:30–19:00", "TOI": "19:00–21:00"}
+    thu = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+    theo_khung = {}
+    for x in khung:
+        t, k = x.split("-")
+        theo_khung.setdefault(k, []).append(thu[int(t)])
+    return " · ".join(f"{', '.join(v)} {gio[k]}" for k, v in sorted(theo_khung.items(), key=lambda i: list(gio).index(i[0])))
 
 
 class LocYeuCauForm(BootstrapMixin, forms.Form):

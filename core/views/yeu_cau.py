@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.forms import ChonHocVienForm, HocVienForm, KetQuaHocThuForm, LocYeuCauForm, YeuCauForm
+from core.forms import HocVienForm, KetQuaHocThuForm, LocYeuCauForm, YeuCauForm
 from core.models import HocVien, LoiMoi, YeuCauHocTap
 from core.permissions import ADMIN, GIA_SU, TUYEN_SINH, vai_tro_required
 from core.services import khoa_hoc as dv_kh
@@ -34,57 +34,85 @@ def _co_the_sua(yc):
 # =============================================================================
 # NV tuyển sinh – Yêu cầu học tập
 # =============================================================================
+TAB_YC = [("", "Tất cả"), ("MOI", "Mới"), ("DANG_TIM", "Đang mời gia sư"), ("DA_PHAN_CONG", "Đã có gia sư"),
+          ("HOC_THU_XONG", "Học thử"), ("CHINH_THUC", "Đã mở khóa"), ("DONG", "Đã đóng")]
+
+
 @vai_tro_required(ADMIN, TUYEN_SINH)
 def danh_sach(request):
+    """Tuyển sinh – Yêu cầu học tập: tab trạng thái + đếm, tìm (bỏ dấu), lọc môn / người tạo, Bước tiếp theo."""
+    from django.db.models import Prefetch
+    from core.models import BuoiHoc, MonHoc
+    from core.services.tim_kiem import chuan_hoa
     dv.quet_loi_moi_het_han()
-    form = LocYeuCauForm(request.GET or None)
-    qs = (YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc", "gia_su")
-          .annotate(so_cho=Count("loi_moi", filter=Q(loi_moi__trang_thai=LM.CHO)),
-                    so_tu_choi=Count("loi_moi", filter=Q(loi_moi__trang_thai=LM.REJECTED)),
-                    so_het_han=Count("loi_moi", filter=Q(loi_moi__trang_thai=LM.HET_HAN))))
-    if form.is_valid():
-        d = form.cleaned_data
-        if d["q"]:
-            q = d["q"].strip()
-            dieu_kien = (Q(hoc_vien__ho_ten__icontains=q) | Q(hoc_vien__ten_phu_huynh__icontains=q)
-                         | Q(hoc_vien__sdt_phu_huynh__icontains=q))
-            so = q.upper().removeprefix("YC-").lstrip("0")
-            if so.isdigit():
-                dieu_kien |= Q(pk=int(so))
-            qs = qs.filter(dieu_kien)
-        if d["trang_thai"]:
-            qs = qs.filter(trang_thai=d["trang_thai"])
-        if d["mon"]:
-            qs = qs.filter(mon_hoc=d["mon"])
-        if d["cho_chot"]:
-            qs = qs.filter(trang_thai__in=[YC.DA_PHAN_CONG, YC.HOC_THU_XONG])
-        if d["can_moi_them"]:
-            qs = qs.filter(trang_thai=YC.DANG_TIM, so_cho=0)
-    qs = qs.order_by("-tao_luc")
+    tt = request.GET.get("trang_thai", "")
+    q = request.GET.get("q", "").strip()
+    mon = request.GET.get("mon", "")
+    nguoi = request.GET.get("nguoi", "")
+    goc = YeuCauHocTap.objects.all()
+    if mon.isdigit():
+        goc = goc.filter(mon_hoc_id=int(mon))
+    if nguoi == "toi":
+        goc = goc.filter(tao_boi=request.user)
+    dem = {k: (goc.filter(trang_thai=k) if k else goc).count() for k, _ in TAB_YC}
+    qs = goc.filter(trang_thai=tt) if tt else goc
+    qs = qs.select_related("hoc_vien", "mon_hoc", "gia_su", "tao_boi", "khoa_hoc").prefetch_related(
+        "loi_moi", Prefetch("buoi_hoc", queryset=BuoiHoc.objects.filter(loai=BuoiHoc.Loai.HOC_THU))).order_by("-tao_luc")
+    if q:
+        cq = chuan_hoa(q)
+        so = cq.removeprefix("yc").lstrip("0")
+        ids = [y.pk for y in qs.only("pk", "hoc_vien__ho_ten", "hoc_vien__ten_phu_huynh", "hoc_vien__sdt_phu_huynh")
+               if (so.isdigit() and y.pk == int(so)) or cq in chuan_hoa(y.hoc_vien.ho_ten)
+               or cq in chuan_hoa(y.hoc_vien.ten_phu_huynh) or cq in y.hoc_vien.sdt_phu_huynh]
+        qs = qs.filter(pk__in=ids)
     trang = Paginator(qs, 20).get_page(request.GET.get("page"))
-    return render(request, "core/yeu_cau/danh_sach.html", {"trang": trang, "form": form})
+    dong = [{"yc": y, "buoc": dv.buoc_tiep_theo(y), "mau": dv.MAU_TRANG_THAI_YC.get(y.trang_thai, "xam"),
+             "co_the_dong": y.trang_thai in (YC.MOI, YC.DANG_TIM)} for y in trang]
+    return render(request, "core/yeu_cau/danh_sach.html", {
+        "trang": trang, "dong": dong, "tab": TAB_YC, "dem": dem, "tt": tt, "q": q, "mon": mon, "nguoi": nguoi,
+        "ds_mon": MonHoc.objects.order_by("ten"), "ly_do_dong": dv.LY_DO_DONG,
+    })
 
 
 @vai_tro_required(TUYEN_SINH)
 def tao(request):
-    chon = ChonHocVienForm(request.POST or None, initial={"hoc_vien": request.GET.get("hoc_vien")})
+    """Tuyển sinh – Tạo yêu cầu (SD-05): học viên mới / đã có, lưới khung giờ, xem trước."""
+    import json
+    from core.models import CapDo
+    hv_pk = request.POST.get("hoc_vien") or request.GET.get("hoc_vien") or ""
+    hv_co_san = HocVien.objects.filter(pk=hv_pk).first() if str(hv_pk).isdigit() else None
     form_hv = HocVienForm(request.POST or None, prefix="hv")
     form_yc = YeuCauForm(request.POST or None)
     if request.method == "POST":
-        hv_co_san = chon.cleaned_data.get("hoc_vien") if chon.is_valid() else None
         hv_hop_le = bool(hv_co_san) or form_hv.is_valid()
         if form_yc.is_valid() and hv_hop_le:
             with transaction.atomic():
                 hoc_vien = hv_co_san
                 if not hoc_vien:
                     hoc_vien = form_hv.save(commit=False)
-                    hoc_vien.tao_boi = request.user
+                    hoc_vien.tao_boi = hoc_vien.tuyen_sinh_phu_trach = request.user
                     hoc_vien.save()
                     ghi_nhat_ky(request.user, "Thêm học viên", hoc_vien.ho_ten)
-                yc = dv.tao_yeu_cau(request.user, hoc_vien, form_yc.cleaned_data)
+                du_lieu = {k: v for k, v in form_yc.cleaned_data.items()}
+                yc = dv.tao_yeu_cau(request.user, hoc_vien, du_lieu)
             messages.success(request, f"Đã tiếp nhận {yc.ma}. Chọn gia sư bên dưới để gửi lời mời.")
             return redirect("yeu_cau_chi_tiet", pk=yc.pk)
-    return render(request, "core/yeu_cau/tao.html", {"chon": chon, "form_hv": form_hv, "form_yc": form_yc})
+    cap_do = {}
+    for c in CapDo.objects.filter(dang_mo=True).order_by("thu_tu", "ten"):
+        cap_do.setdefault(str(c.mon_hoc_id or ""), []).append({"pk": c.pk, "ten": c.ten})
+    so_loi = len(form_yc.errors) + (0 if hv_co_san else len(form_hv.errors))
+    return render(request, "core/yeu_cau/tao.html", {
+        "form_hv": form_hv, "form_yc": form_yc, "hv_co_san": hv_co_san, "so_loi": so_loi,
+        "khung_chon": form_yc.data.getlist("khung_mong_muon") if form_yc.is_bound else [],
+        "cap_do_js": json.dumps(cap_do), "luoi": _luoi_khung(),
+    }, status=400 if request.method == "POST" else 200)
+
+
+def _luoi_khung():
+    from core.models import LichRanh
+    nhan = dict(LichRanh.Khung.choices)
+    return [{"ma": k, "ten": nhan[k].rsplit(" ", 1)[0], "gio": LichRanh.GIO_KHUNG[k]}
+            for k in ("SANG", "CHIEU", "TOI_SOM", "TOI")]
 
 
 @vai_tro_required(ADMIN, TUYEN_SINH)
@@ -155,13 +183,26 @@ def gui_loi_moi(request, pk):
 @vai_tro_required(TUYEN_SINH)
 @require_POST
 def dong(request, pk):
+    """SD-09. Gọi bằng fetch sau khi hết thời gian Hoàn tác (trả JSON), hoặc form thường."""
     yc = get_object_or_404(YeuCauHocTap, pk=pk)
+    la_api = request.headers.get("X-Requested-With") == "fetch"
+    ly_do = request.POST.get("ly_do", "").strip()
+    if request.POST.get("ghi_chu", "").strip():
+        ly_do = f"{ly_do}: {request.POST['ghi_chu'].strip()}"
     try:
-        dv.dong_yeu_cau(request.user, yc, request.POST.get("ly_do", ""))
-        messages.success(request, f"Đã đóng {yc.ma}. Các lời mời đang chờ đã bị hủy.")
+        dv.dong_yeu_cau(request.user, yc, ly_do)
+        msg = f"Đã đóng {yc.ma}. Các lời mời đang chờ đã bị hủy."
+        if la_api:
+            from core.api import tra_ve
+            return tra_ve(True, msg)
+        messages.success(request, msg)
     except ValidationError as e:
+        if la_api:
+            from core.api import loi_nghiep_vu
+            return loi_nghiep_vu(e)
         messages.error(request, _loi(e))
-    return redirect("yeu_cau_chi_tiet", pk=pk)
+    return redirect(request.POST.get("tiep") if str(request.POST.get("tiep", "")).startswith("/") else
+                    reverse("yeu_cau_chi_tiet", args=[pk]))
 
 
 # =============================================================================

@@ -1,61 +1,178 @@
-{% extends "base.html" %}
-{% block title %}Tiếp nhận yêu cầu · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Tạo yêu cầu{% endblock %}
+{% block crumb %}<a href="{% url 'yeu_cau_danh_sach' %}">Yêu cầu học tập</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Tạo yêu cầu</h1>{% endblock %}
 {% block content %}
-<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
-  <li class="breadcrumb-item"><a href="{% url 'yeu_cau_danh_sach' %}">Yêu cầu học tập</a></li>
-  <li class="breadcrumb-item active" aria-current="page">Tiếp nhận</li>
-</ol></nav>
-<div class="dau-trang"><div><h1>Tiếp nhận yêu cầu học tập</h1>
-  <p class="mo-ta">Ghi thông tin học viên và nhu cầu học. Sau khi lưu, hệ thống đề xuất gia sư phù hợp.</p></div></div>
+<div class="head"><div><h2 class="h2">Tạo yêu cầu học tập</h2><p class="lead">Ghi lại khi đang nghe phụ huynh. Ô có dấu <span class="req">*</span> là bắt buộc.</p></div></div>
 
-<form method="post" novalidate>{% csrf_token %}
-<div class="row g-4">
-  <div class="col-xl-6">
-    <div class="card">
-      <div class="card-header"><i class="bi bi-person" aria-hidden="true"></i>1. Học viên</div>
-      <div class="card-body">
-        {% with form=chon %}{% include "partials/form_fields.html" %}{% endwith %}
-        <fieldset id="khoi-hoc-vien-moi">
-          <legend class="form-label fw-semibold mb-2" style="font-size:var(--gs-fs-base)">Thông tin học viên mới</legend>
-          {% with form=form_hv %}{% include "partials/form_fields.html" %}{% endwith %}
-        </fieldset>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start">
+<form method="post" class="card" novalidate data-form-yc>
+  {% csrf_token %}
+  {% if so_loi %}<div class="banner tom-tat-loi" tabindex="-1" role="alert" style="margin:20px 24px 0;background:#FDECEC;border-color:#F8C9CA"><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle"></i></span><span>Còn {{ so_loi }} mục cần sửa.</span></div>{% endif %}
+
+  <div class="phan">
+    <div><h3>Học viên</h3><p class="mo" style="margin-left:0">Chọn học viên đã có hoặc nhập mới.</p></div>
+    <div class="stack-16">
+      <div class="chon-loai" role="radiogroup" aria-label="Học viên mới hay đã có">
+        <label><input type="radio" name="loai_hv" value="moi"{% if not hv_co_san %} checked{% endif %}>Học viên mới</label>
+        <label><input type="radio" name="loai_hv" value="cu"{% if hv_co_san %} checked{% endif %}>Đã có trong hệ thống</label>
+      </div>
+      <input type="hidden" name="hoc_vien" value="{{ hv_co_san.pk|default:'' }}" data-hv-id>
+      <div data-hv-moi{% if hv_co_san %} hidden{% endif %} style="display:grid;grid-template-columns:minmax(0,1fr) 140px 120px;gap:12px">
+        {% with f=form_hv.ho_ten %}<div class="field"><label for="{{ f.id_for_label }}">Họ tên học viên <span class="req">*</span></label>{{ f }}{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
+        {% with f=form_hv.lop %}<div class="field"><label for="{{ f.id_for_label }}">Lớp hiện tại</label>{{ f }}</div>{% endwith %}
+        {% with f=form_hv.gioi_tinh %}<div class="field"><label for="{{ f.id_for_label }}">Giới tính</label>{{ f }}</div>{% endwith %}
+        {% with f=form_hv.truong %}<div class="field" style="grid-column:1/-1"><label for="{{ f.id_for_label }}">Trường <span class="opt">(không bắt buộc)</span></label>{{ f }}</div>{% endwith %}
+      </div>
+      <div data-hv-cu{% if not hv_co_san %} hidden{% endif %} class="stack" style="gap:8px">
+        <div class="card row" data-hv-da-chon style="padding:10px 14px;box-shadow:none;{% if not hv_co_san %}display:none{% endif %}"><i class="bi bi-person-check" style="color:#0F766E"></i><b class="b5" data-hv-ten>{{ hv_co_san.ho_ten }}</b><span class="sm muted" data-hv-phu>{{ hv_co_san.lop }}{% if hv_co_san %} · PH {{ hv_co_san.ten_phu_huynh }}{% endif %}</span><button type="button" class="btn sm" style="margin-left:auto" data-hv-doi>Đổi</button></div>
+        <div class="search" data-hv-tim{% if hv_co_san %} hidden{% endif %}><i class="bi bi-search"></i><input class="inp" type="search" placeholder="Gõ tên học viên, phụ huynh hoặc SĐT" aria-label="Tìm học viên đã có" data-hv-q autocomplete="off"></div>
+        <div class="stack" style="gap:4px" data-hv-goi-y></div>
+        <div class="banner" style="background:#FFF4E5;border-color:#FDE2BF;padding:8px 12px" data-hv-canh hidden><span class="ic" style="width:24px;height:24px;color:#B45309"><i class="bi bi-exclamation-triangle"></i></span><span class="sm"></span></div>
       </div>
     </div>
   </div>
-  <div class="col-xl-6">
-    <div class="card">
-      <div class="card-header">2. Nhu cầu học</div>
-      <div class="card-body">
-        {% if form_yc.non_field_errors %}<div class="alert alert-danger"><i class="bi bi-x-octagon-fill" aria-hidden="true"></i><div>{{ form_yc.non_field_errors|join:" " }}</div></div>{% endif %}
-        {% for field in form_yc %}
-          <div class="mb-3">
-            <label class="form-label" {% if field.name != "thu_mong_muon" %}for="{{ field.id_for_label }}"{% endif %}>{{ field.label }} <span class="bat-buoc" aria-hidden="true">*</span></label>
-            {% if field.name == "thu_mong_muon" %}
-              <div class="d-flex flex-wrap gap-3" role="group" aria-label="{{ field.label }}">
-                {% for cb in field %}<div class="form-check">{{ cb.tag }}<label class="form-check-label" for="{{ cb.id_for_label }}">{{ cb.choice_label }}</label></div>{% endfor %}
-              </div>
-            {% else %}{{ field }}{% endif %}
-            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-            {% for e in field.errors %}<div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</div>{% endfor %}
-          </div>
-        {% endfor %}
+
+  <div class="phan">
+    <div><h3>Môn và mục tiêu</h3><p class="mo" style="margin-left:0">Hệ thống chỉ đề xuất gia sư đã được duyệt đúng môn và cấp độ.</p></div>
+    <div class="stack-16">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        {% with f=form_yc.mon_hoc %}<div class="field"><label for="{{ f.id_for_label }}">Môn học <span class="req">*</span></label>{{ f }}{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
+        {% with f=form_yc.cap_do %}<div class="field"><label for="{{ f.id_for_label }}">Cấp độ <span class="req">*</span></label>{{ f }}{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
       </div>
+      {% with f=form_yc.muc_tieu %}<div class="field"><label for="{{ f.id_for_label }}">Mục tiêu học tập <span class="req">*</span></label>{{ f }}<span class="sm muted">Gia sư sẽ thấy mục tiêu này trong lời mời nhận lớp.</span>{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
     </div>
   </div>
-</div>
-<div class="d-flex gap-2 mt-4">
-  <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu và tìm gia sư</button>
-  <a href="{% url 'yeu_cau_danh_sach' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Hủy</a>
-</div>
+
+  <div class="phan">
+    <div><h3>Lịch mong muốn <span class="req">*</span></h3><p class="mo" style="margin-left:0">Bấm vào ô để chọn. Dùng để so khớp giờ rảnh của gia sư.</p></div>
+    <div>
+      <div class="luoi-gio" style="border:none;padding:0">
+        <table><thead><tr><th class="k"></th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th><th>CN</th></tr></thead>
+        <tbody>{% for h in luoi %}<tr><th class="k">{{ h.ten }}<small>{{ h.gio.0 }}–{{ h.gio.1 }}</small></th>
+          {% for t in "0123456" %}{% with ma=t|add:"-"|add:h.ma %}<td style="background:none;padding:0"><label class="o-khung"><input type="checkbox" name="khung_mong_muon" value="{{ ma }}"{% if ma in khung_chon %} checked{% endif %}><span aria-hidden="true"><i class="bi bi-plus"></i></span><span class="sr">{{ h.ten }} thứ {{ t }}</span></label></td>{% endwith %}{% endfor %}</tr>{% endfor %}</tbody></table>
+      </div>
+      <div class="sm row" style="margin-top:8px;color:#646B85" data-mo-ta-khung><i class="bi bi-calendar3"></i><span>Chưa chọn khung giờ nào.</span></div>
+      {% if form_yc.khung_mong_muon.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ form_yc.khung_mong_muon.errors.0 }}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="phan" data-phan-ph{% if hv_co_san %} hidden{% endif %}>
+    <div><h3>Liên hệ phụ huynh</h3><p class="mo" style="margin-left:0">Chỉ Tuyển sinh và Quản trị viên thấy. Hệ thống gửi đánh giá buổi học qua Zalo số này.</p></div>
+    <div class="stack-16">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        {% with f=form_hv.ten_phu_huynh %}<div class="field"><label for="{{ f.id_for_label }}">Tên phụ huynh <span class="req">*</span></label>{{ f }}{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
+        {% with f=form_hv.sdt_phu_huynh %}<div class="field"><label for="{{ f.id_for_label }}">SĐT / Zalo <span class="req">*</span></label>{{ f }}<span class="sm muted">Nhận 10 số, có thể kèm +84. Hệ thống tự chuẩn hóa.</span>{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
+      </div>
+      <label class="row" style="gap:8px;font-size:14px">{{ form_hv.dong_y_ghi_hinh }} Phụ huynh đồng ý ghi hình buổi học (bản ghi lưu 30 ngày)</label>
+    </div>
+  </div>
+
+  <div class="phan">
+    <div><h3>Ghi chú</h3><p class="mo" style="margin-left:0">Không bắt buộc. Gia sư thấy ghi chú trong lời mời.</p></div>
+    <div class="stack-16">
+      {% with f=form_yc.ghi_chu %}<div class="field">{{ f }}</div>{% endwith %}
+      {% with f=form_yc.thu_lao_du_kien %}<div class="field" style="max-width:260px"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}<span class="sm muted">{{ f.help_text }}</span></div>{% endwith %}
+    </div>
+  </div>
+
+  <div class="chan-form">
+    <span class="sm muted row"><i class="bi bi-gear"></i>Sau khi tạo, hệ thống đề xuất gia sư ngay trên trang chi tiết.</span>
+    <a href="{% url 'yeu_cau_danh_sach' %}" class="btn" style="margin-left:auto">Hủy</a>
+    <button class="btn pri" data-dang-gui="Đang tạo…">Tạo yêu cầu<kbd style="background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.4)">Ctrl ↵</kbd></button>
+  </div>
 </form>
 
+<aside class="stack sticky" style="gap:16px">
+  <section class="card"><div class="card-b stack" style="gap:12px">
+    <div><div class="row b6" style="font-size:13px"><i class="bi bi-eye" style="color:#4F46E5"></i>Xem trước yêu cầu</div><div class="sm muted">Tự cập nhật theo thông tin bạn nhập.</div></div>
+    <div style="border-top:1px solid #EEF0F5;padding-top:12px"><b style="font-size:16px" data-xt-ten>Chưa có tên học viên</b><div class="sm muted" data-xt-phu>Các mục bên dưới được đánh dấu khi bạn điền xong.</div></div>
+    <ul class="stack" style="list-style:none;margin:0;padding:12px 0 0;border-top:1px solid #EEF0F5;gap:8px;font-size:13px" data-xt-muc>
+      <li data-muc="hv"><i class="bi bi-circle"></i> Học viên</li><li data-muc="mon"><i class="bi bi-circle"></i> Môn và cấp độ</li>
+      <li data-muc="mt"><i class="bi bi-circle"></i> Mục tiêu</li><li data-muc="lich"><i class="bi bi-circle"></i> Lịch mong muốn</li>
+      <li data-muc="ph"><i class="bi bi-circle"></i> Liên hệ phụ huynh</li>
+    </ul>
+  </div></section>
+  <div class="banner" style="background:#F5F6FF;border-color:#DCDFFB" data-xt-gs><span class="ic" style="color:#4F46E5"><i class="bi bi-people"></i></span><span class="sm">Chọn môn và lịch học để xem số gia sư phù hợp.</span></div>
+</aside>
+</div>
+{{ cap_do_js|json_script:"cap-do-js" }}
+{% endblock %}
+{% block scripts %}
 <script>
-  // Chọn học viên có sẵn thì ẩn khối nhập học viên mới.
-  (function () {
-    const chon = document.getElementById("{{ chon.hoc_vien.id_for_label }}");
-    const khoi = document.getElementById("khoi-hoc-vien-moi");
-    function capNhat() { khoi.hidden = !!chon.value; }
-    chon.addEventListener("change", capNhat); capNhat();
-  })();
+(function () {
+  var f = document.querySelector("[data-form-yc]"), CAP = JSON.parse(JSON.parse(document.getElementById("cap-do-js").textContent));
+  var $ = function (s) { return f.querySelector(s); }, esc = function (x) { var d = document.createElement("div"); d.textContent = x || ""; return d.innerHTML; };
+  var THU = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"], GIO = { SANG: "08:00–11:00", CHIEU: "14:00–17:00", TOI_SOM: "17:30–19:00", TOI: "19:00–21:00" };
+  var capSel = f.cap_do, capCu = capSel.value;
+  function locCapDo() {
+    var ds = (CAP[f.mon_hoc.value] || []).concat(CAP[""] || []);
+    capSel.innerHTML = '<option value="">' + (f.mon_hoc.value ? "Chọn cấp độ" : "Chọn môn trước") + "</option>" + ds.map(function (c) { return '<option value="' + c.pk + '"' + (String(c.pk) === capCu ? " selected" : "") + ">" + esc(c.ten) + "</option>"; }).join("");
+  }
+  f.mon_hoc.addEventListener("change", function () { capCu = ""; locCapDo(); });
+  locCapDo();
+
+  /* Học viên mới / đã có */
+  function cheDoHv() {
+    var cu = f.loai_hv.value === "cu";
+    $("[data-hv-moi]").hidden = cu; $("[data-hv-cu]").hidden = !cu; $("[data-phan-ph]").hidden = cu;
+    if (!cu) { $("[data-hv-id]").value = ""; }
+  }
+  f.addEventListener("change", function (e) { if (e.target.name === "loai_hv") { cheDoHv(); } });
+  var hen;
+  $("[data-hv-q]").addEventListener("input", function () {
+    var q = this.value.trim(); clearTimeout(hen);
+    hen = setTimeout(function () {
+      if (q.length < 2) { $("[data-hv-goi-y]").innerHTML = ""; return; }
+      GSO.get("{% url 'api_tim_hoc_vien' %}?q=" + encodeURIComponent(q)).then(function (j) {
+        $("[data-hv-goi-y]").innerHTML = (j.data.ds || []).map(function (h) {
+          return '<button type="button" class="thao-tac" style="height:auto;padding:8px 12px" data-chon-hv=\'' + esc(JSON.stringify(h)) + '\'><span><b class="b5">' + esc(h.ho_ten) + '</b><span class="sm muted" style="display:block">' + esc(h.lop) + " · PH " + esc(h.phu_huynh) + (h.yeu_cau_mo ? ' · <span style="color:#B45309">' + esc(h.yeu_cau_mo) + "</span>" : "") + "</span></span></button>";
+        }).join("") || '<div class="sm muted">Không tìm thấy. Chọn "Học viên mới" để nhập.</div>';
+      });
+    }, 300);
+  });
+  f.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-chon-hv]");
+    if (b) {
+      var h = JSON.parse(b.dataset.chonHv);
+      $("[data-hv-id]").value = h.pk; $("[data-hv-ten]").textContent = h.ho_ten; $("[data-hv-phu]").textContent = h.lop + " · PH " + h.phu_huynh;
+      $("[data-hv-da-chon]").style.display = "flex"; $("[data-hv-tim]").hidden = true; $("[data-hv-goi-y]").innerHTML = "";
+      var c = $("[data-hv-canh]"); c.hidden = !h.yeu_cau_mo; c.querySelector("span.sm").textContent = h.yeu_cau_mo ? h.ho_ten + " đã có " + h.yeu_cau_mo + "." : "";
+      capNhat();
+    }
+    if (e.target.closest("[data-hv-doi]")) { $("[data-hv-id]").value = ""; $("[data-hv-da-chon]").style.display = "none"; $("[data-hv-tim]").hidden = false; $("[data-hv-canh]").hidden = true; $("[data-hv-q]").focus(); capNhat(); }
+  });
+
+  /* Xem trước + đếm gia sư phù hợp */
+  var henDem;
+  function khung() { return [].slice.call(f.querySelectorAll("input[name=khung_mong_muon]:checked")).map(function (x) { return x.value; }); }
+  function moTa(ds) {
+    var g = {}; ds.forEach(function (x) { var p = x.split("-"); (g[p[1]] = g[p[1]] || []).push(THU[+p[0]]); });
+    return Object.keys(GIO).filter(function (k) { return g[k]; }).map(function (k) { return g[k].join(", ") + " " + GIO[k]; }).join(" · ");
+  }
+  function danh(muc, ok) { var li = f.ownerDocument.querySelector('[data-muc="' + muc + '"]'); li.querySelector(".bi").className = "bi " + (ok ? "bi-check-circle-fill" : "bi-circle"); li.style.color = ok ? "#0F766E" : ""; }
+  function capNhat() {
+    var cu = f.loai_hv.value === "cu", ten = cu ? $("[data-hv-ten]").textContent : f["hv-ho_ten"].value.trim(), k = khung();
+    document.querySelector("[data-xt-ten]").textContent = (cu && !$("[data-hv-id]").value) || !ten ? "Chưa có tên học viên" : ten;
+    var mon = f.mon_hoc.selectedOptions[0], cap = capSel.selectedOptions[0];
+    document.querySelector("[data-xt-phu]").textContent = (f.mon_hoc.value ? mon.text : "Chưa chọn môn") + (capSel.value ? " · " + cap.text : "") + (k.length ? " · " + moTa(k) : "");
+    danh("hv", cu ? !!$("[data-hv-id]").value : !!ten); danh("mon", !!f.mon_hoc.value && !!capSel.value);
+    danh("mt", !!f.muc_tieu.value.trim()); danh("lich", k.length > 0);
+    danh("ph", cu ? !!$("[data-hv-id]").value : !!(f["hv-ten_phu_huynh"].value.trim() && f["hv-sdt_phu_huynh"].value.trim()));
+    $("[data-mo-ta-khung] span").textContent = k.length ? "Đã chọn " + k.length + " khung: " + moTa(k) : "Chưa chọn khung giờ nào.";
+    clearTimeout(henDem);
+    if (!f.mon_hoc.value) { return; }
+    henDem = setTimeout(function () {
+      var url = "{% url 'api_dem_gia_su' %}?mon=" + f.mon_hoc.value + "&cap_do=" + capSel.value + k.map(function (x) { return "&khung=" + x; }).join("");
+      GSO.get(url).then(function (j) {
+        if (!j.ok) { return; }
+        var el = document.querySelector("[data-xt-gs] span.sm");
+        el.innerHTML = !j.data.tong ? "Chưa có gia sư nào được duyệt môn này." : k.length ? "Có <b>" + j.data.khop + "</b> gia sư phù hợp (đúng cấp độ, trùng ít nhất 1 khung giờ) trên " + j.data.tong + " gia sư dạy môn này." : "Có " + j.data.tong + " gia sư dạy môn này. Chọn lịch để lọc theo giờ rảnh.";
+      });
+    }, 400);
+  }
+  f.addEventListener("input", capNhat); f.addEventListener("change", capNhat); capNhat();
+  f.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); f.requestSubmit(); } });
+})();
 </script>
 {% endblock %}
