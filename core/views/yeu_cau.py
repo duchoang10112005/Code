@@ -197,8 +197,11 @@ def sua(request, pk):
                     yc.ma, ", ".join(form.changed_data) + (f". Lý do: {ly_do}" if ly_do else ""))
         messages.success(request, f"Đã cập nhật {yc.ma}.")
         return redirect("yeu_cau_chi_tiet", pk=pk)
-    return render(request, "core/yeu_cau/sua.html", {"yc": yc, "form": form, "can_ly_do": admin_sua_da_khoa,
-                                                     "ly_do": ly_do, "loi_ly_do": loi_ly_do})
+    return render(request, "core/yeu_cau/sua.html", {
+        "yc": yc, "form": form, "can_ly_do": admin_sua_da_khoa, "ly_do": ly_do, "loi_ly_do": loi_ly_do,
+        "luoi": _luoi_khung(),
+        "khung_chon": form.data.getlist("khung_mong_muon") if form.is_bound else list(yc.khung_mong_muon or []),
+    }, status=400 if request.method == "POST" else 200)
 
 
 @vai_tro_required(TUYEN_SINH)

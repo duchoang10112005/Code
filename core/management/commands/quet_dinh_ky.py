@@ -1,21 +1,22 @@
-"""Chạy định kỳ (Windows Task Scheduler, mỗi 15 phút):  python manage.py quet_dinh_ky
+"""Chạy định kỳ mỗi 5 phút (Task Scheduler / cron):  python manage.py quet_dinh_ky   (SD-36)
 
-- Nhắc gia sư sắp hết hạn xác nhận, tự hủy buổi quá hạn (cũng chạy nhẹ mỗi khi mở trang).
-- Hậu kiểm Zoom: lấy người tham gia + bản ghi cho các buổi đã xác nhận.
-- Hết hạn lời mời nhận lớp.
+1. Hết hạn lời mời  2. Mở / kết thúc phòng Zoom  3. Nhắc & tự hủy buổi quá hạn xác nhận
+4. Hậu kiểm (chấm 5 tiêu chí, bản ghi)  5. Nhắc việc, nhắc gia hạn, từ chối xin mở lại quá hạn
+6. Hết hạn bản ghi  7. Hết tạm nghỉ của gia sư
 """
 
 from django.core.management.base import BaseCommand
 
-from core.services.buoi_hoc import hau_kiem, quet_han
-from core.services.yeu_cau import quet_loi_moi_het_han
+from core.services.dinh_ky import quet
 
 
 class Command(BaseCommand):
-    help = "Quét hạn xác nhận buổi học, hậu kiểm Zoom, hết hạn lời mời."
+    help = "Một lượt quét định kỳ (SD-36)."
 
     def handle(self, *args, **opts):
-        n_huy = quet_han()
-        quet_loi_moi_het_han()
-        n_kiem = hau_kiem()
-        self.stdout.write(self.style.SUCCESS(f"Đã tự hủy {n_huy} buổi quá hạn, hậu kiểm {n_kiem} buổi."))
+        kq = quet()
+        loi = {k: v for k, v in kq.items() if k.startswith("loi_")}
+        dong = ", ".join(f"{k}={v}" for k, v in kq.items() if not k.startswith("loi_"))
+        self.stdout.write(self.style.SUCCESS(f"Quét xong: {dong}"))
+        for k, v in loi.items():
+            self.stderr.write(f"{k}: {v}")

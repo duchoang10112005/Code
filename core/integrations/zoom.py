@@ -57,6 +57,10 @@ class ZoomClient:
     def xoa_phong(self, meeting_id) -> None:
         raise NotImplementedError
 
+    def ket_thuc_phong(self, meeting_id) -> None:
+        """Kết thúc phòng đang mở (đá mọi người ra) – dùng sau giờ học (SD-36)."""
+        raise NotImplementedError
+
     def lay_nguoi_tham_gia(self, meeting_id) -> list[NguoiThamGia] | None:
         """None = gói Zoom không cung cấp dữ liệu này (VD gói Free) → không hậu kiểm được."""
         raise NotImplementedError
@@ -93,6 +97,10 @@ class FakeZoomClient(ZoomClient):
 
     def xoa_phong(self, meeting_id):
         self.phong_da_tao.pop(meeting_id, None)
+
+    def ket_thuc_phong(self, meeting_id):
+        self.phong_da_ket_thuc = getattr(self, "phong_da_ket_thuc", set())
+        self.phong_da_ket_thuc.add(meeting_id)
 
     def lay_nguoi_tham_gia(self, meeting_id):
         # Không có kịch bản → coi như gói Zoom không trả dữ liệu tham gia (giống tài khoản Free).
@@ -191,6 +199,11 @@ class RealZoomClient(ZoomClient):
         r = self._goi("DELETE", f"/meetings/{meeting_id}")
         if r.status_code not in (204, 404):  # 404: phòng không còn → coi như đã xóa
             raise self._loi(r, "xóa phòng")
+
+    def ket_thuc_phong(self, meeting_id):
+        r = self._goi("PUT", f"/meetings/{meeting_id}/status", json={"action": "end"})
+        if r.status_code not in (204, 400, 404):  # 400/404: phòng chưa bắt đầu hoặc đã kết thúc
+            raise self._loi(r, "kết thúc phòng")
 
     def lay_nguoi_tham_gia(self, meeting_id):
         r = self._goi("GET", f"/report/meetings/{meeting_id}/participants", params={"page_size": 300})

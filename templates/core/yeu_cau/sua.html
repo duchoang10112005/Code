@@ -1,39 +1,44 @@
-{% extends "base.html" %}
-{% block title %}Sửa {{ yc.ma }} · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% block title %}Sửa {{ yc.ma }}{% endblock %}
+{% block crumb %}<a href="{% url 'yeu_cau_danh_sach' %}">Yêu cầu học tập</a><i class="bi bi-chevron-right" aria-hidden="true"></i><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}">{{ yc.ma }}</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Sửa</h1>{% endblock %}
 {% block content %}
-<nav aria-label="breadcrumb"><ol class="breadcrumb small mb-2">
-  <li class="breadcrumb-item"><a href="{% url 'yeu_cau_danh_sach' %}">Yêu cầu học tập</a></li>
-  <li class="breadcrumb-item"><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}">{{ yc.ma }}</a></li>
-  <li class="breadcrumb-item active" aria-current="page">Sửa</li>
-</ol></nav>
-<div class="dau-trang"><h1>Sửa {{ yc.ma }} · {{ yc.hoc_vien.ho_ten }}</h1></div>
-<div class="card khung-form"><div class="card-body">
-  <form method="post" novalidate>{% csrf_token %}
-    {% for field in form %}
-      <div class="mb-3">
-        <label class="form-label" {% if field.name != "thu_mong_muon" %}for="{{ field.id_for_label }}"{% endif %}>{{ field.label }}</label>
-        {% if field.name == "thu_mong_muon" %}
-          <div class="d-flex flex-wrap gap-3" role="group" aria-label="{{ field.label }}">
-            {% for cb in field %}<div class="form-check">{{ cb.tag }}<label class="form-check-label" for="{{ cb.id_for_label }}">{{ cb.choice_label }}</label></div>{% endfor %}
-          </div>
-        {% else %}{{ field }}{% endif %}
-        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-        {% for e in field.errors %}<div class="loi-truong"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>{{ e }}</div>{% endfor %}
+<div class="head"><div><h2 class="h2">Sửa {{ yc.ma }} · {{ yc.hoc_vien.ho_ten }}</h2><p class="lead">Thông tin học viên và phụ huynh sửa ở trang Học viên. {% if can_ly_do %}Quản trị viên sửa dữ liệu phải ghi lý do.{% endif %}</p></div></div>
+<form method="post" novalidate class="card" style="padding:4px 0">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="banner" role="alert" style="margin:16px 24px 0;background:#FDECEC;border-color:#F8C9CA">{{ form.non_field_errors.0 }}</div>{% endif %}
+  <div class="phan">
+    <div><h3>Môn và mục tiêu</h3><p class="mo" style="margin-left:0">Môn bị khóa khi đã gửi lời mời hoặc đã mở khóa.</p></div>
+    <div class="stack-16">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        {% for f in form %}{% if f.name == 'mon_hoc' or f.name == 'cap_do' or f.name == 'trinh_do' %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</label>{{ f }}{% for e in f.errors %}<span class="err" role="alert">{{ e }}</span>{% endfor %}</div>{% endif %}{% endfor %}
       </div>
-    {% endfor %}
-    {% if can_ly_do %}
-      <div class="mb-3">
-        <label class="form-label" for="ly_do">Lý do sửa <span class="bat-buoc" aria-hidden="true">*</span></label>
-        <input id="ly_do" name="ly_do" value="{{ ly_do }}" maxlength="300" class="form-control{% if loi_ly_do %} is-invalid{% endif %}"
-               {% if loi_ly_do %}aria-invalid="true" aria-describedby="ly_do_loi"{% endif %}>
-        <div class="form-text">Admin sửa dữ liệu phải ghi lý do; lý do được lưu vào nhật ký thao tác.</div>
-        {% if loi_ly_do %}<div class="loi-truong" id="ly_do_loi"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Cần ghi lý do sửa.</div>{% endif %}
-      </div>
-    {% endif %}
-    <div class="d-flex gap-2">
-      <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i>Lưu</button>
-      <a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Hủy</a>
+      {% with f=form.muc_tieu %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }} <span class="req">*</span></label>{{ f }}{% for e in f.errors %}<span class="err" role="alert">{{ e }}</span>{% endfor %}</div>{% endwith %}
     </div>
-  </form>
-</div></div>
+  </div>
+  <div class="phan">
+    <div><h3>Lịch mong muốn <span class="req">*</span></h3><p class="mo" style="margin-left:0">Bấm vào ô để chọn.</p></div>
+    <div>
+      <div class="luoi-gio" style="border:none;padding:0">
+        <table><thead><tr><th class="k"></th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th><th>CN</th></tr></thead>
+        <tbody>{% for h in luoi %}<tr><th class="k">{{ h.ten }}<small>{{ h.gio.0 }}–{{ h.gio.1 }}</small></th>
+          {% for t in "0123456" %}{% with ma=t|add:"-"|add:h.ma %}<td style="background:none;padding:0"><label class="o-khung"><input type="checkbox" name="khung_mong_muon" value="{{ ma }}"{% if ma in khung_chon %} checked{% endif %}><span aria-hidden="true"><i class="bi bi-plus"></i></span><span class="sr">{{ h.ten }} thứ {{ t }}</span></label></td>{% endwith %}{% endfor %}</tr>{% endfor %}</tbody></table>
+      </div>
+      {% for e in form.khung_mong_muon.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}
+    </div>
+  </div>
+  <div class="phan">
+    <div><h3>Ghi chú</h3></div>
+    <div class="stack-16">
+      {% with f=form.ghi_chu %}<div class="field">{{ f }}</div>{% endwith %}
+      {% with f=form.thu_lao_du_kien %}<div class="field" style="max-width:260px"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}<span class="sm muted">{{ f.help_text }}</span>{% for e in f.errors %}<span class="err" role="alert">{{ e }}</span>{% endfor %}</div>{% endwith %}
+    </div>
+  </div>
+  {% if can_ly_do %}
+  <div class="phan">
+    <div><h3>Lý do sửa <span class="req">*</span></h3><p class="mo" style="margin-left:0">Lưu vào nhật ký thao tác.</p></div>
+    <div class="field"><input id="ly_do" name="ly_do" value="{{ ly_do }}" maxlength="300" class="inp"{% if loi_ly_do %} aria-invalid="true" aria-describedby="ly_do_loi"{% endif %} placeholder="VD: Phụ huynh đổi lịch sang buổi tối">
+      {% if loi_ly_do %}<span class="err" id="ly_do_loi" role="alert"><i class="bi bi-exclamation-circle"></i>Cần ghi lý do sửa.</span>{% endif %}</div>
+  </div>
+  {% endif %}
+  <div class="chan-form"><a href="{% url 'yeu_cau_chi_tiet' yc.pk %}" class="btn" style="margin-left:auto">Hủy</a><button class="btn pri" data-dang-gui="Đang lưu…"><i class="bi bi-check-lg"></i>Lưu thay đổi</button></div>
+</form>
 {% endblock %}

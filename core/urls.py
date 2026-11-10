@@ -7,7 +7,7 @@ from core.api import gia_su as api_gs
 from core.api import hau_kiem as api_hk
 from core.api import yeu_cau as api_yc
 from core.views import hau_kiem
-from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, quy_chuan, tai_khoan, yeu_cau
+from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, tai_khoan, yeu_cau
 
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
@@ -119,5 +119,4 @@ urlpatterns = [
     path("api/buoi-hoc/<int:pk>/gui-lai-zalo/", api_buoi.gui_lai_zalo, name="api_gui_lai_zalo"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
-    path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),
 ]

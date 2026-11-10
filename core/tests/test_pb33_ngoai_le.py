@@ -119,7 +119,7 @@ class SuaDuLieuTest(NgoaiLe):
         du_lieu = {"mon_hoc": self.toan.pk, "trinh_do": "Lớp 10", "muc_tieu": "Thi 10", "khung_mong_muon": ["0-TOI"]}
 
         r = self.client.post(url, du_lieu)
-        self.assertContains(r, "Cần ghi lý do sửa")
+        self.assertContains(r, "Cần ghi lý do sửa", status_code=400)
         r = self.client.post(url, {**du_lieu, "ly_do": "Nhập sai trình độ"})
         self.assertRedirects(r, reverse("yeu_cau_chi_tiet", args=[self.yc.pk]))
         self.yc.refresh_from_db()
