@@ -25,7 +25,7 @@
     {% for y in ds_can_moi_them %}
     <div class="dong-viec">
       <a class="nhan-vo" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><span class="ma">{{ y.ma }}</span><br><b>{{ y.hoc_vien.ho_ten }}</b> · {{ y.trinh_do }} · {{ y.mon_hoc }}</a>
-      <div class="noi-dung-dong">Đang tìm gia sư<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
+      <div class="noi-dung-dong">Đang mời gia sư<small>Tiếp nhận {{ y.tao_luc|da_qua }} trước · mong muốn {{ y.ten_thu_mong_muon }}</small></div>
       <p class="loi-phe"><i class="bi bi-pen" aria-hidden="true"></i>Không còn lời mời nào đang chờ, cần mời thêm gia sư dạy {{ y.mon_hoc }}.</p>
       <a class="btn btn-sm btn-primary" href="{% url 'yeu_cau_chi_tiet' y.pk %}"><i class="bi bi-person-plus" aria-hidden="true"></i>Mời thêm</a>
     </div>
@@ -110,7 +110,7 @@
 {% endif %}
 
 <p class="chan-trang">
-  <a href="{{ ds }}?trang_thai=DANG_TIM">Đang tìm gia sư: <b class="so">{{ so_dang_tim }}</b></a>
+  <a href="{{ ds }}?trang_thai=DANG_TIM">Đang mời gia sư: <b class="so">{{ so_dang_tim }}</b></a>
   <span aria-hidden="true">·</span>
   <a href="{{ dskh }}?trang_thai=DANG_HOC">Khóa đang học: <b class="so">{{ so_khoa_dang_hoc }}</b></a>
 </p>

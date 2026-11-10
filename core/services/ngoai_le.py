@@ -232,7 +232,7 @@ def gan_thang(admin, yc, gia_su, ly_do):
     """Vận hành chốt: tạo lời mời và nhận thay ngay cho gia sư (tái dùng 'Accept hợp lệ đầu tiên thắng')."""
     ly_do = _ly_do(ly_do)
     if yc.trang_thai not in (YC.MOI, YC.DANG_TIM):
-        raise ValidationError("Chỉ gán thẳng cho yêu cầu đang Mới hoặc Đang tìm gia sư.")
+        raise ValidationError("Chỉ gán thẳng cho yêu cầu đang Mới hoặc Đang mời gia sư.")
     if not la_du_dieu_kien(gia_su, yc.mon_hoc):
         raise ValidationError(f"{gia_su.ho_ten} chưa đủ điều kiện dạy môn {yc.mon_hoc}.")
     with transaction.atomic():

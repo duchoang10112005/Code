@@ -40,7 +40,7 @@ def ghi_ket_qua_hoc_thu(request, pk):
             messages.success(request, "Đã ghi kết quả: tiếp tục học. Điền thông tin để tạo khóa chính thức.")
             return redirect("khoa_hoc_tao", pk=pk)
         if yc.trang_thai == YC.DANG_TIM:
-            messages.success(request, "Đã ghi kết quả. Yêu cầu quay về Đang tìm gia sư — chọn gia sư khác bên dưới.")
+            messages.success(request, "Đã ghi kết quả. Yêu cầu quay về Đang mời gia sư — chọn gia sư khác bên dưới.")
         else:
             messages.success(request, "Đã ghi kết quả. Yêu cầu đã đóng.")
     except ValidationError as e:

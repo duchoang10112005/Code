@@ -76,7 +76,7 @@
       {% if de_nghi_cho_duyet %}
         <p class="loi-phe yen mb-0"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Đang chờ Admin duyệt đề nghị đổi gia sư ({{ de_nghi_cho_duyet.get_ly_do_display }}).</p>
       {% else %}
-      <p class="small text-muted">Các buổi sắp tới của gia sư hiện tại sẽ bị hủy, khóa tạm dừng và yêu cầu quay về "Đang tìm gia sư". Số buổi còn lại ({{ khoa.so_buoi_con_lai }}) được giữ cho gia sư mới.{% if user.la_tuyen_sinh and so_lan_doi %} Đây là lần đổi thứ {{ so_lan_doi|add:1 }}, cần Admin duyệt.{% endif %}</p>
+      <p class="small text-muted">Các buổi sắp tới của gia sư hiện tại sẽ bị hủy, khóa tạm dừng và yêu cầu quay về "Đang mời gia sư". Số buổi còn lại ({{ khoa.so_buoi_con_lai }}) được giữ cho gia sư mới.{% if user.la_tuyen_sinh and so_lan_doi %} Đây là lần đổi thứ {{ so_lan_doi|add:1 }}, cần Admin duyệt.{% endif %}</p>
       <form method="post" action="{% url 'khoa_hoc_doi_gia_su' khoa.pk %}"
             data-xac-nhan="Đổi gia sư cho khóa {{ khoa.ma }}? Các buổi sắp tới của {{ khoa.gia_su.ho_ten }} sẽ bị hủy." data-nut="Đổi gia sư">{% csrf_token %}
         <div class="mb-2"><label class="form-label" for="dg_ly_do">Lý do <span class="bat-buoc" aria-hidden="true">*</span></label>

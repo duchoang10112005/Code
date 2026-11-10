@@ -130,7 +130,7 @@ def gui_loi_moi(nvts, yeu_cau, ds_user_id):
         # Kiểm tra lại trạng thái NGAY trong transaction (đối tượng truyền vào có thể đã cũ:
         # yêu cầu vừa được Accept hoặc bị đóng ở một request khác).
         if not YeuCauHocTap.objects.filter(pk=yeu_cau.pk, trang_thai__in=[YC.MOI, YC.DANG_TIM]).exists():
-            raise ValidationError("Chỉ gửi lời mời cho yêu cầu đang Mới hoặc Đang tìm gia sư.")
+            raise ValidationError("Chỉ gửi lời mời cho yêu cầu đang Mới hoặc Đang mời gia sư.")
         da_moi = set(yeu_cau.loi_moi.filter(trang_thai=LM.CHO).values_list("gia_su_id", flat=True))
         for hs in hop_le:
             if hs.user_id in da_moi:

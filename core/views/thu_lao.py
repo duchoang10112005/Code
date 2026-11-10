@@ -121,7 +121,7 @@ def xuat_csv(request):
     resp.write("﻿")  # BOM để Excel đọc đúng tiếng Việt
     w = csv.writer(resp)
     w.writerow(["Gia sư", "Email", "Số buổi", "Tạm tính", "Đã đối soát", "Tạm giữ", "Điều chỉnh", "Tổng", "Trạng thái"])
-    nhan = {"DA_CHOT": "Đã chốt", "DA_KIEM_TRA": "NVTS đã kiểm tra", "CAN_KIEM_TRA_LAI": "Cần kiểm tra lại",
+    nhan = {"DA_CHOT": "Đã chốt", "DA_KIEM_TRA": "Tuyển sinh đã kiểm tra", "CAN_KIEM_TRA_LAI": "Cần kiểm tra lại",
             "CHUA_KIEM_TRA": "Chưa kiểm tra"}
     for d in dv.tong_hop(thang):
         w.writerow([d.gia_su.ho_ten, d.gia_su.email, d.so_buoi, d.tam_tinh, d.da_doi_soat, d.tam_giu, d.dieu_chinh,

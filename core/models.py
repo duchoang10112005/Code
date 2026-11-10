@@ -20,8 +20,8 @@ from django.utils import timezone
 # =============================================================================
 class User(AbstractUser):
     class VaiTro(models.TextChoices):
-        ADMIN = "ADMIN", "Admin"
-        TUYEN_SINH = "TUYEN_SINH", "Nhân viên tuyển sinh"
+        ADMIN = "ADMIN", "Quản trị viên"
+        TUYEN_SINH = "TUYEN_SINH", "Tuyển sinh"
         GIA_SU = "GIA_SU", "Gia sư"
 
     vai_tro = models.CharField("Vai trò", max_length=20, choices=VaiTro.choices)
@@ -105,7 +105,7 @@ class MonGiaSu(models.Model):
     class TrangThai(models.TextChoices):
         CHO_DUYET = "CHO_DUYET", "Chờ duyệt"
         DA_DUYET = "DA_DUYET", "Đã duyệt"
-        TU_CHOI = "TU_CHOI", "Từ chối"
+        TU_CHOI = "TU_CHOI", "Bị từ chối"
 
     ho_so = models.ForeignKey(HoSoGiaSu, on_delete=models.CASCADE, related_name="mon_day")
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.PROTECT)
@@ -189,10 +189,10 @@ class HocVien(models.Model):
 class YeuCauHocTap(models.Model):
     class TrangThai(models.TextChoices):
         MOI = "MOI", "Mới"
-        DANG_TIM = "DANG_TIM", "Đang tìm gia sư"
-        DA_PHAN_CONG = "DA_PHAN_CONG", "Đã phân công"
-        HOC_THU_XONG = "HOC_THU_XONG", "Học thử xong"
-        CHINH_THUC = "CHINH_THUC", "Đã mở khóa chính thức"
+        DANG_TIM = "DANG_TIM", "Đang mời gia sư"
+        DA_PHAN_CONG = "DA_PHAN_CONG", "Đã có gia sư"
+        HOC_THU_XONG = "HOC_THU_XONG", "Học thử"
+        CHINH_THUC = "CHINH_THUC", "Đã mở khóa"
         DONG = "DONG", "Đã đóng"
 
     class KetQuaHocThu(models.TextChoices):
@@ -245,10 +245,10 @@ class YeuCauHocTap(models.Model):
 # =============================================================================
 class LoiMoi(models.Model):
     class TrangThai(models.TextChoices):
-        CHO = "CHO", "Chờ phản hồi"
+        CHO = "CHO", "Đang chờ"
         ACCEPTED = "ACCEPTED", "Đã nhận"
-        REJECTED = "REJECTED", "Từ chối"
-        VOIDED = "VOIDED", "Vô hiệu (đã có người nhận)"
+        REJECTED = "REJECTED", "Đã từ chối"
+        VOIDED = "VOIDED", "Đã vô hiệu"
         HET_HAN = "HET_HAN", "Hết hạn"
 
     yeu_cau = models.ForeignKey(YeuCauHocTap, on_delete=models.CASCADE, related_name="loi_moi")
@@ -379,9 +379,9 @@ class DoiGiaSu(models.Model):
         KHAC = "KHAC", "Lý do khác"
 
     class TrangThai(models.TextChoices):
-        CHO_DUYET = "CHO_DUYET", "Chờ Admin duyệt"
+        CHO_DUYET = "CHO_DUYET", "Chờ Quản trị viên duyệt"
         DA_THUC_HIEN = "DA_THUC_HIEN", "Đã thực hiện"
-        TU_CHOI = "TU_CHOI", "Admin từ chối"
+        TU_CHOI = "TU_CHOI", "Quản trị viên từ chối"
 
     khoa_hoc = models.ForeignKey(KhoaHoc, on_delete=models.PROTECT, related_name="lich_su_doi_gia_su")
     gia_su_cu = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
@@ -416,7 +416,7 @@ class BuoiHoc(models.Model):
         CHINH_THUC = "CHINH_THUC", "Chính thức"
 
     class TrangThai(models.TextChoices):
-        LOI_ZOOM = "LOI_ZOOM", "Lỗi tạo Zoom"
+        LOI_ZOOM = "LOI_ZOOM", "Lỗi Zoom"
         DA_LEN_LICH = "DA_LEN_LICH", "Đã lên lịch"
         HOAN_TAT = "HOAN_TAT", "Hoàn tất"
         DANG_XEM_XET = "DANG_XEM_XET", "Đang xem xét"
@@ -439,9 +439,9 @@ class BuoiHoc(models.Model):
         KHONG_DU_LIEU = "KHONG_DU_LIEU", "Không có dữ liệu Zoom"
 
     class XepLoai(models.TextChoices):
-        TOT = "TOT", "Tiếp thu tốt, nắm chắc bài"
-        KHA = "KHA", "Tiếp thu cơ bản, cần luyện thêm"
-        CAN_HO_TRO = "CAN_HO_TRO", "Chưa nắm được bài, cần hỗ trợ thêm"
+        TOT = "TOT", "Tiếp thu tốt"
+        KHA = "KHA", "Tiếp thu cơ bản"
+        CAN_HO_TRO = "CAN_HO_TRO", "Cần hỗ trợ thêm"
 
     class BanGhi(models.TextChoices):
         KHONG_GHI = "KHONG_GHI", "Không ghi hình"
@@ -550,7 +550,7 @@ class BuoiHoc(models.Model):
 class ThuLao(models.Model):
     class TrangThai(models.TextChoices):
         TAM_TINH = "TAM_TINH", "Tạm tính"
-        TAM_GIU = "TAM_GIU", "Tạm giữ (đang xem xét)"
+        TAM_GIU = "TAM_GIU", "Tạm giữ"
         DA_DOI_SOAT = "DA_DOI_SOAT", "Đã đối soát"
         HUY = "HUY", "Đã hủy"
 
@@ -593,7 +593,7 @@ class DoiSoatThang(models.Model):
     NV tuyển sinh kiểm tra (DA_KIEM_TRA) → Admin chốt (DA_CHOT) → khóa sổ tháng đó."""
 
     class TrangThai(models.TextChoices):
-        DA_KIEM_TRA = "DA_KIEM_TRA", "NVTS đã kiểm tra"
+        DA_KIEM_TRA = "DA_KIEM_TRA", "Tuyển sinh đã kiểm tra"
         DA_CHOT = "DA_CHOT", "Đã chốt"
 
     gia_su = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="doi_soat")

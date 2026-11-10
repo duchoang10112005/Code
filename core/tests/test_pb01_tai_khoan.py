@@ -69,7 +69,7 @@ class PB01PhanQuyenTest(TestCase):
         self.assertTrue(self.gs.is_active)
 
     def test_PB01_moi_vai_tro_thay_trang_chu_rieng(self):
-        for username, chu in [("ad", "Tài khoản bị khóa"), ("ts", "Đang tìm gia sư"), ("gs", "Lời mời đang chờ")]:
+        for username, chu in [("ad", "Tài khoản bị khóa"), ("ts", "Đang mời gia sư"), ("gs", "Lời mời đang chờ")]:
             self.client.login(username=username, password=MK)
             self.assertContains(self.client.get(reverse("trang_chu")), chu)
             self.client.logout()
@@ -133,7 +133,7 @@ class PB01QuanLyTaiKhoanTest(TestCase):
         self.assertEqual(ts.vai_tro, User.VaiTro.GIA_SU)
         self.assertTrue(HoSoGiaSu.objects.filter(user=ts).exists())
         nk = NhatKy.objects.get(hanh_dong="Sửa tài khoản")
-        self.assertIn("Nhân viên tuyển sinh → Gia sư", nk.chi_tiet)
+        self.assertIn("Tuyển sinh → Gia sư", nk.chi_tiet)
 
 
 class SuaLoiCodeReviewTaiKhoanTest(TestCase):

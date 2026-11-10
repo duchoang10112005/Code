@@ -93,7 +93,7 @@ def ghi_ket_qua_hoc_thu(nvts, yc, ket_qua, ghi_chu=""):
     with transaction.atomic():
         n = YeuCauHocTap.objects.filter(pk=yc.pk, trang_thai=YC.DA_PHAN_CONG).update(**cap_nhat)
         if n == 0:
-            raise ValidationError("Yêu cầu không còn ở trạng thái Đã phân công.")
+            raise ValidationError("Yêu cầu không còn ở trạng thái Đã có gia sư.")
         ghi_nhat_ky(nvts, "Ghi kết quả học thử", yc.ma, f"{KQ(ket_qua).label}. {ghi_chu}".strip())
         if ket_qua != KQ.TIEP_TUC and gia_su:
             huy_buoi_thu_chua_hoc(yc, gia_su, f"Kết quả học thử: {KQ(ket_qua).label}")
