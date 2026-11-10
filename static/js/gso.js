@@ -231,6 +231,46 @@
     b.querySelector(".bi").className = "bi " + (hien ? "bi-eye-slash" : "bi-eye");
   });
 
+  /* Hộp thoại: data-mo-hop="id" mở .overlay#id, data-dong-hop đóng, Esc / bấm nền cũng đóng */
+  document.addEventListener("click", function (e) {
+    var mo = e.target.closest("[data-mo-hop]");
+    if (mo) {
+      var h = document.getElementById(mo.dataset.moHop);
+      if (h) { h.hidden = false; var f = h.querySelector("[autofocus],input,select,textarea,button"); if (f) { f.focus(); } }
+      return;
+    }
+    if (e.target.closest("[data-dong-hop]") || e.target.classList.contains("overlay")) {
+      var o = e.target.closest(".overlay"); if (o && o.id !== "hop-xac-nhan") { o.hidden = true; }
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { $$(".overlay:not(#hop-xac-nhan)").forEach(function (o) { o.hidden = true; }); }
+  });
+
+  /* Đếm ngược: data-dem-nguoc="ISO" → "05:12:39"; thêm data-kieu="chu" → "còn 5 giờ 12 phút" */
+  function demNguoc() {
+    $$("[data-dem-nguoc]").forEach(function (el) {
+      var s = Math.max(Math.floor((new Date(el.dataset.demNguoc).getTime() - Date.now()) / 1000), 0);
+      var g = Math.floor(s / 3600), p = Math.floor(s % 3600 / 60), hai = function (n) { return (n < 10 ? "0" : "") + n; };
+      if (el.dataset.kieu === "chu") {
+        el.textContent = s <= 0 ? (el.dataset.het || "Hết hạn") : "còn " + (g ? g + " giờ " : "") + p + " phút";
+      } else {
+        el.textContent = hai(g) + ":" + hai(p) + ":" + hai(s % 60);
+      }
+      if (s <= 0 && el.dataset.khiHet) { $$(el.dataset.khiHet).forEach(function (n) { n.disabled = true; }); }
+    });
+  }
+  demNguoc(); setInterval(demNguoc, 1000);
+
+  /* Lọc danh sách tại chỗ: <input data-loc="#ds"> lọc các phần tử [data-tim] (chuỗi không dấu) trong #ds */
+  function boDau(x) { return x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d"); }
+  $$("[data-loc]").forEach(function (o) {
+    o.addEventListener("input", function () {
+      var q = boDau(o.value.trim());
+      $$(o.dataset.loc + " [data-tim]").forEach(function (x) { x.hidden = !!q && boDau(x.dataset.tim).indexOf(q) < 0; });
+    });
+  });
+
   /* Lỗi form: đưa con trỏ tới hộp tóm tắt lỗi */
   var tomTat = $(".tom-tat-loi"); if (tomTat) { tomTat.focus(); }
 

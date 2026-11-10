@@ -3,11 +3,15 @@
 Quyền: NV tuyển sinh thao tác; Admin chỉ xem (giám sát); Gia sư chỉ thấy lời mời của chính mình.
 """
 
+from datetime import timedelta
+
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
+from django.urls import reverse
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -195,39 +199,76 @@ def hoc_vien_chi_tiet(request, pk):
 # =============================================================================
 @vai_tro_required(GIA_SU)
 def loi_moi_cua_toi(request):
+    """Gia sư – Lời mời nhận lớp (SD-08): danh sách bên trái, chi tiết + lưới khớp giờ bên phải."""
+    from core.services.thong_bao import danh_dau_da_doc
     dv.quet_loi_moi_het_han()
+    danh_dau_da_doc(request.user, list(request.user.thong_bao.filter(loai="LOI_MOI", da_doc=False)
+                                       .values_list("pk", flat=True)))
     tab = request.GET.get("tab", "cho")
-    qs = LoiMoi.objects.filter(gia_su=request.user).select_related("yeu_cau__hoc_vien", "yeu_cau__mon_hoc")
-    if tab == "lich-su":
-        qs = qs.exclude(trang_thai=LM.CHO).order_by("-phan_hoi_luc", "-gui_luc")
-    else:
-        qs = qs.filter(trang_thai=LM.CHO).order_by("het_han_luc")
+    qs = LoiMoi.objects.filter(gia_su=request.user).select_related(
+        "yeu_cau__hoc_vien", "yeu_cau__mon_hoc", "yeu_cau__cap_do", "gui_boi")
+    nhom = {
+        "cho": qs.filter(trang_thai=LM.CHO).order_by("het_han_luc"),
+        "da-nhan": qs.filter(trang_thai=LM.ACCEPTED).order_by("-phan_hoi_luc"),
+        "da-dong": qs.filter(trang_thai__in=[LM.REJECTED, LM.VOIDED, LM.HET_HAN]).order_by("-phan_hoi_luc", "-gui_luc"),
+    }
+    if tab not in nhom:
+        tab = "cho"
     ho_so = getattr(request.user, "ho_so_gia_su", None)
-    thu_ranh = set(ho_so.lich_ranh.values_list("thu", flat=True)) if ho_so else set()
-    trang = Paginator(qs, 20).get_page(request.GET.get("page"))
-    return render(request, "core/loi_moi/danh_sach.html", {"trang": trang, "tab": tab, "thu_ranh": thu_ranh})
+    ds = []
+    for lm in nhom[tab][:50]:
+        _, khop, can, _ = dv.luoi_khop(ho_so, lm.yeu_cau.khung_mong_muon)
+        ds.append({"lm": lm, "khop": khop, "can": can, "vach": [i < khop for i in range(can)]})
+    chon = None
+    try:
+        chon_pk = int(request.GET.get("chon", 0))
+    except ValueError:
+        chon_pk = 0
+    chon = next((x for x in ds if x["lm"].pk == chon_pk), ds[0] if ds else None)
+    chi_tiet = {}
+    if chon:
+        lm, yc = chon["lm"], chon["lm"].yeu_cau
+        hang, khop, can, thieu = dv.luoi_khop(ho_so, yc.khung_mong_muon)
+        so_moi = LoiMoi.objects.filter(yeu_cau=yc, gui_luc__gte=lm.gui_luc - timedelta(minutes=5)).count()
+        chi_tiet = {"hang": hang, "khop": khop, "can": can, "thieu": thieu, "so_moi_cung_luc": so_moi,
+                    "so_buoi_tuan": len({k.split("-")[0] for k in yc.khung_mong_muon or []}) or len(yc.thu_mong_muon or []),
+                    "so_lop_dang_day": request.user.khoa_hoc_phu_trach.filter(trang_thai="DANG_HOC").count(),
+                    "so_lop_toi_da": getattr(ho_so, "so_lop_toi_da", 4)}
+    return render(request, "core/loi_moi/danh_sach.html", {
+        "tab": tab, "ds": ds, "chon": chon, "ct": chi_tiet,
+        "dem": {k.replace("-", "_"): v.count() for k, v in nhom.items()}, "ly_do_tu_choi": LoiMoi.LY_DO_TU_CHOI_GOI_Y,
+    })
 
 
 @vai_tro_required(GIA_SU)
 @require_POST
 def nhan_lop(request, pk):
     lm = get_object_or_404(LoiMoi.objects.select_related("yeu_cau"), pk=pk, gia_su=request.user)
+    if not request.POST.get("cam_ket"):
+        messages.error(request, "Đánh dấu xác nhận dạy đúng các khung giờ đã khớp để nhận lớp.")
+        return redirect(f"{reverse('loi_moi_cua_toi')}?chon={pk}")
     try:
-        yc = dv.chap_nhan(request.user, lm)
+        yc = dv.chap_nhan(request.user, lm, cam_ket=True, ghi_chu=request.POST.get("ghi_chu_gia_su", ""))
         messages.success(request, f"Bạn đã nhận lớp {yc.mon_hoc} – {yc.hoc_vien}. "
-                                  "Trung tâm sẽ liên hệ phụ huynh để chốt lịch học thử hoặc học chính thức.")
+                                  "Bước tiếp: Tuyển sinh chốt lớp và xếp buổi học thử với phụ huynh.")
+        return redirect(f"{reverse('loi_moi_cua_toi')}?tab=da-nhan&chon={pk}")
     except ValidationError as e:
         messages.warning(request, _loi(e))
-    return redirect("loi_moi_cua_toi")
+    return redirect(f"{reverse('loi_moi_cua_toi')}?chon={pk}")
 
 
 @vai_tro_required(GIA_SU)
 @require_POST
 def tu_choi_loi_moi(request, pk):
     lm = get_object_or_404(LoiMoi, pk=pk, gia_su=request.user)
+    ly_do = request.POST.get("ly_do", "").strip()
+    if not ly_do:
+        messages.error(request, "Vui lòng chọn lý do từ chối.")
+        return redirect(f"{reverse('loi_moi_cua_toi')}?chon={pk}")
+    ghi_chu = request.POST.get("ghi_chu", "").strip()
     try:
-        dv.tu_choi(request.user, lm, request.POST.get("ly_do", ""))
-        messages.success(request, "Đã từ chối lời mời.")
+        dv.tu_choi(request.user, lm, f"{ly_do}: {ghi_chu}" if ghi_chu else ly_do)
+        messages.success(request, "Đã từ chối lời mời. Trung tâm sẽ mời gia sư khác.")
     except ValidationError as e:
         messages.warning(request, _loi(e))
     return redirect("loi_moi_cua_toi")

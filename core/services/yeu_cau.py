@@ -163,19 +163,21 @@ class _DaCoNguoiNhan(Exception):
     pass
 
 
-def chap_nhan(gia_su, loi_moi):
-    """Accept hợp lệ đầu tiên thắng (BRULE-12, PB-22)."""
+def chap_nhan(gia_su, loi_moi, cam_ket=True, ghi_chu=""):
+    """Accept hợp lệ đầu tiên thắng (BRULE-12, PB-22, SD-08). Giao diện bắt buộc tick cam kết."""
     now = timezone.now()
     yc = loi_moi.yeu_cau
     if loi_moi.gia_su_id != gia_su.pk:
         raise ValidationError("Lời mời này không phải của bạn.")
+    if not cam_ket:
+        raise ValidationError({"cam_ket": "Đánh dấu xác nhận để nhận lớp."})
     if not la_du_dieu_kien(gia_su, yc.mon_hoc):
         raise ValidationError("Bạn chưa đủ điều kiện nhận lớp môn này "
                               "(hồ sơ đang tạm ngừng hoặc môn chưa được duyệt).")
     try:
         with transaction.atomic():
             n = LoiMoi.objects.filter(pk=loi_moi.pk, trang_thai=LM.CHO, het_han_luc__gt=now).update(
-                trang_thai=LM.ACCEPTED, phan_hoi_luc=now)
+                trang_thai=LM.ACCEPTED, phan_hoi_luc=now, cam_ket=True, ghi_chu_gia_su=(ghi_chu or "").strip()[:300])
             if n == 0:
                 raise ValidationError("Lời mời không còn hiệu lực (đã hết hạn, đã phản hồi hoặc đã bị hủy).")
             n = YeuCauHocTap.objects.filter(pk=yc.pk, trang_thai=YC.DANG_TIM, gia_su__isnull=True).update(
@@ -189,9 +191,17 @@ def chap_nhan(gia_su, loi_moi):
             khoa = nhan_lai_khoa(gia_su, yc)
     except _DaCoNguoiNhan:
         LoiMoi.objects.filter(pk=loi_moi.pk, trang_thai=LM.CHO).update(trang_thai=LM.VOIDED, phan_hoi_luc=now)
-        raise ValidationError("Lớp này đã có gia sư khác nhận trước. Cảm ơn bạn đã phản hồi.")
+        yc.refresh_from_db()
+        luc = f" (lúc {timezone.localtime(yc.phan_cong_luc):%H:%M})" if yc.phan_cong_luc else ""
+        raise ValidationError(f"Lời mời đã vô hiệu. Một gia sư khác đã nhận lớp này trước{luc}.")
 
     yc.refresh_from_db()
+    from django.urls import reverse
+    from core.services.thong_bao import thong_bao
+    thong_bao(yc.tao_boi, f"{yc.ma} đã có gia sư nhận",
+              f"{gia_su.ho_ten} nhận lớp {yc.mon_hoc} – {yc.hoc_vien}"
+              + (f". Lời nhắn: {ghi_chu.strip()[:120]}" if (ghi_chu or "").strip() else ""),
+              reverse("yeu_cau_chi_tiet", args=[yc.pk]), "YEU_CAU")
     if yc.tao_boi and khoa:
         gui_email(yc.tao_boi, f"{khoa.ma} đã có gia sư mới",
                   f"Gia sư {gia_su.ho_ten} đã nhận khóa {yc.mon_hoc} của học viên {yc.hoc_vien}. "
@@ -210,7 +220,57 @@ def tu_choi(gia_su, loi_moi, ly_do=""):
         trang_thai=LM.REJECTED, phan_hoi_luc=now, ly_do_tu_choi=ly_do.strip()[:300])
     if n == 0:
         raise ValidationError("Lời mời không còn hiệu lực.")
-    ghi_nhat_ky(gia_su, "Từ chối lời mời", str(loi_moi.yeu_cau), ly_do)
+    yc = loi_moi.yeu_cau
+    ghi_nhat_ky(gia_su, "Từ chối lời mời", str(yc), ly_do)
+    if yc.trang_thai == YC.DANG_TIM and not LoiMoi.objects.filter(yeu_cau=yc, trang_thai=LM.CHO).exists():
+        from django.urls import reverse
+        from core.services.thong_bao import thong_bao
+        thong_bao(yc.tao_boi, f"{yc.ma} cần mời thêm gia sư",
+                  f"{gia_su.ho_ten} đã từ chối ({ly_do.strip()[:80] or 'không ghi lý do'}); không còn lời mời nào đang chờ.",
+                  reverse("yeu_cau_chi_tiet", args=[yc.pk]), "YEU_CAU")
+
+
+# =============================================================================
+# Lưới khớp giờ (dùng cho Lời mời nhận lớp và Đề xuất gia sư)
+# =============================================================================
+KHUNG = ["SANG", "CHIEU", "TOI_SOM", "TOI"]
+
+
+def khung_ranh(ho_so):
+    """Tập "<thu>-<khung>" gia sư đã đăng ký rảnh."""
+    if ho_so is None:
+        return set()
+    return {f"{t}-{k}" for t, k in ho_so.lich_ranh.exclude(khung="").values_list("thu", "khung")}
+
+
+def luoi_khop(ho_so, khung_mong_muon):
+    """Lưới 4 khung × 7 ngày: mỗi ô "khop" (cần + rảnh), "thieu" (cần, chưa rảnh), "ranh" (rảnh khác), "".
+
+    Trả về (hàng, số khớp, tổng cần, danh sách ô thiếu dạng "CN sáng").
+    """
+    from core.models import LichRanh
+    ranh = khung_ranh(ho_so)
+    can = set(khung_mong_muon or [])
+    nhan_khung = dict(LichRanh.Khung.choices)
+    thu_ngan = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+    hang, thieu = [], []
+    for k in KHUNG:
+        o = []
+        for t in range(7):
+            ma = f"{t}-{k}"
+            if ma in can and ma in ranh:
+                o.append("khop")
+            elif ma in can:
+                o.append("thieu")
+                thieu.append(f"{thu_ngan[t]} {nhan_khung[k].split()[0].lower()}"
+                             + (" sớm" if k == "TOI_SOM" else ""))
+            elif ma in ranh:
+                o.append("ranh")
+            else:
+                o.append("")
+        ten, gio = nhan_khung[k].rsplit(" ", 1)
+        hang.append({"ma": k, "ten": ten, "gio": LichRanh.GIO_KHUNG[k], "o": o})
+    return hang, len(can & ranh), len(can), thieu
 
 
 def dong_yeu_cau(nvts, yeu_cau, ly_do):

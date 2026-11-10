@@ -169,7 +169,7 @@ class PB06PhanHoiTest(DuLieu):
         LoiMoi.objects.filter(pk=self.lm_b.pk).update(trang_thai=LM.CHO)
         dv.chap_nhan(self.gs_a, self.lm_a)
         LoiMoi.objects.filter(pk=self.lm_b.pk).update(trang_thai=LM.CHO)  # giả lập "chưa bị vô hiệu"
-        with self.assertRaisesMessage(ValidationError, "đã có gia sư khác nhận trước"):
+        with self.assertRaisesMessage(ValidationError, "đã nhận lớp này trước"):
             dv.chap_nhan(self.gs_b, self.lm_b)
         self.lm_b.refresh_from_db()
         self.assertEqual(self.lm_b.trang_thai, LM.VOIDED)
@@ -210,10 +210,17 @@ class PB06PhanHoiTest(DuLieu):
     def test_PB06_accept_qua_giao_dien_va_email_bao_nvts(self):
         self.dang_nhap(self.gs_b)
         mail.outbox.clear()
+        # YC-08: không tick cam kết → không nhận được
         self.client.post(reverse("loi_moi_nhan", args=[self.lm_b.pk]))
+        self.yc.refresh_from_db()
+        self.assertIsNone(self.yc.gia_su)
+        self.client.post(reverse("loi_moi_nhan", args=[self.lm_b.pk]), {"cam_ket": "1", "ghi_chu_gia_su": "Dạy được T5"})
         self.yc.refresh_from_db()
         self.assertEqual(self.yc.gia_su, self.gs_b)
         self.assertEqual(mail.outbox[-1].to, ["ts@test.local"])
+        self.lm_b.refresh_from_db()
+        self.assertEqual((self.lm_b.cam_ket, self.lm_b.ghi_chu_gia_su), (True, "Dạy được T5"))
+        self.assertTrue(self.yc.tao_boi.thong_bao.filter(tieu_de__contains="đã có gia sư nhận").exists())
 
     def test_PB24_gia_su_khong_phan_hoi_loi_moi_cua_nguoi_khac(self):
         self.dang_nhap(self.gs_b)

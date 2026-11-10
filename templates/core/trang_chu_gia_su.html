@@ -159,17 +159,6 @@
 {% block scripts %}
 <script>
 (function () {
-  /* Đồng hồ đếm ngược tới giờ học */
-  var el = document.querySelector("[data-dem-nguoc]");
-  if (el) {
-    var dich = new Date(el.dataset.demNguoc).getTime();
-    var hai = function (n) { return (n < 10 ? "0" : "") + n; };
-    var chay = function () {
-      var s = Math.max(Math.floor((dich - Date.now()) / 1000), 0);
-      el.textContent = hai(Math.floor(s / 3600)) + ":" + hai(Math.floor(s % 3600 / 60)) + ":" + hai(s % 60);
-    };
-    chay(); setInterval(chay, 1000);
-  }
   /* Phím tắt N / G (không khi đang gõ) */
   document.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { return; }
