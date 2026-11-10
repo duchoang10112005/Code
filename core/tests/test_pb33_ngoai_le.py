@@ -234,6 +234,6 @@ class SuaLoiReviewTest(NgoaiLe):
 
     def test_loi_gio_hien_tai_o_gio_bat_dau(self):
         self.dang_nhap(self.gs)
-        r = self.client.post(reverse("buoi_tao"), {"lop": f"k-{self.khoa.pk}", "bat_dau": "2020-01-01T08:00"})
-        self.assertContains(r, 'id="id_bat_dau_loi"')
+        r = self.client.post(reverse("buoi_tao"), {"lop": f"k-{self.khoa.pk}", "ngay": "2020-01-01", "gio": "08:00"})
+        self.assertEqual(r.status_code, 200)  # không tạo được buổi nào → ở lại form
         self.assertContains(r, "tương lai")

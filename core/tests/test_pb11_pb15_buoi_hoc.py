@@ -130,10 +130,12 @@ class TaoBuoiTest(DuLieu):
 
     def test_tao_buoi_qua_giao_dien(self):
         self.dang_nhap(self.gs)
-        gio = ngay_mai().astimezone(timezone.get_current_timezone()).strftime("%Y-%m-%dT%H:%M")
-        r = self.client.post(reverse("buoi_tao"), {"lop": f"k-{self.khoa.pk}", "bat_dau": gio})
+        bd = timezone.localtime(ngay_mai())
+        r = self.client.post(reverse("buoi_tao"), {"lop": f"k-{self.khoa.pk}", "ngay": f"{bd:%Y-%m-%d}",
+                                                   "gio": f"{bd:%H:%M}", "so_buoi": 1})
         b = BuoiHoc.objects.get()
-        self.assertRedirects(r, reverse("buoi_chi_tiet", args=[b.pk]))
+        self.assertRedirects(r, reverse("buoi_tao") + f"?da_tao={b.pk}", fetch_redirect_response=False)
+        self.assertContains(self.client.get(reverse("buoi_tao") + f"?da_tao={b.pk}"), "Meeting ID")
         self.assertContains(self.client.get(reverse("buoi_chi_tiet", args=[b.pk])), b.zoom_join_url)
 
 

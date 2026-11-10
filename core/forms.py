@@ -404,26 +404,32 @@ class _GioBatDauField(forms.DateTimeField):
         super().__init__(**kw)
 
 
-class TaoBuoiForm(BootstrapMixin, forms.Form):
-    """Gia sư chọn lớp: khóa chính thức (k-<id>) hoặc lớp chờ học thử (t-<id>)."""
+class TaoBuoiForm(GsoMixin, forms.Form):
+    """Tạo một hoặc nhiều buổi (SD-13). lop: "k-<id>" khóa chính thức hoặc "t-<id>" lớp chờ học thử."""
 
-    lop = forms.ChoiceField(label="Lớp")
-    bat_dau = _GioBatDauField()
-    thoi_luong = forms.TypedChoiceField(
-        label="Thời lượng buổi học thử", coerce=int, required=False, initial=60,
-        choices=[(60, "1 giờ"), (90, "1,5 giờ"), (120, "2 giờ")], widget=forms.RadioSelect,
-        help_text="Buổi chính thức luôn theo thời lượng đã đăng ký của khóa.")
+    lop = forms.CharField(label="Lớp")
+    hoc_bu_cho = forms.IntegerField(label="Buổi cần bù", required=False)
+    ngay = forms.DateField(label="Ngày học", input_formats=["%Y-%m-%d", "%d/%m/%Y"],
+                           widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+    gio = forms.TimeField(label="Giờ bắt đầu", input_formats=["%H:%M"])
+    so_buoi = forms.IntegerField(label="Số buổi (lặp hằng tuần)", min_value=1, required=False, initial=1)
+    thoi_luong = forms.TypedChoiceField(label="Thời lượng buổi học thử", coerce=int, required=False,
+                                        choices=[(60, "60 phút"), (90, "90 phút"), (120, "120 phút")])
 
-    def __init__(self, *args, ds_khoa=(), ds_thu=(), **kwargs):
-        super().__init__(*args, **kwargs)
-        nhom = []
-        if ds_khoa:
-            nhom.append(("Khóa chính thức", [
-                (f"k-{k.pk}", f"{k.ma} · {k.hoc_vien.ho_ten} · {k.yeu_cau.mon_hoc} "
-                              f"(còn xếp được {k.so_buoi_co_the_xep} buổi)") for k in ds_khoa]))
-        if ds_thu:
-            nhom.append(("Học thử", [(f"t-{y.pk}", f"{y.ma} · {y.hoc_vien.ho_ten} · {y.mon_hoc}") for y in ds_thu]))
-        self.fields["lop"].choices = [("", "— Chọn lớp —")] + nhom
+    def clean_lop(self):
+        v = self.cleaned_data["lop"]
+        loai, _, pk = v.partition("-")
+        if loai not in ("k", "t") or not pk.isdigit():
+            raise forms.ValidationError("Hãy chọn lớp.")
+        return v
+
+    def ke_hoach(self):
+        """Danh sách giờ bắt đầu (aware) theo ngày + giờ + số tuần lặp."""
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+        d = self.cleaned_data
+        dau = timezone.make_aware(datetime.combine(d["ngay"], d["gio"]))
+        return [dau + timedelta(weeks=i) for i in range(d.get("so_buoi") or 1)]
 
 
 class XacNhanBuoiForm(BootstrapMixin, forms.Form):

@@ -12,6 +12,7 @@ from datetime import date
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -58,34 +59,93 @@ def danh_sach(request):
     })
 
 
+def lay_lop(user, ma):
+    """"k-5" → KhoaHoc của gia sư; "t-7" → YeuCauHocTap (học thử) của gia sư. Không phải của mình → 404."""
+    loai, _, pk = (ma or "").partition("-")
+    if loai == "k":
+        return get_object_or_404(KhoaHoc.objects.select_related("hoc_vien", "yeu_cau__mon_hoc"), pk=pk, gia_su=user)
+    return get_object_or_404(YeuCauHocTap.objects.select_related("hoc_vien", "mon_hoc"), pk=pk, gia_su=user)
+
+
+def lay_buoi_bu(user, lop, pk):
+    if not pk:
+        return None
+    return get_object_or_404(BuoiHoc, pk=pk, gia_su=user)
+
+
 @vai_tro_required(GIA_SU)
 def tao(request):
+    """Gia sư – Tạo buổi học v2 (SD-13): một hoặc nhiều buổi lặp tuần, học bù, kết quả từng buổi."""
+    import json
+    from core.services.trang_chu import MAU_LOP
     u = request.user
-    ds_khoa, ds_thu = dv.khoa_co_the_xep(u), dv.yeu_cau_co_the_hoc_thu(u)
-    ban_dau = {}
-    if request.GET.get("khoa"):
-        ban_dau["lop"] = f"k-{request.GET['khoa']}"
-    elif request.GET.get("yc"):
-        ban_dau["lop"] = f"t-{request.GET['yc']}"
-    form = TaoBuoiForm(request.POST or None, initial=ban_dau, ds_khoa=ds_khoa, ds_thu=ds_thu)
+    form = TaoBuoiForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        loai, _, pk = form.cleaned_data["lop"].partition("-")
+        lop = lay_lop(u, form.cleaned_data["lop"])
         try:
-            if loai == "k":
-                khoa = get_object_or_404(KhoaHoc, pk=pk, gia_su=u)
-                buoi = dv.tao_buoi_chinh_thuc(u, khoa, form.cleaned_data["bat_dau"])
-            else:
-                yc = get_object_or_404(YeuCauHocTap, pk=pk, gia_su=u)
-                buoi = dv.tao_buoi_hoc_thu(u, yc, form.cleaned_data["bat_dau"], form.cleaned_data["thoi_luong"] or 60)
+            kq = dv.tao_nhieu_buoi(u, lop, form.ke_hoach(), lay_buoi_bu(u, lop, form.cleaned_data["hoc_bu_cho"]),
+                                   form.cleaned_data.get("thoi_luong"))
         except ValidationError as e:
-            form.add_error(None, e)  # lỗi theo ô (bat_dau, thoi_luong) hiện tại ô; lỗi chung hiện ở đầu form
+            form.add_error(None, e)
         else:
-            if buoi.trang_thai == TT.DA_LEN_LICH:
-                messages.success(request, "Đã tạo buổi học và phòng Zoom. Sao chép link gửi học viên qua Zalo.")
-            else:
-                messages.error(request, "Đã lưu buổi học nhưng chưa tạo được phòng Zoom. Bấm Thử lại.")
-            return redirect("buoi_chi_tiet", pk=buoi.pk)
-    return render(request, "core/buoi_hoc/tao.html", {"form": form, "khong_co_lop": not (ds_khoa or ds_thu)})
+            tao_duoc = [x["buoi"].pk for x in kq if x["buoi"]]
+            for x in kq:
+                if not x["buoi"]:
+                    messages.warning(request, f"Không tạo buổi {timezone.localtime(x['bat_dau']):%H:%M %d/%m}: {x['loi']}")
+            if tao_duoc:
+                return redirect(f"{reverse('buoi_tao')}?da_tao={','.join(map(str, tao_duoc))}")
+
+    # Kết quả sau khi tạo
+    da_tao = []
+    if request.GET.get("da_tao"):
+        ids = [int(x) for x in request.GET["da_tao"].split(",") if x.isdigit()][:20]
+        for b in BuoiHoc.objects.filter(pk__in=ids, gia_su=u).select_related(
+                "hoc_vien", "yeu_cau__mon_hoc", "khoa_hoc", "tai_khoan_zoom").order_by("bat_dau"):
+            da_tao.append({"b": b, "nhan": dv.nhan_buoi(b), "link_lop": dv.link_lop(b, request),
+                           "tin_nhan": dv.noi_dung_moi_vao_lop(b, request),
+                           "mo_luc": dv.gio_mo_phong(b), "dong_luc": dv.gio_dong_phong(b)})
+
+    now = timezone.now()
+    ds_lop, bu, lich_co_dinh = [], {}, {}
+    for i, k in enumerate(KhoaHoc.objects.filter(gia_su=u, trang_thai=KhoaHoc.TrangThai.DANG_HOC)
+                          .select_related("hoc_vien", "yeu_cau__mon_hoc").order_by("pk")):
+        m = MAU_LOP[i % len(MAU_LOP)]
+        xep = k.so_buoi_dang_len_lich
+        ds_lop.append({"ma": f"k-{k.pk}", "loai": "khoa", "tieu_de": str(k.yeu_cau.mon_hoc), "ma_hien": k.ma,
+                       "phu": f"{k.hoc_vien.ho_ten} · {k.thoi_luong_phut} phút/buổi", "chu_tat": k.hoc_vien.ho_ten,
+                       "mau": m, "da": k.so_buoi_da_dung, "tong": k.so_buoi_dang_ky, "con_xep": k.so_buoi_co_the_xep,
+                       "w_da": round(k.so_buoi_da_dung * 100 / k.so_buoi_dang_ky),
+                       "w_xep": round(xep * 100 / k.so_buoi_dang_ky), "thoi_luong": k.thoi_luong_phut,
+                       "lich": ", ".join(f"{['T2','T3','T4','T5','T6','T7','CN'][int(x['thu'])]} {x['gio']}"
+                                         for x in (k.lich_co_dinh or []) if "thu" in x and "gio" in x)})
+        lich_co_dinh[f"k-{k.pk}"] = k.lich_co_dinh or []
+        bu[f"k-{k.pk}"] = [{"pk": b.pk, "nhan": f"{b.ma} · {timezone.localtime(b.bat_dau):%H:%M %d/%m} · {b.get_ly_do_huy_display()}"}
+                           for b in k.buoi_hoc.filter(trang_thai=TT.DA_HUY, ly_do_huy__in=dv.LY_DO_GIA_SU_CHON,
+                                                       buoi_hoc_bu__isnull=True).order_by("-bat_dau")[:10]]
+    for y in dv.yeu_cau_co_the_hoc_thu(u):
+        ds_lop.append({"ma": f"t-{y.pk}", "loai": "thu", "tieu_de": str(y.mon_hoc), "ma_hien": y.ma,
+                       "phu": f"{y.hoc_vien.ho_ten} · Học thử", "chu_tat": y.hoc_vien.ho_ten,
+                       "mau": ("#FF7A59", "#FFF1EA", "#C2410C"), "lich": y.lich_mong_muon, "thoi_luong": 90})
+    chon = request.POST.get("lop") or (f"k-{request.GET['khoa']}" if request.GET.get("khoa") else
+                                       f"t-{request.GET['yeu_cau']}" if request.GET.get("yeu_cau") else
+                                       f"t-{request.GET['yc']}" if request.GET.get("yc") else "")
+    # Chấm lịch: buổi đã có của gia sư trong 9 tuần tới
+    mau_lop = {x["ma"]: x["mau"][0] for x in ds_lop}
+    cham = {}
+    for b in BuoiHoc.objects.filter(gia_su=u, trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO + [TT.HOAN_TAT],
+                                    bat_dau__gte=now - timedelta(days=7), bat_dau__lte=now + timedelta(days=63)):
+        d = f"{timezone.localtime(b.bat_dau):%Y-%m-%d}"
+        m = mau_lop.get(f"k-{b.khoa_hoc_id}" if b.khoa_hoc_id else f"t-{b.yeu_cau_id}", "#9AA1B8")
+        if m not in cham.setdefault(d, []):
+            cham[d].append(m)
+    return render(request, "core/buoi_hoc/tao.html", {
+        "form": form, "ds_lop": ds_lop, "chon": chon, "da_tao": da_tao,
+        "du_lieu_js": json.dumps({"bu": bu, "lich": lich_co_dinh, "cham": cham,
+                                  "hom_nay": f"{timezone.localdate():%Y-%m-%d}",
+                                  "thoi_luong": {x["ma"]: x["thoi_luong"] for x in ds_lop},
+                                  "con_xep": {x["ma"]: x.get("con_xep", 1) for x in ds_lop},
+                                  "toi_da": settings.NGHIEP_VU.get("SO_BUOI_TAO_TOI_DA_MOT_LAN", 8)}),
+    })
 
 
 @vai_tro_required(GIA_SU)
@@ -122,6 +182,9 @@ def thu_lai_zoom(request, pk):
             messages.error(request, "Zoom vẫn chưa phản hồi. Thử lại sau ít phút.")
     except ValidationError as e:
         messages.error(request, _loi(e))
+    tiep = request.POST.get("tiep", "")
+    if tiep.startswith("/") and not tiep.startswith("//"):
+        return redirect(tiep)
     return redirect("buoi_chi_tiet", pk=pk)
 
 

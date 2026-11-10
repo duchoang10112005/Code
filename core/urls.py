@@ -1,6 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
+from core.api import buoi_hoc as api_buoi
 from core.api import chung as api_chung
 from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, quy_chuan, tai_khoan, yeu_cau
 
@@ -87,6 +88,10 @@ urlpatterns = [
     path("api/thong-bao/", api_chung.thong_bao, name="api_thong_bao"),
     path("api/thong-bao/da-doc/", api_chung.thong_bao_da_doc, name="api_thong_bao_da_doc"),
     path("api/tim-kiem/", api_chung.tim_kiem, name="api_tim_kiem"),
+    path("api/buoi-hoc/kiem-tra-lich/", api_buoi.kiem_tra_lich, name="api_kiem_tra_lich"),
+    path("api/buoi-hoc/<int:pk>/tin-nhan-lop/", api_buoi.tin_nhan_lop, name="api_tin_nhan_lop"),
+    path("api/buoi-hoc/<int:pk>/nhap/", api_buoi.luu_nhap, name="api_luu_nhap"),
+    path("api/buoi-hoc/<int:pk>/gui-lai-zalo/", api_buoi.gui_lai_zalo, name="api_gui_lai_zalo"),
 
     # Xem trước quy chuẩn giao diện (chỉ khi DEBUG)
     path("quy-chuan-giao-dien/", quy_chuan.xem_truoc, name="quy_chuan_giao_dien"),

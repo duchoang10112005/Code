@@ -338,3 +338,50 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .tabs a:hover{color:#1E2235;text-decoration:none}
 .tabs a[aria-current=page]{background:#fff;color:#1E2235;box-shadow:0 1px 2px rgba(16,24,40,.1)}
 .tabs a[aria-current=page] .cnt{background:#6366F1;color:#fff}
+
+/* Tạo buổi học */
+.buoc-tren{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden}
+.buoc-tren>div{display:flex;align-items:center;gap:12px;padding:14px 18px;position:relative}
+.buoc-tren>div+div{border-left:1px solid #EEF0F5}
+.buoc-tren .c{width:28px;height:28px;flex:none;border-radius:50%;border:1.5px solid #D5D9E6;display:grid;place-items:center;font-size:12px;font-weight:600;color:#646B85}
+.buoc-tren .dang .c{background:#6366F1;border-color:#6366F1;color:#fff}.buoc-tren .xong .c{background:#E6FAF7;border-color:#14B8A6;color:#0F766E}
+.buoc-tren .dang::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:#6366F1}
+.buoc-tren b{display:block;font-size:13px;font-weight:600}.buoc-tren small{display:block;font-size:12px;color:#646B85}.buoc-tren .dang small{color:#4F46E5}
+.phan{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:24px;border-bottom:1px solid #EEF0F5}
+.phan:last-child{border-bottom:none}
+.phan h3{margin:0;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.phan h3 .so{width:20px;height:20px;border-radius:50%;background:#EEF0FF;color:#4F46E5;font-size:11px;display:grid;place-items:center}
+.phan .mo{margin:6px 0 0 28px;font-size:13px;color:#646B85;line-height:19px}
+.the-lop{display:flex;align-items:center;gap:14px;padding:12px 16px;border:1px solid #E6E9F2;border-radius:12px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s}
+.the-lop:hover{border-color:#C7CBF9}
+.the-lop:has(input:checked){border-color:#6366F1;box-shadow:0 0 0 3px #EEF0FF}
+.the-lop input{width:16px;height:16px;margin:0;accent-color:#6366F1}
+.the-lop .av{width:40px;height:40px;border-radius:10px;font-size:13px}
+.the-lop .td{min-width:140px;text-align:right}
+.chon-loai{display:inline-flex;gap:2px;padding:3px;background:#EEF0F5;border-radius:10px}
+.chon-loai label{height:34px;padding:0 18px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#4A5068;cursor:pointer}
+.chon-loai label:has(input:checked){background:#fff;color:#1E2235;box-shadow:0 1px 2px rgba(16,24,40,.1)}
+.chon-loai input{position:absolute;opacity:0;pointer-events:none}
+.lich-chon{border:1px solid #E6E9F2;border-radius:12px;padding:12px}
+.lich-chon .luoi{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.lich-chon .thu{font-size:11px;color:#9AA1B8;font-weight:600}
+.lich-chon button{height:44px;border:1px solid #EEF0F5;border-radius:8px;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;color:#1E2235;position:relative}
+.lich-chon button:hover:not(:disabled){border-color:#C7CBF9}
+.lich-chon button:disabled{color:#C4C9D6;background:#FAFBFE;cursor:not-allowed}
+.lich-chon button.nay small{position:absolute;top:2px;font-size:9px;color:#4F46E5;font-weight:600}
+.lich-chon button.co-dinh{background:#F5F6FF}
+.lich-chon button[aria-pressed=true]{background:#6366F1;border-color:#6366F1;color:#fff}
+.lich-chon button.lap{border:1.5px dashed #6366F1;color:#4F46E5}
+.lich-chon button i{display:flex;gap:2px;height:4px}.lich-chon button i span{width:4px;height:4px;border-radius:50%}
+.o-so{display:inline-flex;align-items:center;border:1px solid #E6E9F2;border-radius:8px;overflow:hidden}
+.o-so button{width:34px;height:34px;border:none;background:#fff;cursor:pointer;color:#4A5068}
+.o-so input{width:64px;height:34px;border:none;border-left:1px solid #E6E9F2;border-right:1px solid #E6E9F2;text-align:center;font-weight:600}
+.dong-xt{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #EEF0F5}
+.dong-xt:last-child{border-bottom:none}
+.kq-buoi{border:1px solid #E6E9F2;border-radius:12px;overflow:hidden}
+.kq-buoi .dau{display:flex;align-items:center;gap:14px;padding:14px 18px;background:#FAFBFE;border-bottom:1px solid #EEF0F5}
+.kq-buoi .than{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:16px 18px}
+.o-copy{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;min-width:0}
+.o-copy code{font-family:inherit;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tin-nhan{font-family:inherit;white-space:pre-wrap;font-size:13px;line-height:20px;background:#F7F8FC;border:1px solid #EEF0F5;border-radius:8px;padding:10px 12px;margin:8px 0 0}
+.chan-form{position:sticky;bottom:0;display:flex;align-items:center;gap:10px;padding:14px 24px;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);border-top:1px solid #E6E9F2;border-radius:0 0 12px 12px}

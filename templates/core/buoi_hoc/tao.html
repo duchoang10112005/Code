@@ -1,35 +1,276 @@
-{% extends "base.html" %}
-{% block title %}Tạo buổi học · {{ TEN_HE_THONG }}{% endblock %}
+{% extends "giao_dien/khung.html" %}
+{% load gso %}
+{% block title %}Tạo buổi học{% endblock %}
+{% block crumb %}<a href="{% url 'buoi_cua_toi' %}">Buổi học</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Tạo buổi học</h1>{% endblock %}
 {% block content %}
-<nav aria-label="Đường dẫn" class="small mb-2"><a href="{% url 'buoi_cua_toi' %}">Buổi học của tôi</a> / Tạo buổi học</nav>
-<div class="dau-trang">
-  <div><h1>Tạo buổi học</h1><p class="mo-ta">Hệ thống tạo phòng Zoom cho buổi học; bạn sao chép link gửi học viên qua Zalo</p></div>
+<div class="head"><div><h2 class="h2">Tạo buổi học</h2>
+  <p class="lead">Xếp lịch cho lớp bạn đang dạy. Hệ thống tự tạo phòng Zoom và soạn sẵn tin nhắn để bạn gửi nhóm Zalo lớp.</p></div></div>
+
+<div class="card buoc-tren" aria-label="Quy trình buổi học">
+  <div class="{% if da_tao %}xong{% else %}dang{% endif %}"><span class="c">{% if da_tao %}<i class="bi bi-check2"></i>{% else %}1{% endif %}</span><div><b>Tạo buổi học</b><small>{% if da_tao %}Đã tạo {{ da_tao|length }} buổi{% else %}Đang điền thông tin{% endif %}</small></div></div>
+  <div class="{% if da_tao %}dang{% endif %}"><span class="c">2</span><div><b>Dạy trên Zoom</b><small>Theo lịch đã chọn</small></div></div>
+  <div><span class="c">3</span><div><b>Đánh giá buổi học</b><small>Trong 12 giờ sau buổi</small></div></div>
+  <div><span class="c">4</span><div><b>Hoàn tất</b><small>Gửi nhận xét, tính thù lao</small></div></div>
 </div>
-{% if khong_co_lop %}
-  <div class="trang-giay trang-rong">Bạn chưa có khóa nào còn buổi để xếp lịch, cũng chưa có lớp nào chờ học thử. <a href="{% url 'lop_cua_toi' %}">Xem Lớp của tôi</a></div>
-{% else %}
-<div class="row g-4">
-  <div class="col-lg-7">
-    <div class="trang-giay p-4">
-      <form method="post" novalidate>{% csrf_token %}
-        {% include "partials/form_fields.html" %}
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary" data-dang-gui="Đang tạo phòng Zoom…"><i class="bi bi-camera-video" aria-hidden="true"></i>Tạo buổi học</button>
-          <a href="{% url 'buoi_cua_toi' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i>Hủy bỏ</a>
+
+{% if da_tao %}
+<section class="stack-16" aria-labelledby="kq-t">
+  <div class="row"><div><h2 id="kq-t" style="margin:0;font-size:18px;font-weight:600">Đã tạo {{ da_tao|length }} buổi học</h2>
+    <p class="muted" style="margin:4px 0 0;font-size:13px">Sao chép tin nhắn và dán vào nhóm Zalo của lớp. Học viên bấm link lớp cố định là vào đúng phòng Zoom.</p></div></div>
+  {% for x in da_tao %}{% with b=x.b %}
+  <article class="kq-buoi card">
+    <div class="dau">
+      <div class="ngay-nho" style="background:#EEF0FF;color:#4F46E5"><small>{{ b.bat_dau|thu_ngan }}</small><b>{{ b.bat_dau|date:"d" }}</b></div>
+      <div style="flex:1;min-width:0"><div class="b6">{{ b.yeu_cau.mon_hoc }} · {{ b.hoc_vien.ho_ten }}</div>
+        <div class="sm muted">{{ b.ma }} · {{ x.nhan }} · {{ b.bat_dau|date:"H:i" }}–{{ b.ket_thuc|time:"H:i" }} {{ b.bat_dau|date:"d/m/Y" }}</div></div>
+      {% if b.trang_thai == "DA_LEN_LICH" %}<span class="chip xanh_la"><span class="d"></span>Đã tạo phòng</span>{% else %}<span class="chip do"><i class="bi bi-camera-video-off" aria-hidden="true"></i>Lỗi Zoom</span>{% endif %}
+    </div>
+    {% if b.trang_thai == "DA_LEN_LICH" %}
+    <div class="than">
+      <div class="stack" style="gap:10px">
+        <div><div class="sm muted">Link lớp học cố định</div><div class="o-copy"><i class="bi bi-link-45deg" aria-hidden="true"></i><code>{{ x.link_lop }}</code><button type="button" class="icon-btn sm" data-sao-chep="{{ x.link_lop }}" data-thong-bao="Đã sao chép link lớp" aria-label="Sao chép link lớp"><i class="bi bi-copy"></i></button></div></div>
+        <div class="row" style="gap:10px">
+          <div style="flex:1"><div class="sm muted">Zoom ID</div><div class="o-copy"><code>{{ b.zoom_meeting_id }}</code><button type="button" class="icon-btn sm" data-sao-chep="{{ b.zoom_meeting_id }}" data-thong-bao="Đã sao chép Zoom ID" aria-label="Sao chép Zoom ID"><i class="bi bi-copy"></i></button></div></div>
+          {% if b.tai_khoan_zoom.host_key %}<div style="flex:1"><div class="sm muted">Host key · chỉ gia sư</div><div class="o-copy"><code data-an="{{ b.tai_khoan_zoom.host_key }}">••••••</code><button type="button" class="icon-btn sm" data-hien-ma aria-label="Hiện host key"><i class="bi bi-eye"></i></button></div></div>{% endif %}
         </div>
-      </form>
+        <p class="sm muted" style="margin:0"><i class="bi bi-info-circle" aria-hidden="true"></i> Phòng mở lúc {{ x.mo_luc|time:"H:i" }} và tự đóng lúc {{ x.dong_luc|time:"H:i" }}.</p>
+      </div>
+      <div>
+        <div class="row"><span class="sm b6">Tin nhắn gửi nhóm Zalo lớp</span><button type="button" class="btn sm" style="margin-left:auto" data-sao-chep-tu="#tn-{{ b.pk }}" data-thong-bao="Đã sao chép tin nhắn. Dán vào nhóm Zalo của lớp"><i class="bi bi-copy" aria-hidden="true"></i>Sao chép tin nhắn Zalo</button></div>
+        <pre class="tin-nhan" id="tn-{{ b.pk }}">{{ x.tin_nhan }}</pre>
+      </div>
+    </div>
+    {% else %}
+    <div class="row" style="padding:14px 18px;gap:12px">
+      <span class="dlg-ic" style="background:#FDECEC;color:#C2292E"><i class="bi bi-camera-video-off" aria-hidden="true"></i></span>
+      <div style="flex:1"><div class="b6">Chưa tạo được phòng Zoom</div><div class="sm muted">Buổi vẫn giữ lịch nhưng chưa có link vào lớp. Thử lại; nếu vẫn lỗi, buổi sẽ hiện ở Việc cần làm trên trang chủ.</div></div>
+      <form method="post" action="{% url 'buoi_thu_lai_zoom' b.pk %}">{% csrf_token %}<input type="hidden" name="tiep" value="{{ request.get_full_path }}"><button class="btn pri" data-dang-gui="Đang tạo lại phòng Zoom…"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i>Thử lại</button></form>
+    </div>
+    {% endif %}
+  </article>
+  {% endwith %}{% endfor %}
+  <div class="row"><a class="btn pri" href="{% url 'buoi_chi_tiet' da_tao.0.b.pk %}"><i class="bi bi-pencil-square" aria-hidden="true"></i>Xem buổi học</a><a class="btn" href="{% url 'buoi_tao' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi khác</a><a class="btn" href="{% url 'trang_chu' %}">Về trang chủ</a></div>
+</section>
+
+{% else %}
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:20px;align-items:start">
+<form method="post" class="card" novalidate data-form-tao>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="banner tom-tat-loi" tabindex="-1" role="alert" style="margin:20px 24px 0;background:#FDECEC;border-color:#F8C9CA"><span class="ic" style="color:#C2292E"><i class="bi bi-exclamation-circle" aria-hidden="true"></i></span><span>{{ form.non_field_errors|join:" " }}</span></div>{% endif %}
+
+  <div class="phan">
+    <div><h3><span class="so">1</span>Lớp</h3><p class="mo">Khóa đang học và lớp chờ học thử của bạn.</p></div>
+    <div class="stack" style="gap:10px">
+      {% for l in ds_lop %}
+      <label class="the-lop">
+        <input type="radio" name="lop" value="{{ l.ma }}"{% if l.ma == chon %} checked{% endif %} required>
+        <span class="av" style="background:{{ l.mau.1 }};color:{{ l.mau.2 }}">{{ l.chu_tat|slice:":1" }}{{ l.chu_tat.split|last|slice:":1" }}</span>
+        <span style="flex:1;min-width:0"><span class="row"><b class="b6">{{ l.tieu_de }}</b><span class="sm muted">{{ l.ma_hien }}</span>{% if l.loai == "thu" %}<span class="chip cam" style="height:20px"><span class="d"></span>Học thử</span>{% endif %}</span>
+          <span class="muted ell" style="display:block;font-size:13px">{{ l.phu }}</span>
+          {% if l.lich %}<span class="sm muted row" style="gap:5px"><i class="bi bi-calendar3" aria-hidden="true"></i>{% if l.loai == "khoa" %}Lịch cố định {% endif %}{{ l.lich }}</span>{% endif %}</span>
+        {% if l.loai == "khoa" %}<span class="td"><span class="sm b6">{{ l.da }}/{{ l.tong }} đã học</span>
+          <span class="tien-do" style="margin:6px 0"><span class="da" style="width:{{ l.w_da }}%"></span><span class="xep" style="width:{{ l.w_xep }}%"></span></span>
+          <span class="sm" style="color:{% if l.con_xep <= 2 %}#C2410C{% else %}#646B85{% endif %}">{% if l.con_xep %}Còn {{ l.con_xep }} buổi chưa xếp{% else %}Đã xếp đủ{% endif %}</span></span>{% endif %}
+      </label>
+      {% empty %}
+      <div class="empty"><span class="ring"><i class="bi bi-collection" aria-hidden="true"></i></span>Bạn chưa có lớp nào cần xếp lịch. Lớp sẽ hiện ở đây khi bạn nhận lời mời hoặc khi trung tâm mở khóa.</div>
+      {% endfor %}
+      {% if form.lop.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Hãy chọn lớp.</span>{% endif %}
     </div>
   </div>
-  <div class="col-lg-5">
-    <div class="trang-giay p-4">
-      <h2 class="fs-tieu-de mt-0"><i class="bi bi-lightbulb" aria-hidden="true"></i>Lưu ý</h2>
-      <ul class="small mb-0 ps-3">
-        <li>Trung tâm dùng chung một tài khoản Zoom, nên mỗi khung giờ chỉ có một buổi học. Nếu giờ bị trùng, hệ thống sẽ báo để bạn chọn giờ khác.</li>
-        <li>Sau giờ kết thúc, bạn có <b>12 giờ</b> để xác nhận buổi học. Quá hạn, buổi bị hủy và không tính thù lao.</li>
-        <li>Muốn đổi giờ, dùng <b>Dời lịch</b> trong trang buổi học, không tạo buổi mới.</li>
-      </ul>
+
+  <div class="phan" data-phan-loai>
+    <div><h3><span class="so">2</span>Loại buổi</h3><p class="mo">Buổi học bù thay cho buổi đã hủy vì gia sư hoặc học viên nghỉ.</p></div>
+    <div class="stack" style="gap:12px">
+      <div class="chon-loai" role="radiogroup" aria-label="Loại buổi">
+        <label><input type="radio" name="loai_buoi" value="thuong" checked><i class="bi bi-calendar3" aria-hidden="true"></i>Buổi thường</label>
+        <label><input type="radio" name="loai_buoi" value="bu"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Học bù</label>
+      </div>
+      <div class="field" data-chon-bu hidden><label for="hoc-bu">Buổi cần bù</label><select class="inp" id="hoc-bu" name="hoc_bu_cho"><option value="">Chọn buổi đã hủy</option></select><span class="sm muted" data-khong-bu hidden>Lớp này không có buổi nào cần học bù.</span></div>
+      <div class="field" data-thoi-luong-thu hidden><label for="tl-thu">Thời lượng buổi học thử</label><select class="inp" id="tl-thu" name="thoi_luong" style="width:200px"><option value="60">60 phút</option><option value="90" selected>90 phút</option><option value="120">120 phút</option></select></div>
     </div>
   </div>
+
+  <div class="phan">
+    <div><h3><span class="so">3</span>Ngày và giờ</h3><p class="mo">Mỗi buổi phải kết thúc trước 22:00 và không trùng giờ buổi khác của bạn.</p></div>
+    <div class="stack" style="gap:14px">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px;align-items:start">
+        <div class="lich-chon">
+          <div class="row" style="margin-bottom:8px"><b class="b6" data-tieu-de-lich style="font-size:13px"></b><span class="sm muted" style="margin-left:auto">Chọn ngày học <span class="req">*</span></span>
+            <button type="button" class="icon-btn sm" data-lich-lui aria-label="3 tuần trước"><i class="bi bi-chevron-left"></i></button><button type="button" class="icon-btn sm" data-lich-toi aria-label="3 tuần sau"><i class="bi bi-chevron-right"></i></button></div>
+          <div class="luoi thu" style="margin-bottom:6px"><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span></div>
+          <div class="luoi" data-luoi-ngay></div>
+          <div class="legend" style="margin-top:10px;padding-top:8px;border-top:1px solid #EEF0F5"><span><i style="background:#F5F6FF;border:1px solid #DCDFFB"></i>Theo lịch cố định</span><span><i style="border:1.5px dashed #6366F1"></i>Buổi lặp sẽ tạo</span><span><i style="background:#9AA1B8;border-radius:50%"></i>Đã có buổi</span></div>
+          <noscript><div class="field" style="margin-top:10px"><label for="id_ngay">Ngày học</label>{{ form.ngay }}</div></noscript>
+          <input type="hidden" name="ngay" value="{{ form.ngay.value|default_if_none:'' }}" data-o-ngay>
+        </div>
+        <div class="stack" style="gap:12px">
+          <div class="field"><label for="gio">Giờ bắt đầu <span class="req">*</span></label>
+            <select class="inp" id="gio" name="gio" required><option value="">Chọn giờ</option></select></div>
+          <div class="row" style="gap:8px"><div class="card" style="flex:1;padding:8px 10px;box-shadow:none;background:#F7F8FC"><div class="sm muted">Thời lượng</div><b data-thoi-luong>—</b></div><div class="card" style="flex:1;padding:8px 10px;box-shadow:none;background:#F7F8FC"><div class="sm muted">Kết thúc</div><b data-ket-thuc>—</b></div></div>
+          {% if form.gio.errors or form.ngay.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Chọn ngày và giờ bắt đầu.</span>{% endif %}
+        </div>
+      </div>
+      <div class="row" style="padding:12px 14px;border:1px solid #E6E9F2;border-radius:12px;background:#FAFBFE;gap:12px" data-lap>
+        <label class="row" style="gap:10px;flex:1;cursor:pointer"><input type="checkbox" data-co-lap style="width:16px;height:16px;margin:0;accent-color:#6366F1">
+          <span><b class="b5" style="display:block">Lặp lại hằng tuần</b><span class="sm muted" data-goi-y-lap>Cùng thứ, cùng giờ trong các tuần tiếp theo.</span></span></label>
+        <span class="o-so"><button type="button" data-bot aria-label="Bớt một buổi">−</button><input name="so_buoi" value="1" inputmode="numeric" aria-label="Số buổi" data-so-buoi readonly><button type="button" data-them aria-label="Thêm một buổi">+</button></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chan-form">
+    <span class="sm muted row" data-trang-thai-form><i class="bi bi-info-circle" aria-hidden="true"></i>Chọn lớp, ngày và giờ để kiểm tra lịch.</span>
+    <a href="{% url 'buoi_cua_toi' %}" class="btn" style="margin-left:auto">Hủy</a>
+    <button class="btn pri" data-nut-tao data-dang-gui="Đang tạo phòng Zoom…" disabled>Tạo buổi học</button>
+  </div>
+</form>
+
+<aside class="stack sticky" style="gap:16px">
+  <div class="card">
+    <div class="card-h"><i class="bi bi-eye" style="color:#4F46E5" aria-hidden="true"></i><h3>Xem trước</h3><span class="sm muted" style="margin-left:auto" data-dem-xt></span></div>
+    <div class="card-b" data-xem-truoc><p class="muted" style="margin:0;font-size:13px">Chọn lớp, ngày và giờ để xem các buổi sẽ được tạo.</p></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h3>Nhật ký buổi học</h3><span class="sm muted" style="margin-left:auto">Dự kiến</span></div>
+    <div class="card-b"><ul class="tl">
+      <li><span class="rail"><span class="ic" style="border-color:#6366F1;color:#4F46E5;background:#EEF0FF"><i class="bi bi-calendar3"></i></span><span class="ln"></span></span><div class="tx"><b class="b5">Bạn đang tạo buổi học</b><small style="color:#4F46E5">Bây giờ</small></div></li>
+      <li><span class="rail"><span class="ic" style="border-color:#D5D9E6;color:#646B85"><i class="bi bi-camera-video"></i></span><span class="ln"></span></span><div class="tx">Tạo phòng Zoom tự động<small>Ngay khi bấm Tạo</small></div></li>
+      <li><span class="rail"><span class="ic" style="border-color:#D5D9E6;color:#646B85"><i class="bi bi-chat-dots"></i></span><span class="ln"></span></span><div class="tx">Bạn dán tin nhắn vào nhóm Zalo lớp<small>Ngay sau khi có phòng</small></div></li>
+      <li><span class="rail"><span class="ic" style="border-color:#D5D9E6;color:#646B85"><i class="bi bi-door-open"></i></span><span class="ln"></span></span><div class="tx">Zoom mở phòng (trước 10 phút)<small>Link lớp cố định chuyển vào phòng</small></div></li>
+      <li><span class="rail"><span class="ic" style="border-color:#D5D9E6;color:#646B85"><i class="bi bi-person-video3"></i></span><span class="ln"></span></span><div class="tx">Buổi học diễn ra<small>Theo lịch đã chọn</small></div></li>
+      <li><span class="rail"><span class="ic" style="border-color:#D5D9E6;color:#646B85"><i class="bi bi-clipboard-check"></i></span><span class="ln"></span></span><div class="tx">Đánh giá và xác nhận hoàn tất<small>Trong 12 giờ sau buổi học</small></div></li>
+    </ul></div>
+  </div>
+</aside>
 </div>
+{{ du_lieu_js|json_script:"du-lieu-tao" }}
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if not da_tao %}
+<script>
+(function () {
+  var D = JSON.parse(JSON.parse(document.getElementById("du-lieu-tao").textContent));
+  var f = document.querySelector("[data-form-tao]");
+  var oNgay = f.querySelector("[data-o-ngay]"), gio = f.gio, soBuoi = f.querySelector("[data-so-buoi]");
+  var luoi = f.querySelector("[data-luoi-ngay]"), coLap = f.querySelector("[data-co-lap]");
+  var hai = function (n) { return (n < 10 ? "0" : "") + n; };
+  var iso = function (d) { return d.getFullYear() + "-" + hai(d.getMonth() + 1) + "-" + hai(d.getDate()); };
+  var homNay = new Date(D.hom_nay + "T00:00:00");
+  var dauTuan = new Date(homNay); dauTuan.setDate(homNay.getDate() - ((homNay.getDay() + 6) % 7));
+  var lech = 0;
+
+  /* Giờ: 07:00 → 21:00, mỗi 15 phút */
+  for (var h = 7; h <= 21; h++) { for (var m = 0; m < 60; m += 15) {
+    var o = document.createElement("option"); o.value = o.textContent = hai(h) + ":" + hai(m); gio.appendChild(o); } }
+  {% if form.gio.value %}gio.value = "{{ form.gio.value }}";{% endif %}
+
+  function lop() { var r = f.querySelector("input[name=lop]:checked"); return r ? r.value : ""; }
+  function thuCoDinh() { return (D.lich[lop()] || []).map(function (x) { return Number(x.thu); }); }
+
+  function veLich() {
+    luoi.innerHTML = "";
+    var bd = new Date(dauTuan); bd.setDate(bd.getDate() + lech * 21);
+    var kt = new Date(bd); kt.setDate(kt.getDate() + 20);
+    f.querySelector("[data-tieu-de-lich]").textContent = hai(bd.getDate()) + "/" + hai(bd.getMonth() + 1) + " – " + hai(kt.getDate()) + "/" + hai(kt.getMonth() + 1) + "/" + kt.getFullYear();
+    var chon = oNgay.value, so = Number(soBuoi.value) || 1, lap = [];
+    if (chon) { for (var i = 1; i < so; i++) { var d = new Date(chon + "T00:00:00"); d.setDate(d.getDate() + 7 * i); lap.push(iso(d)); } }
+    var cd = thuCoDinh();
+    for (var k = 0; k < 21; k++) {
+      var ng = new Date(bd); ng.setDate(bd.getDate() + k);
+      var b = document.createElement("button"); b.type = "button"; b.dataset.ngay = iso(ng);
+      b.disabled = ng < homNay || ng > new Date(homNay.getTime() + 60 * 864e5);
+      if (iso(ng) === D.hom_nay) { b.classList.add("nay"); b.innerHTML = "<small>Nay</small>"; }
+      if (cd.indexOf((ng.getDay() + 6) % 7) >= 0) { b.classList.add("co-dinh"); }
+      if (lap.indexOf(iso(ng)) >= 0) { b.classList.add("lap"); }
+      b.setAttribute("aria-pressed", String(iso(ng) === chon));
+      b.setAttribute("aria-label", "Ngày " + ng.getDate() + "/" + (ng.getMonth() + 1));
+      b.insertAdjacentHTML("beforeend", "<span>" + ng.getDate() + "</span><i>" + (D.cham[iso(ng)] || []).slice(0, 3).map(function (c) { return '<span style="background:' + c + '"></span>'; }).join("") + "</i>");
+      luoi.appendChild(b);
+    }
+  }
+  luoi.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-ngay]"); if (!b || b.disabled) { return; }
+    oNgay.value = b.dataset.ngay;
+    var thu = (new Date(b.dataset.ngay + "T00:00:00").getDay() + 6) % 7;
+    var g = (D.lich[lop()] || []).filter(function (x) { return Number(x.thu) === thu; })[0];
+    if (g && !gio.value) { gio.value = g.gio; }
+    veLich(); kiemTra();
+  });
+  f.querySelector("[data-lich-lui]").onclick = function () { if (lech > 0) { lech--; veLich(); } };
+  f.querySelector("[data-lich-toi]").onclick = function () { if (lech < 2) { lech++; veLich(); } };
+
+  function capNhatLop() {
+    var l = lop(), laThu = l.indexOf("t-") === 0;
+    f.querySelector("[data-thoi-luong-thu]").hidden = !laThu;
+    f.querySelector("[data-phan-loai] .chon-loai").hidden = laThu;
+    var bu = D.bu[l] || [], sel = f.hoc_bu_cho;
+    sel.innerHTML = '<option value="">Chọn buổi đã hủy</option>' + bu.map(function (x) { return '<option value="' + x.pk + '">' + x.nhan + "</option>"; }).join("");
+    f.querySelector("[data-khong-bu]").hidden = bu.length > 0;
+    if (laThu) { f.querySelector("input[name=loai_buoi][value=thuong]").checked = true; }
+    capNhatBu(); capNhatThoiLuong(); veLich();
+  }
+  function capNhatBu() {
+    var bu = f.querySelector("input[name=loai_buoi]:checked").value === "bu";
+    f.querySelector("[data-chon-bu]").hidden = !bu;
+    if (!bu) { f.hoc_bu_cho.value = ""; }
+  }
+  function capNhatThoiLuong() {
+    var l = lop(), tl = l.indexOf("t-") === 0 ? Number(f.thoi_luong.value) : (D.thoi_luong[l] || 0);
+    f.querySelector("[data-thoi-luong]").textContent = tl ? tl + " phút" : "—";
+    if (tl && gio.value) { var p = gio.value.split(":"), ph = Number(p[0]) * 60 + Number(p[1]) + tl; f.querySelector("[data-ket-thuc]").textContent = hai(Math.floor(ph / 60)) + ":" + hai(ph % 60); }
+    else { f.querySelector("[data-ket-thuc]").textContent = "—"; }
+  }
+  function capNhatLap() {
+    var toiDa = Math.min(D.toi_da, Math.max(D.con_xep[lop()] || 1, 1));
+    if (!coLap.checked) { soBuoi.value = 1; }
+    soBuoi.value = Math.max(1, Math.min(Number(soBuoi.value) || 1, toiDa));
+    f.querySelector("[data-goi-y-lap]").textContent = coLap.checked ? "Tạo " + soBuoi.value + " buổi, cùng thứ, cùng giờ (tối đa " + toiDa + ")." : "Cùng thứ, cùng giờ trong các tuần tiếp theo.";
+    veLich(); kiemTra();
+  }
+  f.querySelector("[data-them]").onclick = function () { coLap.checked = true; soBuoi.value = Number(soBuoi.value) + 1; capNhatLap(); };
+  f.querySelector("[data-bot]").onclick = function () { soBuoi.value = Number(soBuoi.value) - 1; if (Number(soBuoi.value) <= 1) { coLap.checked = false; } capNhatLap(); };
+  coLap.onchange = function () { if (coLap.checked && Number(soBuoi.value) < 2) { soBuoi.value = 2; } capNhatLap(); };
+
+  /* Kiểm tra lịch ở máy chủ (SD-13) */
+  var hen = null, nut = f.querySelector("[data-nut-tao]"), tt = f.querySelector("[data-trang-thai-form]");
+  var xt = document.querySelector("[data-xem-truoc]"), demXt = document.querySelector("[data-dem-xt]");
+  function kiemTra() {
+    capNhatThoiLuong();
+    clearTimeout(hen); nut.disabled = true;
+    if (!lop() || !oNgay.value || !gio.value) { return; }
+    hen = setTimeout(function () {
+      var fd = new FormData(f);
+      GSO.post("{% url 'api_kiem_tra_lich' %}", fd).then(function (j) {
+        if (!j.ok) { tt.innerHTML = '<i class="bi bi-exclamation-circle" style="color:#C2292E"></i>' + (j.message || "Không kiểm tra được lịch."); xt.innerHTML = '<p class="sm" style="margin:0;color:#C2292E">' + (j.message || "") + "</p>"; return; }
+        demXt.textContent = j.data.dong.length + " buổi";
+        xt.innerHTML = j.data.dong.map(function (d) {
+          var chip = d.muc === "ok" ? '<span class="chip xanh_la"><span class="d"></span>Sẵn sàng</span>' : d.muc === "canh_bao" ? '<span class="chip cam"><span class="d"></span>Lưu ý</span>' : '<span class="chip do"><span class="d"></span>Bị chặn</span>';
+          return '<div class="dong-xt"><div class="ngay-nho" style="background:#F1F3F9"><small>' + d.thu + "</small><b>" + d.ngay.slice(0, 2) + '</b></div><div style="flex:1;min-width:0"><div class="b5" style="font-size:13px">' + d.nhan + '</div><div class="sm muted">' + d.bat_dau + "–" + d.ket_thuc + " · " + d.ngay + "</div>" + (d.ly_do ? '<div class="sm" style="margin-top:2px;color:' + (d.muc === "chan" ? "#C2292E" : "#B45309") + '">' + d.ly_do + "</div>" : "") + "</div>" + chip + "</div>";
+        }).join("");
+        tt.innerHTML = '<i class="bi ' + (j.data.so_chan ? "bi-exclamation-triangle" : "bi-check-circle") + '" style="color:' + (j.data.so_chan ? "#B45309" : "#0F766E") + '"></i>' + j.message;
+        nut.disabled = j.data.so_ok === 0;
+        nut.textContent = j.data.so_ok > 1 ? "Tạo " + j.data.so_ok + " buổi học" : "Tạo buổi học";
+      });
+    }, 300);
+  }
+  f.addEventListener("change", function (e) {
+    if (e.target.name === "lop") { capNhatLop(); }
+    if (e.target.name === "loai_buoi") { capNhatBu(); }
+    kiemTra();
+  });
+  capNhatLop(); capNhatLap();
+})();
+</script>
+{% else %}
+<script>
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("[data-hien-ma]"); if (!b) { return; }
+  var c = b.parentNode.querySelector("[data-an]"); var hien = c.textContent.indexOf("•") === 0;
+  c.textContent = hien ? c.dataset.an : "••••••";
+  b.querySelector(".bi").className = "bi " + (hien ? "bi-eye-slash" : "bi-eye");
+});
+</script>
 {% endif %}
 {% endblock %}
