@@ -358,19 +358,23 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .the-lop input{width:16px;height:16px;margin:0;accent-color:#6366F1}
 .the-lop .av{width:40px;height:40px;border-radius:10px;font-size:13px}
 .the-lop .td{min-width:140px;text-align:right}
-.chon-loai{display:inline-flex;gap:2px;padding:3px;background:#EEF0F5;border-radius:10px}
+.chon-loai{display:inline-flex;align-self:flex-start;width:max-content;gap:2px;padding:3px;background:#EEF0F5;border-radius:10px}
 .chon-loai label{height:34px;padding:0 18px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#4A5068;cursor:pointer}
 .chon-loai label:has(input:checked){background:#fff;color:#1E2235;box-shadow:0 1px 2px rgba(16,24,40,.1)}
 .chon-loai input{position:absolute;opacity:0;pointer-events:none}
 .lich-chon{border:1px solid #E6E9F2;border-radius:12px;padding:12px}
 .lich-chon .luoi{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
-.lich-chon .thu{font-size:11px;color:#9AA1B8;font-weight:600}
+.lich-chon .thu{font-size:11px;color:#646B85;font-weight:600}
 .lich-chon button{height:44px;border:1px solid #EEF0F5;border-radius:8px;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;color:#1E2235;position:relative}
 .lich-chon button:hover:not(:disabled){border-color:#C7CBF9}
-.lich-chon button:disabled{color:#C4C9D6;background:#FAFBFE;cursor:not-allowed}
+.lich-chon button:disabled{color:#9AA1B8;background:#F7F8FC;cursor:not-allowed}
+.lich-chon button.nay{border-color:#A5B4FC;font-weight:600}
 .lich-chon button.nay small{position:absolute;top:2px;font-size:9px;color:#4F46E5;font-weight:600}
-.lich-chon button.co-dinh{background:#F5F6FF}
-.lich-chon button[aria-pressed=true]{background:#6366F1;border-color:#6366F1;color:#fff}
+.lich-chon button[aria-pressed=true] small{color:#fff;opacity:.9}
+.lich-chon button.co-dinh{background:#EEF0FF;border-color:#C7CBF9;color:#3730A3}
+.lich-chon button[aria-pressed=true]{background:#6366F1;border-color:#6366F1;color:#fff;font-weight:600}
+.lich-chon button[aria-pressed=true] i span{background:#fff!important}
+.lich-chon .legend{color:#4A5068}
 .lich-chon button.lap{border:1.5px dashed #6366F1;color:#4F46E5}
 .lich-chon button i{display:flex;gap:2px;height:4px}.lich-chon button i span{width:4px;height:4px;border-radius:50%}
 .o-so{display:inline-flex;align-items:center;border:1px solid #E6E9F2;border-radius:8px;overflow:hidden}
@@ -490,3 +494,15 @@ kbd,.kbd{font-family:inherit;font-size:11px;color:#646B85;border:1px solid #E6E9
 .dong-ds .mui-ds{transition:transform .15s}
 .dong-ds[open] .mui-ds{transform:rotate(90deg)}
 .gt-r .r,.gt-h .r{text-align:right;justify-content:flex-end}
+
+/* Tạo buổi: chọn lớp dạng sổ xuống */
+.chon-lop{position:relative}
+.chon-lop-nut{width:100%;display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #E6E9F2;border-radius:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:#1E2235}
+.chon-lop-nut:hover,.chon-lop-nut[aria-expanded=true]{border-color:#6366F1;box-shadow:0 0 0 3px #EEF0FF}
+.chon-lop-nut .av{width:36px;height:36px;border-radius:10px;font-size:12px}
+.chon-lop-nut>.bi{margin-left:auto;color:#646B85;transition:transform .15s}
+.chon-lop-nut[aria-expanded=true]>.bi{transform:rotate(180deg)}
+.chon-lop-ds{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 16px 40px rgba(16,24,40,.14);padding:8px}
+.chon-lop-ds .cuon{max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.chon-lop-ds .the-lop{padding:10px 12px}
+.chon-lop-ds .search{margin-bottom:8px}

@@ -61,8 +61,17 @@
   <div class="phan">
     <div><h3><span class="so">1</span>Lớp</h3><p class="mo">Khóa đang học và lớp chờ học thử của bạn.</p></div>
     <div class="stack" style="gap:10px">
+      {% if ds_lop %}
+      <div class="chon-lop" data-chon-lop>
+        <button type="button" class="chon-lop-nut" aria-haspopup="listbox" aria-expanded="false" data-nut-lop>
+          <span data-tom-lop class="row" style="gap:12px;flex:1;min-width:0"><span class="av" style="background:#F1F3F8;color:#646B85"><i class="bi bi-collection"></i></span><span><b class="b6" style="display:block">Chọn lớp</b><span class="sm muted">{{ ds_lop|length }} lớp đang dạy và chờ học thử</span></span></span>
+          <i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+        <div class="chon-lop-ds" data-ds-lop hidden>
+          {% if ds_lop|length > 4 %}<div class="search"><i class="bi bi-search" aria-hidden="true"></i><input class="inp" type="search" placeholder="Tìm môn, học viên, mã lớp" aria-label="Tìm lớp" data-tim-lop></div>{% endif %}
+          <div class="cuon" role="listbox">
+      {% endif %}
       {% for l in ds_lop %}
-      <label class="the-lop">
+      <label class="the-lop" data-the-lop data-tim="{{ l.tieu_de }} {{ l.ma_hien }} {{ l.phu }}">
         <input type="radio" name="lop" value="{{ l.ma }}"{% if l.ma == chon %} checked{% endif %} required>
         <span class="av" style="background:{{ l.mau.1 }};color:{{ l.mau.2 }}">{{ l.chu_tat|slice:":1" }}{{ l.chu_tat.split|last|slice:":1" }}</span>
         <span style="flex:1;min-width:0"><span class="row"><b class="b6">{{ l.tieu_de }}</b><span class="sm muted">{{ l.ma_hien }}</span>{% if l.loai == "thu" %}<span class="chip cam" style="height:20px"><span class="d"></span>Học thử</span>{% endif %}</span>
@@ -72,6 +81,7 @@
           <span class="tien-do" style="margin:6px 0"><span class="da" style="width:{{ l.w_da }}%"></span><span class="xep" style="width:{{ l.w_xep }}%"></span></span>
           <span class="sm" style="color:{% if l.con_xep <= 2 %}#C2410C{% else %}#646B85{% endif %}">{% if l.con_xep %}Còn {{ l.con_xep }} buổi chưa xếp{% else %}Đã xếp đủ{% endif %}</span></span>{% endif %}
       </label>
+      {% if forloop.last %}<div class="sm muted" data-khong-lop hidden style="padding:10px">Không có lớp nào khớp.</div></div></div></div>{% endif %}
       {% empty %}
       <div class="empty"><span class="ring"><i class="bi bi-collection" aria-hidden="true"></i></span>Bạn chưa có lớp nào cần xếp lịch. Lớp sẽ hiện ở đây khi bạn nhận lời mời hoặc khi trung tâm mở khóa.</div>
       {% endfor %}
@@ -155,6 +165,30 @@
   var f = document.querySelector("[data-form-tao]");
   var oNgay = f.querySelector("[data-o-ngay]"), gio = f.gio, soBuoi = f.querySelector("[data-so-buoi]");
   var luoi = f.querySelector("[data-luoi-ngay]"), coLap = f.querySelector("[data-co-lap]");
+
+  /* Chọn lớp dạng sổ xuống: nút tóm tắt lớp đang chọn + danh sách cuộn có ô tìm. */
+  (function () {
+    var hop = f.querySelector("[data-chon-lop]"); if (!hop) { return; }
+    var nut = hop.querySelector("[data-nut-lop]"), ds = hop.querySelector("[data-ds-lop]"), tim = hop.querySelector("[data-tim-lop]");
+    function moDong(mo) { ds.hidden = !mo; nut.setAttribute("aria-expanded", String(mo)); if (mo && tim) { tim.focus(); } }
+    function tomTat() {
+      var r = f.querySelector("input[name=lop]:checked"); if (!r) { return; }
+      var the = r.closest("[data-the-lop]"), av = the.querySelector(".av").cloneNode(true), noi = the.querySelector("span[style*='flex:1']").cloneNode(true);
+      var o = hop.querySelector("[data-tom-lop]"); o.innerHTML = ""; o.appendChild(av); o.appendChild(noi);
+    }
+    nut.addEventListener("click", function () { moDong(ds.hidden); });
+    document.addEventListener("click", function (e) { if (!hop.contains(e.target)) { moDong(false); } });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !ds.hidden) { moDong(false); nut.focus(); } });
+    hop.addEventListener("change", function (e) { if (e.target.name === "lop") { tomTat(); moDong(false); } });
+    if (tim) {
+      tim.addEventListener("input", function () {
+        var q = tim.value.trim().toLowerCase(), con = 0;
+        hop.querySelectorAll("[data-the-lop]").forEach(function (t) { var an = q && t.dataset.tim.toLowerCase().indexOf(q) < 0; t.hidden = an; if (!an) { con++; } });
+        hop.querySelector("[data-khong-lop]").hidden = con > 0;
+      });
+    }
+    tomTat();
+  })();
   var hai = function (n) { return (n < 10 ? "0" : "") + n; };
   var iso = function (d) { return d.getFullYear() + "-" + hai(d.getMonth() + 1) + "-" + hai(d.getDate()); };
   var homNay = new Date(D.hom_nay + "T00:00:00");
