@@ -64,6 +64,7 @@
         {% with f=form_hv.ten_phu_huynh %}<div class="field"><label for="{{ f.id_for_label }}">Tên phụ huynh <span class="req">*</span></label>{{ f }}{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
         {% with f=form_hv.sdt_phu_huynh %}<div class="field"><label for="{{ f.id_for_label }}">SĐT / Zalo <span class="req">*</span></label>{{ f }}<span class="sm muted">Nhận 10 số, có thể kèm +84. Hệ thống tự chuẩn hóa.</span>{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
       </div>
+      {% with f=form_hv.email_phu_huynh %}<div class="field" style="max-width:420px"><label for="{{ f.id_for_label }}">Email phụ huynh <span class="opt">(không bắt buộc)</span></label>{{ f }}<span class="sm muted">Nhận đánh giá sau mỗi buổi học qua email, song song với Zalo.</span>{% if f.errors %}<span class="err" id="{{ f.auto_id }}_loi">{{ f.errors.0 }}</span>{% endif %}</div>{% endwith %}
       <label class="row" style="gap:8px;font-size:14px">{{ form_hv.dong_y_ghi_hinh }} Phụ huynh đồng ý ghi hình buổi học (bản ghi lưu 30 ngày)</label>
     </div>
   </div>

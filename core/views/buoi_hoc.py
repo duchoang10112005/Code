@@ -319,11 +319,14 @@ def xac_nhan(request, pk):
                 messages.error(request, _loi(e))
                 return redirect("buoi_chi_tiet", pk=pk)
         else:
+            kenh = [k for k, v in (("Zalo", buoi.zalo_trang_thai), ("email", buoi.email_trang_thai))
+                    if v == BuoiHoc.GuiZalo.DA_GUI]
             if not form.cleaned_data.get("gui_zalo_phu_huynh"):
                 messages.success(request, f"Đã xác nhận hoàn tất lúc {timezone.localtime(buoi.xac_nhan_luc):%H:%M}. "
-                                          "Bạn đã tắt gửi Zalo – hãy sao chép nhận xét gửi phụ huynh.")
-            elif buoi.zalo_trang_thai == BuoiHoc.GuiZalo.DA_GUI:
-                messages.success(request, "Đã xác nhận hoàn tất. Đánh giá đã được gửi cho phụ huynh qua Zalo.")
+                                          "Bạn đã tắt gửi tự động – hãy sao chép nhận xét gửi phụ huynh.")
+            elif kenh:
+                messages.success(request, "Đã xác nhận hoàn tất. Đánh giá đã được gửi cho phụ huynh qua "
+                                 + " và ".join(kenh) + ".")
             else:
                 messages.warning(request, "Đã xác nhận hoàn tất, nhưng chưa gửi được Zalo. "
                                           "Bấm Gửi lại hoặc sao chép nhận xét gửi phụ huynh.")

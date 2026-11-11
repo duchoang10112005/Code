@@ -33,7 +33,7 @@ def tieu_chi(hk):
     nguong = round(NV["NGUONG_THAM_GIA"] * 100)
     nx_min = NV.get("DO_DAI_NHAN_XET_TOI_THIEU", 30)
     do_dai = len((b.danh_gia or "").strip())
-    zalo = b.zalo_trang_thai == BuoiHoc.GuiZalo.DA_GUI
+    zalo = BuoiHoc.GuiZalo.DA_GUI in (b.zalo_trang_thai, b.email_trang_thai)  # Zalo hoặc email đều được
 
     def ty_le(v):
         return None if v is None else v >= nguong
@@ -47,8 +47,9 @@ def tieu_chi(hk):
          "gia_tri": "Không có dữ liệu" if hk.ty_le_hoc_vien is None else f"{hk.ty_le_hoc_vien}%"},
         {"ten": f"Phiếu đánh giá đầy đủ (nhận xét từ {nx_min} ký tự)", "dat": do_dai >= nx_min,
          "gia_tri": "Đủ" if do_dai >= nx_min else f"{do_dai} ký tự"},
-        {"ten": "Đã gửi nhận xét cho phụ huynh qua Zalo", "dat": zalo,
-         "gia_tri": "Đã gửi" if zalo else b.get_zalo_trang_thai_display()},
+        {"ten": "Đã gửi nhận xét cho phụ huynh (Zalo hoặc email)", "dat": zalo,
+         "gia_tri": ("Đã gửi " + " + ".join(k for k, v in (("Zalo", b.zalo_trang_thai), ("email", b.email_trang_thai))
+                                            if v == BuoiHoc.GuiZalo.DA_GUI)) if zalo else b.get_zalo_trang_thai_display()},
     ]
 
 
@@ -71,7 +72,7 @@ def cham(hk, nguoi_tham_gia=None, co_du_lieu=True):
         hk.ty_le_gia_su = min(round(phut(host) * 100 / tl), 100)
         hk.ty_le_hoc_vien = min(round(phut(khach) * 100 / tl), 100)
     hk.do_dai_nhan_xet = len((b.danh_gia or "").strip())
-    hk.da_gui_zalo = b.zalo_trang_thai == BuoiHoc.GuiZalo.DA_GUI
+    hk.da_gui_zalo = BuoiHoc.GuiZalo.DA_GUI in (b.zalo_trang_thai, b.email_trang_thai)
     hk.so_canh_bao = so_canh_bao(hk)
     hk.da_cham = True
     hk.save(update_fields=["tre_phut", "ty_le_gia_su", "ty_le_hoc_vien", "do_dai_nhan_xet", "da_gui_zalo",

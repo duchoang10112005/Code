@@ -93,7 +93,17 @@ def gui_lai_zalo(now=None):
         if tin.count() >= 3 or (cuoi and cuoi.thoi_diem > now - timedelta(minutes=30)):
             continue
         n += bool(gui_zalo_danh_gia(b))
-    return {"gui_lai_zalo": n}
+    from core.services.buoi_hoc import gui_email_danh_gia
+    m = 0
+    for b in BuoiHoc.objects.filter(trang_thai=TT.HOAN_TAT, email_trang_thai=BuoiHoc.GuiZalo.LOI,
+                                    gui_zalo_phu_huynh=True, xac_nhan_luc__gte=now - timedelta(days=1)).select_related(
+            "hoc_vien", "gia_su", "yeu_cau__mon_hoc"):
+        tin = NhatKyGuiTin.objects.filter(buoi_hoc=b, kenh=NhatKyGuiTin.Kenh.EMAIL)
+        cuoi = tin.order_by("-thoi_diem").first()
+        if tin.count() >= 3 or (cuoi and cuoi.thoi_diem > now - timedelta(minutes=30)):
+            continue
+        m += bool(gui_email_danh_gia(b))
+    return {"gui_lai_zalo": n, "gui_lai_email": m}
 
 
 def het_han_ban_ghi(now=None):

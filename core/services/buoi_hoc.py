@@ -463,6 +463,7 @@ def xac_nhan_hoan_tat(gia_su, buoi, du_lieu, bo_qua_han=False, nguoi_thuc_hien=N
     buoi.refresh_from_db()
     if gui_zalo:
         gui_zalo_danh_gia(buoi)
+        gui_email_danh_gia(buoi)
     return buoi
 
 
@@ -586,6 +587,33 @@ def gui_zalo_danh_gia(buoi):
                                 buoi_hoc=buoi, thanh_cong=ok, phan_hoi=phan_hoi[:2000])
     buoi.zalo_trang_thai = BuoiHoc.GuiZalo.DA_GUI if ok else BuoiHoc.GuiZalo.LOI
     buoi.save(update_fields=["zalo_trang_thai"])
+    return ok
+
+
+def gui_email_danh_gia(buoi):
+    """Gửi đánh giá buổi học tới email phụ huynh (kênh miễn phí, song song với Zalo).
+    Học viên chưa có email phụ huynh → bỏ qua (giữ CHUA_GUI). Lỗi gửi KHÔNG làm hỏng việc xác nhận."""
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    hv = buoi.hoc_vien
+    if not hv.email_phu_huynh:
+        return None
+    bd = timezone.localtime(buoi.bat_dau)
+    tieu_de = f"Đánh giá buổi {buoi.yeu_cau.mon_hoc} của {hv.ho_ten} – {bd:%d/%m/%Y}"
+    van_ban = noi_dung_gui_phu_huynh(buoi)
+    try:
+        html = render_to_string("email/danh_gia_buoi.html", {"b": buoi, "hv": hv, "bd": bd})
+        m = EmailMultiAlternatives(tieu_de, van_ban, settings.DEFAULT_FROM_EMAIL, [hv.email_phu_huynh])
+        m.attach_alternative(html, "text/html")
+        m.send(fail_silently=False)
+        ok, phan_hoi = True, "OK"
+    except Exception as exc:  # mạng lỗi, sai mật khẩu SMTP…
+        logger.warning("Gửi email đánh giá %s thất bại: %s", buoi.ma, exc)
+        ok, phan_hoi = False, str(exc)
+    NhatKyGuiTin.objects.create(kenh=NhatKyGuiTin.Kenh.EMAIL, nguoi_nhan=hv.email_phu_huynh, tieu_de=tieu_de[:200],
+                                noi_dung=van_ban, buoi_hoc=buoi, thanh_cong=ok, phan_hoi=phan_hoi[:2000])
+    buoi.email_trang_thai = BuoiHoc.GuiZalo.DA_GUI if ok else BuoiHoc.GuiZalo.LOI
+    buoi.save(update_fields=["email_trang_thai"])
     return ok
 
 

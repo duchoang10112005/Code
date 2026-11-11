@@ -298,7 +298,8 @@ class LocGiaSuForm(BootstrapMixin, forms.Form):
 class HocVienForm(GsoMixin, forms.ModelForm):
     class Meta:
         model = HocVien
-        fields = ["ho_ten", "lop", "gioi_tinh", "truong", "ten_phu_huynh", "sdt_phu_huynh", "dong_y_ghi_hinh", "ghi_chu"]
+        fields = ["ho_ten", "lop", "gioi_tinh", "truong", "ten_phu_huynh", "sdt_phu_huynh", "email_phu_huynh",
+                  "dong_y_ghi_hinh", "ghi_chu"]
         labels = {"sdt_phu_huynh": "SĐT / Zalo phụ huynh", "lop": "Lớp hiện tại"}
         widgets = {"ghi_chu": forms.Textarea(attrs={"rows": 2})}
         help_texts = {
@@ -541,7 +542,8 @@ class XacNhanBuoiForm(GsoMixin, forms.Form):
     ghi_chu_tuyen_sinh = forms.CharField(label="Ghi chú cho Tuyển sinh", max_length=500, required=False,
                                          widget=forms.Textarea(attrs={"rows": 3, "placeholder":
                                                                       "VD: Học viên vào trễ 5 phút do mạng yếu"}))
-    gui_zalo_phu_huynh = forms.BooleanField(label="Gửi nhận xét cho phụ huynh qua Zalo", required=False, initial=True)
+    gui_zalo_phu_huynh = forms.BooleanField(label="Gửi nhận xét cho phụ huynh (Zalo + email)", required=False,
+                                            initial=True)
 
 
 class HuyBuoiForm(GsoMixin, forms.Form):

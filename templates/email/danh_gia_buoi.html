@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi"><body style="margin:0;padding:24px;background:#F4F5FA;font-family:Arial,Helvetica,sans-serif;color:#1E2235">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;border:1px solid #E6E9F2">
+  <tr><td style="padding:20px 24px;border-bottom:1px solid #EEF0F5">
+    <div style="font-size:13px;color:#4F46E5;font-weight:bold">Gia Sư Online</div>
+    <div style="font-size:18px;font-weight:bold;margin-top:4px">Đánh giá buổi học của em {{ hv.ho_ten }}</div>
+    <div style="font-size:13px;color:#646B85;margin-top:4px">{{ b.yeu_cau.mon_hoc }} · {{ bd|date:"H:i" }} ngày {{ bd|date:"d/m/Y" }} · gia sư {{ b.gia_su.ho_ten }}</div>
+  </td></tr>
+  <tr><td style="padding:20px 24px;font-size:14px;line-height:22px">
+    <p style="margin:0 0 12px">Kính gửi {{ hv.ten_phu_huynh }},</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:22px">
+      <tr><td style="width:130px;color:#646B85;vertical-align:top;padding:4px 0">Nội dung</td><td style="padding:4px 0">{{ b.noi_dung|linebreaksbr }}</td></tr>
+      <tr><td style="color:#646B85;vertical-align:top;padding:4px 0">Mức tiếp thu</td><td style="padding:4px 0"><b>{{ b.get_xep_loai_display }}</b></td></tr>
+      <tr><td style="color:#646B85;vertical-align:top;padding:4px 0">Nhận xét</td><td style="padding:4px 0">{{ b.danh_gia|linebreaksbr }}</td></tr>
+      {% if b.dan_do_buoi_sau %}<tr><td style="color:#646B85;vertical-align:top;padding:4px 0">Bài tập về nhà</td><td style="padding:4px 0">{{ b.dan_do_buoi_sau|linebreaksbr }}</td></tr>{% endif %}
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 24px;border-top:1px solid #EEF0F5;font-size:12px;color:#9AA1B8">Email tự động từ trung tâm. Phụ huynh cần trao đổi thêm vui lòng liên hệ nhân viên tuyển sinh phụ trách.</td></tr>
+</table>
+</body></html>

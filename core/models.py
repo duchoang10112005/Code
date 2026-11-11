@@ -317,6 +317,8 @@ class HocVien(models.Model):
     ten_phu_huynh = models.CharField("Tên phụ huynh", max_length=150)
     # Lưu dạng chuẩn 84xxxxxxxxx để gửi Zalo ZNS.
     sdt_phu_huynh = models.CharField("SĐT phụ huynh (Zalo)", max_length=15)
+    email_phu_huynh = models.EmailField("Email phụ huynh", blank=True,
+                                        help_text="Nhận đánh giá sau mỗi buổi học qua email (miễn phí).")
     dong_y_ghi_hinh = models.BooleanField("Phụ huynh đồng ý ghi hình buổi học", default=False)
     class GioiTinh(models.TextChoices):
         NAM = "NAM", "Nam"
@@ -756,7 +758,7 @@ class BuoiHoc(models.Model):
     danh_gia = models.TextField("Nhận xét gửi phụ huynh", blank=True)
     dan_do_buoi_sau = models.TextField("Bài tập về nhà", blank=True)
     ghi_chu_tuyen_sinh = models.TextField("Ghi chú cho Tuyển sinh", blank=True)
-    gui_zalo_phu_huynh = models.BooleanField("Gửi nhận xét qua Zalo", default=True)
+    gui_zalo_phu_huynh = models.BooleanField("Gửi nhận xét cho phụ huynh (Zalo + email)", default=True)
     xac_nhan_luc = models.DateTimeField(null=True, blank=True)
     # Hạn xác nhận = giờ kết thúc + HAN_XAC_NHAN_GIO; quá hạn thì hệ thống tự hủy buổi.
     han_xac_nhan = models.DateTimeField("Hạn xác nhận", null=True, blank=True)
@@ -780,6 +782,8 @@ class BuoiHoc(models.Model):
 
     # Zalo
     zalo_trang_thai = models.CharField(max_length=20, choices=GuiZalo.choices, default=GuiZalo.CHUA_GUI)
+    email_trang_thai = models.CharField("Email phụ huynh", max_length=20, choices=GuiZalo.choices,
+                                        default=GuiZalo.CHUA_GUI)
 
     tao_luc = models.DateTimeField(auto_now_add=True)
     cap_nhat_luc = models.DateTimeField(auto_now=True)

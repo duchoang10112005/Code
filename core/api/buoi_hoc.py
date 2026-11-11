@@ -57,7 +57,9 @@ def gui_lai_zalo(request, pk):
                           pk=pk, gia_su=request.user)
     if b.trang_thai not in (BuoiHoc.TrangThai.HOAN_TAT, BuoiHoc.TrangThai.DANG_XEM_XET):
         return tra_ve(False, "Chỉ gửi nhận xét cho buổi đã xác nhận hoàn tất.")
-    ok = dv.gui_zalo_danh_gia(b)
-    return tra_ve(ok, "Đã gửi nhận xét cho phụ huynh qua Zalo." if ok else
-                  "Chưa gửi được Zalo. Hãy sao chép nhận xét và gửi tay qua Zalo.",
-                  data={"zalo": b.get_zalo_trang_thai_display()})
+    ok_z = b.zalo_trang_thai == BuoiHoc.GuiZalo.DA_GUI or dv.gui_zalo_danh_gia(b)
+    ok_e = b.email_trang_thai == BuoiHoc.GuiZalo.DA_GUI or dv.gui_email_danh_gia(b)
+    kenh = [k for k, ok in (("Zalo", ok_z), ("email", ok_e)) if ok]
+    return tra_ve(bool(kenh), ("Đã gửi nhận xét cho phụ huynh qua " + " và ".join(kenh) + ".") if kenh else
+                  "Chưa gửi được. Hãy sao chép nhận xét và gửi tay cho phụ huynh.",
+                  data={"zalo": b.get_zalo_trang_thai_display(), "email": b.get_email_trang_thai_display()})
