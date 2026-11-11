@@ -148,6 +148,10 @@ ZOOM_CLIENT_SECRET = os.getenv("ZOOM_CLIENT_SECRET", "")
 ZOOM_HOST_EMAIL_MAC_DINH = os.getenv("ZOOM_HOST_EMAIL_MAC_DINH", "")
 
 ZALO_MODE = os.getenv("ZALO_MODE", "fake")
+
+# Chạy test thì luôn giả lập Zoom/Zalo, dù .env đang bật chế độ thật (không tạo phòng / gửi tin thật).
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    ZOOM_MODE = ZALO_MODE = "fake"
 ZALO_ACCESS_TOKEN = os.getenv("ZALO_ACCESS_TOKEN", "")
 ZALO_TEMPLATE_ID = os.getenv("ZALO_TEMPLATE_ID", "")
 

@@ -522,6 +522,8 @@ def noi_dung_moi_vao_lop(buoi, request=None):
     dong = [f"Topic: Buổi dạy {lop} - {buoi.yeu_cau.mon_hoc} ({nhan_buoi(buoi)}) của gia sư {buoi.gia_su.ho_ten} "
             f"và học viên {buoi.hoc_vien.ho_ten} vào {bd:%H:%M} {thu} {bd:%d/%m/%Y}",
             f"Vào lớp: {link_lop(buoi, request)}"]
+    if buoi.zoom_join_url:
+        dong.append(f"Link Zoom: {buoi.zoom_join_url}")
     if buoi.zoom_meeting_id:
         mid = buoi.zoom_meeting_id
         dong.append("Meeting ID: " + (" ".join([mid[:3], mid[3:7], mid[7:]]) if len(mid) == 11 else mid))

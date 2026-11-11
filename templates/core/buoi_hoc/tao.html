@@ -29,6 +29,7 @@
     <div class="than">
       <div class="stack" style="gap:10px">
         <div><div class="sm muted">Link lớp học cố định</div><div class="o-copy"><i class="bi bi-link-45deg" aria-hidden="true"></i><code>{{ x.link_lop }}</code><button type="button" class="icon-btn sm" data-sao-chep="{{ x.link_lop }}" data-thong-bao="Đã sao chép link lớp" aria-label="Sao chép link lớp"><i class="bi bi-copy"></i></button></div></div>
+        {% if b.zoom_join_url %}<div><div class="sm muted">Link Zoom trực tiếp · học viên bấm là vào phòng</div><div class="o-copy"><i class="bi bi-camera-video" aria-hidden="true"></i><code class="ell">{{ b.zoom_join_url }}</code><button type="button" class="icon-btn sm" data-sao-chep="{{ b.zoom_join_url }}" data-thong-bao="Đã sao chép link Zoom" aria-label="Sao chép link Zoom"><i class="bi bi-copy"></i></button></div></div>{% endif %}
         <div class="row" style="gap:10px">
           <div style="flex:1"><div class="sm muted">Zoom ID</div><div class="o-copy"><code>{{ b.zoom_meeting_id }}</code><button type="button" class="icon-btn sm" data-sao-chep="{{ b.zoom_meeting_id }}" data-thong-bao="Đã sao chép Zoom ID" aria-label="Sao chép Zoom ID"><i class="bi bi-copy"></i></button></div></div>
           {% if b.tai_khoan_zoom.host_key %}<div style="flex:1"><div class="sm muted">Host key · chỉ gia sư</div><div class="o-copy"><code data-an="{{ b.tai_khoan_zoom.host_key }}">••••••</code><button type="button" class="icon-btn sm" data-hien-ma aria-label="Hiện host key"><i class="bi bi-eye"></i></button></div></div>{% endif %}
