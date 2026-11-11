@@ -1160,3 +1160,20 @@ class SuCoHeThong(models.Model):
 
     def __str__(self):
         return f"{self.ma_loi} {self.phuong_thuc} {self.duong_dan}"
+
+
+class TokenZalo(models.Model):
+    """Token OA Zalo (chỉ 1 dòng). Access token sống ~25 giờ; refresh token sống 3 tháng và CHỈ DÙNG 1 LẦN,
+    nên mỗi lần làm mới phải lưu lại cặp token mới ngay (không để trong .env)."""
+
+    access_token = models.TextField(blank=True)
+    refresh_token = models.TextField(blank=True)
+    het_han_luc = models.DateTimeField(null=True, blank=True)
+    cap_nhat_luc = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Token Zalo OA"
+        verbose_name_plural = "D9 · Token Zalo OA"
+
+    def __str__(self):
+        return f"Token Zalo (hết hạn {self.het_han_luc:%d/%m %H:%M})" if self.het_han_luc else "Token Zalo"

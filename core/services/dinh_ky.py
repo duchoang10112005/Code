@@ -78,6 +78,24 @@ def nhac_viec(now=None):
     return {"bao_nhac_viec": bao, "nhac_gia_han": tao, "tu_choi_mo_lai": tu_choi}
 
 
+def gui_lai_zalo(now=None):
+    """Bước 5b: gửi lại đánh giá Zalo bị lỗi (Zalo/ mạng lỗi tạm thời) – tối đa 3 lần, cách nhau ≥ 30 phút,
+    trong 24 giờ sau khi xác nhận. Tin lỗi không bị Zalo tính phí nên gửi lại không tốn tiền."""
+    from core.models import NhatKyGuiTin
+    from core.services.buoi_hoc import gui_zalo_danh_gia
+    now = now or timezone.now()
+    n = 0
+    for b in BuoiHoc.objects.filter(trang_thai=TT.HOAN_TAT, zalo_trang_thai=BuoiHoc.GuiZalo.LOI,
+                                    gui_zalo_phu_huynh=True, xac_nhan_luc__gte=now - timedelta(days=1)).select_related(
+            "hoc_vien", "gia_su", "yeu_cau__mon_hoc"):
+        tin = NhatKyGuiTin.objects.filter(buoi_hoc=b, kenh=NhatKyGuiTin.Kenh.ZALO)
+        cuoi = tin.order_by("-thoi_diem").first()
+        if tin.count() >= 3 or (cuoi and cuoi.thoi_diem > now - timedelta(minutes=30)):
+            continue
+        n += bool(gui_zalo_danh_gia(b))
+    return {"gui_lai_zalo": n}
+
+
 def het_han_ban_ghi(now=None):
     now = now or timezone.now()
     return {"ban_ghi_het_han": BuoiHoc.objects.filter(ban_ghi_trang_thai=BuoiHoc.BanGhi.SAN_SANG,
@@ -100,6 +118,7 @@ def quet(now=None):
             ("han", lambda: {"tu_huy": quet_han(now)}),
             ("hau_kiem", lambda: {"hau_kiem": hau_kiem(now)}),
             ("nhac_viec", lambda: nhac_viec(now)),
+            ("zalo", lambda: gui_lai_zalo(now)),
             ("ban_ghi", lambda: het_han_ban_ghi(now)),
             ("tam_nghi", lambda: tam_nghi_het_han(now))]
     kq = {}

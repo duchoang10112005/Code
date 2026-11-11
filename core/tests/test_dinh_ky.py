@@ -45,3 +45,20 @@ class DinhKyTest(NgoaiLe):
         call_command("quet_dinh_ky", stdout=open("NUL" if __import__("os").name == "nt" else "/dev/null", "w"))
         self.assertIsNone(HoSoGiaSu.objects.get(user=self.gs).tam_nghi_den)
         self.assertTrue(NhatKy.objects.filter(hanh_dong="Quét định kỳ").exists())
+
+    def test_gui_lai_zalo_khi_loi_toi_da_3_lan(self):
+        from core.integrations import zalo
+        from core.models import NhatKyGuiTin
+        from core.tests.test_pb11_pb15_buoi_hoc import DANH_GIA
+        zalo._fake_singleton.gia_lap_loi = True
+        b = self.ve_qua_khu(dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai()), ket_thuc_truoc_gio=1)
+        dv_buoi.xac_nhan_hoan_tat(self.gs, b, {**DANH_GIA, "gui_zalo_phu_huynh": True})
+        b.refresh_from_db()
+        self.assertEqual(b.zalo_trang_thai, BuoiHoc.GuiZalo.LOI)
+        self.assertEqual(dv.gui_lai_zalo()["gui_lai_zalo"], 0)  # vừa lỗi < 30 phút
+        sau = timezone.now() + timedelta(minutes=31)
+        dv.gui_lai_zalo(sau)
+        dv.gui_lai_zalo(sau + timedelta(minutes=31))
+        dv.gui_lai_zalo(sau + timedelta(minutes=62))
+        self.assertEqual(NhatKyGuiTin.objects.filter(buoi_hoc=b).count(), 3)  # dừng ở 3 lần
+        zalo._fake_singleton.gia_lap_loi = False

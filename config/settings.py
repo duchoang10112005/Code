@@ -152,7 +152,11 @@ ZALO_MODE = os.getenv("ZALO_MODE", "fake")
 # Chạy test thì luôn giả lập Zoom/Zalo, dù .env đang bật chế độ thật (không tạo phòng / gửi tin thật).
 if len(sys.argv) > 1 and sys.argv[1] == "test":
     ZOOM_MODE = ZALO_MODE = "fake"
-ZALO_ACCESS_TOKEN = os.getenv("ZALO_ACCESS_TOKEN", "")
+ZALO_ACCESS_TOKEN = os.getenv("ZALO_ACCESS_TOKEN", "")  # tùy chọn: dán tay để thử nhanh (sống ~25 giờ)
+ZALO_APP_ID = os.getenv("ZALO_APP_ID", "")
+ZALO_SECRET_KEY = os.getenv("ZALO_SECRET_KEY", "")
+ZALO_REDIRECT_URI = os.getenv("ZALO_REDIRECT_URI", "")
+ZALO_ZNS_DEV = os.getenv("ZALO_ZNS_DEV", "false").lower() in ("1", "true", "yes")
 ZALO_TEMPLATE_ID = os.getenv("ZALO_TEMPLATE_ID", "")
 
 

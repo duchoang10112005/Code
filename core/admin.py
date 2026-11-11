@@ -71,5 +71,5 @@ class NhatKyGuiTinAdmin(admin.ModelAdmin):
 
 for model in (m.MonHoc, m.MonGiaSu, m.LichRanh, m.HocVien, m.LoiMoi, m.ThuLao, m.DieuChinhThuLao, m.DoiSoatThang,
               m.MaMoiGiaSu, m.CapDo, m.MinhChung, m.GiaHanKhoa, m.TaiKhoanZoom, m.BanNhapDanhGia, m.HauKiemBuoi,
-              m.YeuCauXuLy, m.ThongBao, m.NhacViec, m.SuCoHeThong):
+              m.YeuCauXuLy, m.ThongBao, m.NhacViec, m.SuCoHeThong, m.TokenZalo):
     admin.site.register(model)
