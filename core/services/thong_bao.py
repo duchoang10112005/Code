@@ -6,14 +6,15 @@ Lỗi gửi email KHÔNG làm hỏng thao tác nghiệp vụ chính: chỉ ghi l
 import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 
 from core.models import NhatKyGuiTin
 
 logger = logging.getLogger(__name__)
 
 
-def gui_email(user, tieu_de, noi_dung, buoi_hoc=None):
+def gui_email(user, tieu_de, noi_dung, buoi_hoc=None, html=None):
+    """noi_dung: bản văn bản thường; html (tùy chọn): bản đẹp hiển thị trong Gmail."""
     if not user.email:
         NhatKyGuiTin.objects.create(
             kenh=NhatKyGuiTin.Kenh.EMAIL, nguoi_nhan=str(user), tieu_de=tieu_de,
@@ -23,7 +24,10 @@ def gui_email(user, tieu_de, noi_dung, buoi_hoc=None):
         return False
 
     try:
-        send_mail(tieu_de, noi_dung, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+        m = EmailMultiAlternatives(tieu_de, noi_dung, settings.DEFAULT_FROM_EMAIL, [user.email])
+        if html:
+            m.attach_alternative(html, "text/html")
+        m.send(fail_silently=False)
         ok, phan_hoi = True, "OK"
     except Exception as exc:  # mạng lỗi, sai mật khẩu SMTP…
         logger.warning("Gửi email thất bại tới %s: %s", user.email, exc)

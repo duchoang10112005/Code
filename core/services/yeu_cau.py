@@ -145,6 +145,31 @@ def dem_gia_su_phu_hop(mon_hoc, cap_do_id=None, khung=None):
 # =============================================================================
 # 3.3 Gửi lời mời nhận lớp
 # =============================================================================
+def gui_email_loi_moi(lm):
+    """Email mời nhận lớp (HTML) – nút "Xem lời mời" mở thẳng lời mời này để Nhận lớp / Từ chối.
+    Chưa đăng nhập thì hệ thống đưa qua trang đăng nhập rồi quay lại đúng lời mời."""
+    from django.template.loader import render_to_string
+    yc = lm.yeu_cau
+    hv = yc.hoc_vien
+    url = f"{settings.SITE_URL}{reverse('loi_moi_cua_toi')}?chon={lm.pk}"
+    het = timezone.localtime(lm.het_han_luc)
+    lich = yc.lich_mong_muon or yc.ten_thu_mong_muon
+    dong = [("Mã lớp", yc.ma),
+            ("Môn", f"{yc.mon_hoc}" + (f" · {yc.cap_do.ten}" if yc.cap_do_id else "") + (f" · {yc.trinh_do}" if yc.trinh_do else "")),
+            ("Thù lao dự kiến", f"{yc.thu_lao_du_kien:,}đ/buổi".replace(",", ".") if yc.thu_lao_du_kien else "Thỏa thuận khi mở khóa"),
+            ("Thời gian mong muốn", lich),
+            ("Học viên", hv.ho_ten + (f" · {hv.get_gioi_tinh_display()}" if hv.gioi_tinh else "") + (f" · {hv.lop}" if hv.lop else "")),
+            ("Mục tiêu", yc.muc_tieu),
+            ("Ghi chú", yc.ghi_chu or "—"),
+            ("Hạn phản hồi", f"{het:%H:%M} ngày {het:%d/%m/%Y}")]
+    van_ban = (f"Chào {lm.gia_su.ho_ten},\n\nTrung tâm có lớp mới phù hợp với bạn:\n"
+               + "\n".join(f"{k}: {v}" for k, v in dong)
+               + f"\n\nXem và Nhận lớp / Từ chối tại: {url}\n"
+               "Người nhận hợp lệ đầu tiên được lớp.\n\nTrung tâm Gia sư Trực tuyến")
+    html = render_to_string("email/loi_moi.html", {"gs": lm.gia_su, "dong": dong, "url": url, "het": het})
+    gui_email(lm.gia_su, f"Lời mời nhận lớp {yc.mon_hoc} {yc.trinh_do} – {yc.ma}", van_ban, html=html)
+
+
 def gui_loi_moi(nvts, yeu_cau, ds_user_id):
     ds_user_id = set(ds_user_id)  # bỏ id trùng trong POST
     if not ds_user_id:
@@ -180,11 +205,7 @@ def gui_loi_moi(nvts, yeu_cau, ds_user_id):
         thong_bao(lm.gia_su, f"Lời mời mới: {yeu_cau.mon_hoc} {yeu_cau.trinh_do}",
                   f"{yeu_cau.hoc_vien.ho_ten} · hết hạn sau {settings.NGHIEP_VU['HAN_LOI_MOI_GIO']} giờ",
                   reverse("loi_moi_cua_toi") + f"?chon={lm.pk}", "LOI_MOI")
-        gui_email(lm.gia_su, f"Lời mời nhận lớp {yeu_cau.mon_hoc} – {yeu_cau.trinh_do}",
-                  f"Chào {lm.gia_su.ho_ten},\n\nTrung tâm mời bạn nhận lớp {yeu_cau.mon_hoc} ({yeu_cau.trinh_do}).\n"
-                  f"Mục tiêu: {yeu_cau.muc_tieu}\nThời gian mong muốn: {yeu_cau.ten_thu_mong_muon} – {yeu_cau.lich_mong_muon}\n\n"
-                  f"Lời mời có hiệu lực đến {timezone.localtime(lm.het_han_luc):%H:%M %d/%m/%Y}. "
-                  f"Phản hồi tại: {settings.SITE_URL}{reverse('loi_moi_cua_toi')}\n\nTrung tâm Gia sư Trực tuyến")
+        gui_email_loi_moi(lm)
     yeu_cau.refresh_from_db()
     bo_qua = len(ds_user_id) - len(moi)
     return moi, bo_qua

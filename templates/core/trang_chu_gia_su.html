@@ -76,14 +76,14 @@
       <span class="sm muted" style="margin-left:auto;display:inline-flex;align-items:center;gap:5px"><i class="bi bi-info-circle" aria-hidden="true"></i>Quá 12 giờ chưa xác nhận, buổi sẽ tự hủy</span></div>
     <div class="card" style="overflow:hidden">
       {% if nhom_viec %}
-      <div class="gt-h" style="--cols:112px minmax(0,1fr) 150px 120px"><span>Loại việc</span><span>Lớp · nội dung</span><span>Trạng thái · hạn</span><span class="r">Hành động</span></div>
+      <div class="gt-h" style="--cols:112px minmax(0,1fr) 190px 110px"><span>Loại việc</span><span>Lớp · nội dung</span><span>Trạng thái · hạn</span><span class="r">Hành động</span></div>
       {% for g in nhom_viec %}
         <div class="nhom-viec" style="--cham:{{ g.cham }};background:{{ g.nen }};border-color:{{ g.vien }};color:{{ g.mau }}"><i class="bi {{ g.icon }}" style="font-size:15px" aria-hidden="true"></i>{{ g.ten }}<span class="so">{{ g.muc|length }}</span>{% if g.goi_y %}<span style="font-weight:400;font-size:12px;color:#646B85">{{ g.goi_y }}</span>{% endif %}</div>
         {% for t in g.muc %}
-        <div class="gt-r" style="--cols:112px minmax(0,1fr) 150px 120px">
+        <div class="gt-r" style="--cols:112px minmax(0,1fr) 190px 110px">
           <span class="row b5" style="font-size:13px;color:#4A5068;white-space:nowrap"><span class="icon-tron" style="background:{{ t.icon_bg }};color:{{ t.icon_c }}"><i class="bi {{ t.icon }}" aria-hidden="true"></i></span>{{ t.loai }}</span>
           <div style="min-width:0"><div class="b5 ell">{{ t.tieu_de }}</div><div class="muted" style="font-size:13px;line-height:18px;margin-top:2px">{{ t.mo_ta }}</div></div>
-          <span style="display:flex;flex-direction:column;align-items:flex-start;gap:4px"><span class="chip {{ t.chip_mau }}"><span class="d"></span>{{ t.chip }}</span><span class="sm" style="white-space:nowrap;display:inline-flex;align-items:center;gap:4px;color:{% if t.gio_do %}#C2410C{% else %}#646B85{% endif %}"><i class="bi {{ t.icon_tg }}" aria-hidden="true"></i>{{ t.thoi_gian }}</span></span>
+          <span style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0"><span class="chip {{ t.chip_mau }}"><span class="d"></span>{{ t.chip }}</span><span class="sm" style="display:inline-flex;align-items:flex-start;gap:4px;line-height:17px;max-width:100%;overflow-wrap:anywhere;color:{% if t.gio_do %}#C2410C{% else %}#646B85{% endif %}"><i class="bi {{ t.icon_tg }}" aria-hidden="true"></i>{{ t.thoi_gian }}</span></span>
           <span class="r" style="display:flex"><a class="btn nhe" href="{{ t.url }}">{{ t.nut }}</a></span>
         </div>
         {% endfor %}
