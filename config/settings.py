@@ -26,6 +26,12 @@ SECRET_KEY = os.getenv(
 )
 DEBUG = env_bool("DEBUG", True)
 ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h]
+# Tên miền chạy thật, VD: CSRF_TRUSTED_ORIGINS=https://giasu.example.com (bắt buộc khi chạy HTTPS sau nginx)
+CSRF_TRUSTED_ORIGINS = [o for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+if not DEBUG:  # production: cookie chỉ đi qua HTTPS, tin header X-Forwarded-Proto do nginx đặt
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
 # --- Ứng dụng ---------------------------------------------------------------
@@ -114,6 +120,7 @@ USE_TZ = True
 # --- File tĩnh --------------------------------------------------------------
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"  # python manage.py collectstatic gom file tĩnh vào đây cho nginx phục vụ
 
 # Tệp gia sư tải lên (ảnh kết quả test, minh chứng ≤ 5MB). Không đưa lên Git; chỉ phục vụ qua view có kiểm tra quyền.
 MEDIA_URL = "media/"
