@@ -76,9 +76,13 @@
           {% elif b.ban_ghi_trang_thai == 'KHONG_GHI' %}Buổi này không ghi hình{% if not b.hoc_vien.dong_y_ghi_hinh %} (phụ huynh không đồng ý ghi hình){% endif %}.
           {% elif b.ban_ghi_trang_thai == 'HET_HAN' %}Bản ghi đã quá thời gian lưu và bị xóa.
           {% else %}Không lấy được bản ghi từ Zoom (gói Zoom Free không có ghi hình cloud).{% endif %}</div></div>
-      {% if b.ban_ghi_trang_thai == 'SAN_SANG' %}<a class="btn sm pri" href="{{ b.ban_ghi_url }}" target="_blank" rel="noopener"><i class="bi bi-play-circle"></i>Xem bản ghi</a>
+      {% if b.ban_ghi_trang_thai == 'SAN_SANG' %}<a class="btn sm pri" href="{{ b.ban_ghi_url }}" target="_blank" rel="noopener"><i class="bi bi-play-circle"></i>{% if b.ban_ghi_cac_doan|length > 1 %}Xem đoạn chính{% else %}Xem bản ghi{% endif %}</a>
       {% else %}<span class="chip {% if b.ban_ghi_trang_thai == 'CHO_XU_LY' %}cam{% else %}xam{% endif %}">{{ b.get_ban_ghi_trang_thai_display }}</span>{% endif %}
     </div>
+    {% if b.ban_ghi_cac_doan|length > 1 %}
+    <div class="card card-b sm" style="margin-top:8px"><b class="b5">{{ b.ban_ghi_cac_doan|length }} đoạn ghi</b> <span class="muted">· phòng bị trống rồi mở lại nên Zoom tách thành nhiều đoạn</span>
+      {% for d in b.ban_ghi_cac_doan %}<div class="row" style="gap:10px;padding:6px 0;border-top:1px solid #F1F3F8;margin-top:6px"><span class="muted" style="width:20px">{{ forloop.counter }}.</span><span style="flex:1">{% if d.bat_dau %}{{ d.bat_dau|slice:"11:16" }} UTC · {% endif %}{{ d.phut }} phút{% if d.passcode %} · mật khẩu <code>{{ d.passcode }}</code>{% endif %}</span><a href="{{ d.url }}" target="_blank" rel="noopener">Xem</a></div>{% endfor %}</div>
+    {% endif %}
 
     {% if chon.ty_le_gia_su is not None %}
     <div class="row" style="margin:18px 0 10px"><h4 style="margin:0;font-size:14px;font-weight:600">Tham gia Zoom</h4></div>

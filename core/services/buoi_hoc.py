@@ -752,6 +752,7 @@ def hau_kiem(now=None):
         if bg.san_sang:
             BuoiHoc.objects.filter(pk=b.pk).update(
                 ban_ghi_trang_thai=BuoiHoc.BanGhi.SAN_SANG, ban_ghi_url=bg.share_url, ban_ghi_passcode=bg.passcode,
+                ban_ghi_cac_doan=bg.cac_doan,
                 ban_ghi_het_han=now + timedelta(days=NV["NGAY_LUU_BAN_GHI"]))
         elif b.ket_thuc + timedelta(days=2) < now:
             BuoiHoc.objects.filter(pk=b.pk).update(ban_ghi_trang_thai=BuoiHoc.BanGhi.LOI)

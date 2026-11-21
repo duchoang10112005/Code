@@ -778,6 +778,7 @@ class BuoiHoc(models.Model):
     ban_ghi_trang_thai = models.CharField(max_length=20, choices=BanGhi.choices, default=BanGhi.KHONG_GHI)
     ban_ghi_url = models.URLField(max_length=1000, blank=True)
     ban_ghi_passcode = models.CharField(max_length=50, blank=True)
+    ban_ghi_cac_doan = models.JSONField("Mọi đoạn ghi (mỗi lượt họp một đoạn)", default=list, blank=True)
     ban_ghi_het_han = models.DateTimeField(null=True, blank=True)
 
     # Zalo

@@ -40,10 +40,13 @@ class NguoiThamGia:
 
 @dataclass
 class ThongTinBanGhi:
+    """share_url/passcode = đoạn DÀI NHẤT (bản chính). cac_doan = mọi đoạn ghi của phòng (mỗi lượt họp một đoạn):
+    [{"url", "passcode", "bat_dau" (ISO), "phut"}], sắp theo giờ bắt đầu."""
     san_sang: bool
     share_url: str = ""
     passcode: str = ""
     ghi_chu: str = ""
+    cac_doan: list = field(default_factory=list)
 
 
 class ZoomClient:
@@ -112,6 +115,8 @@ class FakeZoomClient(ZoomClient):
             san_sang=True,
             share_url=f"https://zoom.us/rec/share/gia-lap-{meeting_id}",
             passcode="Rec@123",
+            cac_doan=[{"url": f"https://zoom.us/rec/share/gia-lap-{meeting_id}", "passcode": "Rec@123",
+                       "bat_dau": "", "phut": 0}],
         )
 
 
@@ -209,21 +214,43 @@ class RealZoomClient(ZoomClient):
         if r.status_code not in (204, 400, 404):  # 400/404: phòng chưa bắt đầu hoặc đã kết thúc
             raise self._loi(r, "kết thúc phòng")
 
-    def lay_nguoi_tham_gia(self, meeting_id):
-        r = self._goi("GET", f"/report/meetings/{meeting_id}/participants", params={"page_size": 300})
-        if r.status_code in (400, 401, 403):
-            return None  # gói Free không có báo cáo, hoặc app thiếu quyền report:read
+    def _cac_luot(self, meeting_id):
+        """UUID của mọi lượt họp (instance) của phòng, theo giờ bắt đầu. Zoom coi mỗi lần phòng trống rồi mở lại là một
+        lượt mới (một bản ghi + một báo cáo riêng); hỏi bằng mã phòng chỉ ra lượt GẦN NHẤT. Cần quyền
+        meeting:read:list_past_instances:admin; thiếu quyền → trả [meeting_id] (chỉ lượt gần nhất, như trước)."""
+        r = self._goi("GET", f"/past_meetings/{meeting_id}/instances")
         if r.status_code != 200:
-            raise self._loi(r, "lấy danh sách người tham gia")  # VD 404 khi Zoom chưa tổng hợp xong
-        host_id, host_email = self._thong_tin_host()
+            return [str(meeting_id)]
+        ds = sorted(r.json().get("meetings", []), key=lambda m: m.get("start_time", ""))
+        return [m["uuid"] for m in ds if m.get("uuid")] or [str(meeting_id)]
+
+    @staticmethod
+    def _ma_uuid(ma):
+        """UUID chứa '/', '+', '=' → Zoom yêu cầu mã hóa URL hai lần."""
+        from urllib.parse import quote
+        return quote(quote(str(ma), safe=""), safe="")
+
+    def lay_nguoi_tham_gia(self, meeting_id):
+        """Người tham gia của MỌI lượt họp (giờ vào/ra tuyệt đối nên cộng gộp được)."""
+        host_id, host_email = None, None
         ds = []
-        for p in r.json().get("participants", []):
-            email = (p.get("user_email") or "").lower()
-            ds.append(NguoiThamGia(
-                ten=p.get("name", ""), email=email,
-                vao_luc=_thoi_gian_zoom(p.get("join_time")), ra_luc=_thoi_gian_zoom(p.get("leave_time")),
-                la_host=(bool(host_id) and p.get("id") == host_id) or (bool(email) and email == host_email),
-            ))
+        for ma in self._cac_luot(meeting_id):
+            r = self._goi("GET", f"/report/meetings/{self._ma_uuid(ma)}/participants", params={"page_size": 300})
+            if r.status_code in (400, 401, 403):
+                return None  # gói Free không có báo cáo, hoặc app thiếu quyền report:read
+            if r.status_code == 404 and len(ds) > 0:
+                continue  # lượt họp rỗng / chưa tổng hợp: bỏ qua, vẫn dùng các lượt khác
+            if r.status_code != 200:
+                raise self._loi(r, "lấy danh sách người tham gia")  # VD 404 khi Zoom chưa tổng hợp xong
+            if host_id is None:
+                host_id, host_email = self._thong_tin_host()
+            for p in r.json().get("participants", []):
+                email = (p.get("user_email") or "").lower()
+                ds.append(NguoiThamGia(
+                    ten=p.get("name", ""), email=email,
+                    vao_luc=_thoi_gian_zoom(p.get("join_time")), ra_luc=_thoi_gian_zoom(p.get("leave_time")),
+                    la_host=(bool(host_id) and p.get("id") == host_id) or (bool(email) and email == host_email),
+                ))
         return ds
 
     def _thong_tin_host(self):
@@ -235,16 +262,28 @@ class RealZoomClient(ZoomClient):
         return j.get("id", ""), (j.get("email") or "").lower()
 
     def lay_ban_ghi(self, meeting_id):
-        r = self._goi("GET", f"/meetings/{meeting_id}/recordings")
-        if r.status_code == 404:
+        """Gom bản ghi của MỌI lượt họp. Lượt chưa có bản ghi / chưa xử lý xong thì bỏ qua."""
+        cac_doan, loi_goi = [], None
+        for ma in self._cac_luot(meeting_id):
+            r = self._goi("GET", f"/meetings/{self._ma_uuid(ma)}/recordings")
+            if r.status_code == 404:
+                continue
+            if r.status_code in (400, 401, 403):
+                return ThongTinBanGhi(san_sang=False, ghi_chu="Gói Zoom không hỗ trợ ghi hình trên cloud")
+            if r.status_code != 200:
+                loi_goi = self._loi(r, "lấy bản ghi")
+                continue
+            j = r.json()
+            if j.get("share_url"):
+                cac_doan.append({"url": j["share_url"], "passcode": j.get("password", ""),
+                                 "bat_dau": j.get("start_time", ""), "phut": int(j.get("duration") or 0)})
+        if not cac_doan:
+            if loi_goi:
+                raise loi_goi
             return ThongTinBanGhi(san_sang=False, ghi_chu="Zoom chưa có bản ghi")
-        if r.status_code in (400, 401, 403):
-            return ThongTinBanGhi(san_sang=False, ghi_chu="Gói Zoom không hỗ trợ ghi hình trên cloud")
-        if r.status_code != 200:
-            raise self._loi(r, "lấy bản ghi")
-        j = r.json()
-        return ThongTinBanGhi(san_sang=bool(j.get("share_url")), share_url=j.get("share_url", ""),
-                              passcode=j.get("password", ""))
+        cac_doan.sort(key=lambda d: d["bat_dau"])
+        chinh = max(cac_doan, key=lambda d: d["phut"])
+        return ThongTinBanGhi(san_sang=True, share_url=chinh["url"], passcode=chinh["passcode"], cac_doan=cac_doan)
 
 
 _fake_singleton = FakeZoomClient()
