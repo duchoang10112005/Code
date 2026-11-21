@@ -47,7 +47,8 @@ class ThongTinBanGhi:
 
 
 class ZoomClient:
-    def tao_phong(self, host_email, chu_de, bat_dau, thoi_luong_phut, ghi_hinh) -> ThongTinPhong:
+    def tao_phong(self, host_email, chu_de, bat_dau, thoi_luong_phut, ghi_hinh, ghi_chu="") -> ThongTinPhong:
+        """ghi_chu: hiện trong Agenda của phòng (giờ bắt đầu / mở / đóng). Phòng chỉ mở khi host bấm bắt đầu."""
         raise NotImplementedError
 
     def lay_start_url(self, meeting_id) -> str:
@@ -78,7 +79,7 @@ class FakeZoomClient(ZoomClient):
     kich_ban_tham_gia: dict = field(default_factory=dict)  # meeting_id -> list[NguoiThamGia]
     gia_lap_loi: bool = False
 
-    def tao_phong(self, host_email, chu_de, bat_dau, thoi_luong_phut, ghi_hinh):
+    def tao_phong(self, host_email, chu_de, bat_dau, thoi_luong_phut, ghi_hinh, ghi_chu=""):
         if self.gia_lap_loi:
             raise ZoomError("Giả lập: Zoom không phản hồi")
         mid = str(random.randint(80_000_000_000, 89_999_999_999))
@@ -168,14 +169,17 @@ class RealZoomClient(ZoomClient):
             msg = r.text[:200]
         return ZoomError(f"Zoom lỗi khi {viec} (HTTP {r.status_code}): {msg}")
 
-    def tao_phong(self, host_email, chu_de, bat_dau, thoi_luong_phut, ghi_hinh):
+    def tao_phong(self, host_email, chu_de, bat_dau, thoi_luong_phut, ghi_hinh, ghi_chu=""):
         body = {
             "topic": chu_de[:200],
             "type": 2,  # cuộc họp có lịch
             "start_time": bat_dau.astimezone(dt_timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "duration": thoi_luong_phut,
             "timezone": "Asia/Ho_Chi_Minh",
+            "agenda": ghi_chu[:2000],
             "settings": {
+                # KHÔNG bật join_before_host: Zoom bỏ qua giới hạn "vào sớm 10 phút" qua API (jbh_time luôn = 0 =
+                # vào bất cứ lúc nào). Phòng chỉ mở khi gia sư bấm bắt đầu, mà nút mở phòng chỉ có từ 10 phút trước giờ học.
                 "join_before_host": False,
                 "waiting_room": False,
                 "mute_upon_entry": True,

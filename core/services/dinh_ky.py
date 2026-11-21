@@ -32,7 +32,7 @@ def mo_dong_phong(now=None):
     dong = 0
     zoom = lay_zoom_client()
     for b in BuoiHoc.objects.filter(phong_dong_luc__isnull=True, ket_thuc_luc__lte=now - timedelta(
-            minutes=NV.get("DONG_PHONG_SAU_PHUT", 5)), ket_thuc_luc__gte=now - timedelta(days=1)).exclude(
+            minutes=NV.get("DONG_PHONG_SAU_PHUT", 0)), ket_thuc_luc__gte=now - timedelta(days=1)).exclude(
             zoom_meeting_id="").exclude(trang_thai=TT.DA_HUY):
         try:
             zoom.ket_thuc_phong(b.zoom_meeting_id)

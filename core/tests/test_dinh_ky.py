@@ -62,3 +62,17 @@ class DinhKyTest(NgoaiLe):
         dv.gui_lai_zalo(sau + timedelta(minutes=62))
         self.assertEqual(NhatKyGuiTin.objects.filter(buoi_hoc=b).count(), 3)  # dừng ở 3 lần
         zalo._fake_singleton.gia_lap_loi = False
+
+    def test_phong_bi_ngat_dung_gio_het_buoi(self):
+        b = dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai())
+        dv.mo_dong_phong(b.bat_dau - timedelta(minutes=5))
+        self.assertEqual(dv.mo_dong_phong(b.ket_thuc_luc - timedelta(seconds=30))["dong_phong"], 0)  # chưa hết giờ
+        self.assertEqual(dv.mo_dong_phong(b.ket_thuc_luc + timedelta(seconds=30))["dong_phong"], 1)  # hết giờ → ngắt ngay
+        self.assertIn(b.zoom_meeting_id, zoom._fake_singleton.phong_da_ket_thuc)
+
+    def test_ghi_chu_phong_co_gio_bat_dau_mo_va_dong(self):
+        b = dv_buoi.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai(1))  # 01:00 UTC = 08:00 giờ Việt Nam
+        gc = dv_buoi._ghi_chu_phong(b)
+        self.assertIn("bắt đầu lúc 08:00", gc)
+        self.assertIn("mở từ 07:50", gc)
+        self.assertIn("tự đóng lúc 09:00", gc)

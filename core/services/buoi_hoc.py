@@ -113,6 +113,15 @@ def _chu_de(buoi):
     return f"{loai} {buoi.yeu_cau.mon_hoc} – {buoi.hoc_vien.ho_ten} – GS {buoi.gia_su.ho_ten}"
 
 
+def _ghi_chu_phong(buoi):
+    """Nội dung hiện trong phần Agenda / lời mời của phòng Zoom: giờ bắt đầu, giờ mở phòng, giờ tự ngắt."""
+    bd, kt = timezone.localtime(buoi.bat_dau), timezone.localtime(buoi.bat_dau + timedelta(minutes=buoi.thoi_luong_phut))
+    mo = bd - timedelta(minutes=NV.get("MO_PHONG_TRUOC_PHUT", 10))
+    return (f"Lớp học bắt đầu lúc {bd:%H:%M} ngày {bd:%d/%m/%Y}. Phòng mở từ {mo:%H:%M} "
+            f"({NV.get('MO_PHONG_TRUOC_PHUT', 10)} phút trước giờ học) và tự đóng lúc {kt:%H:%M} "
+            f"(thời lượng {buoi.thoi_luong_phut} phút).")
+
+
 def chon_host(buoi, tru=None):
     """Tài khoản Zoom đang bật, không có buổi giao giờ. None = chưa khai báo nhóm host (dùng host mặc định);
     False = có nhóm host nhưng không còn host trống."""
@@ -138,7 +147,7 @@ def _gan_zoom(buoi, host=None):
     try:
         phong = lay_zoom_client().tao_phong(
             email, _chu_de(buoi), buoi.bat_dau, buoi.thoi_luong_phut,
-            ghi_hinh=buoi.hoc_vien.dong_y_ghi_hinh)
+            ghi_hinh=buoi.hoc_vien.dong_y_ghi_hinh, ghi_chu=_ghi_chu_phong(buoi))
     except ZoomError as exc:
         buoi.trang_thai, buoi.zoom_loi = TT.LOI_ZOOM, str(exc)[:1000]
         buoi.save(update_fields=["trang_thai", "zoom_loi", "cap_nhat_luc"])
@@ -249,7 +258,7 @@ def gio_mo_phong(buoi):
 
 
 def gio_dong_phong(buoi):
-    return buoi.ket_thuc + timedelta(minutes=NV.get("DONG_PHONG_SAU_PHUT", 5))
+    return buoi.ket_thuc + timedelta(minutes=NV.get("DONG_PHONG_SAU_PHUT", 0))
 
 
 def lay_link_mo_phong(gia_su, buoi):
@@ -544,7 +553,7 @@ def buoi_dang_mo(ma_lop, now=None):
         ds = BuoiHoc.objects.filter(khoa_hoc__ma_lop=ma)
     ds = ds.filter(trang_thai=TT.DA_LEN_LICH).exclude(zoom_join_url="").order_by("bat_dau")
     truoc = timedelta(minutes=NV.get("MO_PHONG_TRUOC_PHUT", 10))
-    sau = timedelta(minutes=NV.get("DONG_PHONG_SAU_PHUT", 5))
+    sau = timedelta(minutes=NV.get("DONG_PHONG_SAU_PHUT", 0))
     dang = ds.filter(bat_dau__lte=now + truoc, ket_thuc_luc__gte=now - sau).first()
     sap = ds.filter(bat_dau__gt=now + truoc).first()
     return dang, sap
