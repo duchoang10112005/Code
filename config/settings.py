@@ -28,10 +28,13 @@ DEBUG = env_bool("DEBUG", True)
 ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h]
 # Tên miền chạy thật, VD: CSRF_TRUSTED_ORIGINS=https://giasu.example.com (bắt buộc khi chạy HTTPS sau nginx)
 CSRF_TRUSTED_ORIGINS = [o for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
-if not DEBUG:  # production: cookie chỉ đi qua HTTPS, tin header X-Forwarded-Proto do nginx đặt
+# CHAY_HTTPS=false: tạm chạy http://IP khi chưa có tên miền + chứng chỉ (cookie Secure sẽ chặn đăng nhập qua http).
+CHAY_HTTPS = env_bool("CHAY_HTTPS", not DEBUG)
+if not DEBUG:
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+if CHAY_HTTPS:  # cookie chỉ đi qua HTTPS, tin header X-Forwarded-Proto do nginx đặt
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
 # --- Ứng dụng ---------------------------------------------------------------
