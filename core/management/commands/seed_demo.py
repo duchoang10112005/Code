@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from core.models import (BuoiHoc, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoiMoi, MonGiaSu, MonHoc, ThuLao, User,
+from core.models import (BuoiHoc, CapDo, HocVien, HoSoGiaSu, KhoaHoc, LichRanh, LoiMoi, MonGiaSu, MonHoc, ThuLao, User,
                          YeuCauHocTap)
 
 MAT_KHAU_DEMO = "Demo@2026"
@@ -48,6 +48,13 @@ class Command(BaseCommand):
         mon = {}
         for ma, ten in MON_HOC:
             mon[ma], _ = MonHoc.objects.get_or_create(ma=ma, defaults={"ten": ten})
+        # Cấp độ mặc định (migration 0019 chỉ nạp cho môn có từ trước; database mới thì môn tạo ở đây)
+        from importlib import import_module
+        m19 = import_module("core.migrations.0019_cap_do_mac_dinh")
+        for ma, m in mon.items():
+            if not CapDo.objects.filter(mon_hoc=m).exists():
+                for i, ten_cd in enumerate(m19.THEO_MA.get(ma, m19.PHO_THONG)):
+                    CapDo.objects.create(mon_hoc=m, ten=ten_cd, thu_tu=i)
 
         admin_user = None
         for username, ho_ten, vai_tro, email in TAI_KHOAN:

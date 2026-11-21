@@ -108,7 +108,7 @@
   var capSel = f.cap_do, capCu = capSel.value;
   function locCapDo() {
     var ds = (CAP[f.mon_hoc.value] || []).concat(CAP[""] || []);
-    capSel.innerHTML = '<option value="">' + (f.mon_hoc.value ? "Chọn cấp độ" : "Chọn môn trước") + "</option>" + ds.map(function (c) { return '<option value="' + c.pk + '"' + (String(c.pk) === capCu ? " selected" : "") + ">" + esc(c.ten) + "</option>"; }).join("");
+    capSel.innerHTML = '<option value="">' + (!f.mon_hoc.value ? "Chọn môn trước" : ds.length ? "Chọn cấp độ" : "Môn này chưa có cấp độ – nhờ Quản trị viên thêm") + "</option>" + ds.map(function (c) { return '<option value="' + c.pk + '"' + (String(c.pk) === capCu ? " selected" : "") + ">" + esc(c.ten) + "</option>"; }).join("");
   }
   f.mon_hoc.addEventListener("change", function () { capCu = ""; locCapDo(); });
   locCapDo();
