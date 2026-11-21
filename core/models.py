@@ -821,6 +821,14 @@ class BuoiHoc(models.Model):
         return self.trang_thai == self.TrangThai.DA_HUY and self.ly_do_huy == self.LyDoHuy.QUA_HAN
 
     @property
+    def doan_ghi_dang_ke(self):
+        """Các đoạn ghi đáng xem: đoạn chính + đoạn dài từ DOAN_GHI_TOI_THIEU_PHUT trở lên. Đoạn vài giây (vào ra thử,
+        mất mạng) bị ẩn để Hậu kiểm không rối."""
+        from django.conf import settings
+        toi_thieu = settings.NGHIEP_VU.get("DOAN_GHI_TOI_THIEU_PHUT", 5)
+        return [d for d in (self.ban_ghi_cac_doan or []) if d.get("phut", 0) >= toi_thieu or d.get("url") == self.ban_ghi_url]
+
+    @property
     def trang_thai_hien_thi(self):
         """(khóa, nhãn) hiển thị — suy ra theo thời gian, không lưu (Q4)."""
         TT = self.TrangThai

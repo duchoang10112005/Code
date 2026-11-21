@@ -74,3 +74,14 @@ class NhieuLuotTest(SimpleTestCase):
         gs = [p for p in ds if p.la_host]
         self.assertEqual(len(gs), 2)
         self.assertEqual(min(p.vao_luc for p in gs), datetime(2026, 11, 21, 11, 0, tzinfo=tz.utc))
+
+
+class DoanNganBiAnTest(SimpleTestCase):
+    def test_an_doan_ngan_giu_doan_chinh_va_doan_dai(self):
+        from core.models import BuoiHoc
+        b = BuoiHoc(ban_ghi_url="https://z/chinh", ban_ghi_cac_doan=[
+            {"url": "https://z/a", "phut": 0}, {"url": "https://z/b", "phut": 2},
+            {"url": "https://z/chinh", "phut": 68}, {"url": "https://z/c", "phut": 20}])
+        self.assertEqual([d["url"] for d in b.doan_ghi_dang_ke], ["https://z/chinh", "https://z/c"])
+        b.ban_ghi_cac_doan = [{"url": "https://z/a", "phut": 0}, {"url": "https://z/chinh", "phut": 68}]
+        self.assertEqual(len(b.doan_ghi_dang_ke), 1)  # chỉ còn đoạn chính → giao diện không hiện danh sách

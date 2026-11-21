@@ -192,6 +192,7 @@ NGHIEP_VU = {
     "THOI_LUONG_BUOI_DEMO": int(os.getenv("THOI_LUONG_BUOI_DEMO", "0")),
     # --- Tham số cho UI mới (thiết kế luồng, 02 · mục 6) ---
     "MO_PHONG_TRUOC_PHUT": int(os.getenv("MO_PHONG_TRUOC_PHUT", "10")),
+    "DOAN_GHI_TOI_THIEU_PHUT": int(os.getenv("DOAN_GHI_TOI_THIEU_PHUT", "5")),  # đoạn ghi ngắn hơn: ẩn (vào ra thử)
     "DONG_PHONG_SAU_PHUT": int(os.getenv("DONG_PHONG_SAU_PHUT", "0")),
     "GIO_KET_THUC_MUON_NHAT": os.getenv("GIO_KET_THUC_MUON_NHAT", "22:00"),
     "NGUONG_SAP_HET_BUOI": int(os.getenv("NGUONG_SAP_HET_BUOI", "2")),
