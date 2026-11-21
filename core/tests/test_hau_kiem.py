@@ -123,3 +123,15 @@ class HauKiemTest(NgoaiLe):
         r = self.client.get(reverse("hau_kiem"))
         self.assertFalse(r.context["co_quyen"])
         self.assertNotContains(r, "Kết luận của bạn")
+
+    def test_luon_hien_trang_thai_ban_ghi(self):
+        hk = self.buoi_cham()
+        b = hk.buoi_hoc
+        BuoiHoc.objects.filter(pk=b.pk).update(ban_ghi_trang_thai=BuoiHoc.BanGhi.SAN_SANG,
+                                               ban_ghi_url="https://zoom.us/rec/share/abc", ban_ghi_passcode="Xy1")
+        self.dang_nhap(self.nvts)
+        r = self.client.get(reverse("hau_kiem"), {"chon": b.pk})
+        self.assertContains(r, "https://zoom.us/rec/share/abc")
+        self.assertContains(r, "Xy1")
+        BuoiHoc.objects.filter(pk=b.pk).update(ban_ghi_trang_thai=BuoiHoc.BanGhi.KHONG_GHI, ban_ghi_url="")
+        self.assertContains(self.client.get(reverse("hau_kiem"), {"chon": b.pk}), "không ghi hình")

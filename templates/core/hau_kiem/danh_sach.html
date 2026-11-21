@@ -67,8 +67,21 @@
     </div>
     {% if not chon.da_cham %}<p class="sm muted" style="margin:8px 0 0"><i class="bi bi-hourglass-split"></i> Zoom cần khoảng 30 phút sau buổi học để tổng hợp dữ liệu tham gia.</p>{% endif %}
 
+    {# Bản ghi Zoom: luôn hiện trạng thái, kể cả khi Zoom không trả dữ liệu tham gia (gói Free) #}
+    <div class="card row sm" style="margin-top:14px;padding:12px 14px;gap:12px">
+      <span class="tile" style="width:30px;height:30px;font-size:14px;{% if b.ban_ghi_trang_thai == 'SAN_SANG' %}background:#E6FAF7;color:#0F766E{% else %}background:#F1F3F8;color:#646B85{% endif %}"><i class="bi bi-record-circle"></i></span>
+      <div style="flex:1;min-width:0"><b class="b5">Bản ghi Zoom</b>
+        <div class="muted">{% if b.ban_ghi_trang_thai == 'SAN_SANG' %}Lưu đến {{ b.ban_ghi_het_han|date:"d/m/Y" }}{% if b.ban_ghi_passcode %} · mật khẩu xem: <code>{{ b.ban_ghi_passcode }}</code>{% endif %}
+          {% elif b.ban_ghi_trang_thai == 'CHO_XU_LY' %}Zoom đang xử lý bản ghi, thường có sau buổi học vài giờ.
+          {% elif b.ban_ghi_trang_thai == 'KHONG_GHI' %}Buổi này không ghi hình{% if not b.hoc_vien.dong_y_ghi_hinh %} (phụ huynh không đồng ý ghi hình){% endif %}.
+          {% elif b.ban_ghi_trang_thai == 'HET_HAN' %}Bản ghi đã quá thời gian lưu và bị xóa.
+          {% else %}Không lấy được bản ghi từ Zoom (gói Zoom Free không có ghi hình cloud).{% endif %}</div></div>
+      {% if b.ban_ghi_trang_thai == 'SAN_SANG' %}<a class="btn sm pri" href="{{ b.ban_ghi_url }}" target="_blank" rel="noopener"><i class="bi bi-play-circle"></i>Xem bản ghi</a>
+      {% else %}<span class="chip {% if b.ban_ghi_trang_thai == 'CHO_XU_LY' %}cam{% else %}xam{% endif %}">{{ b.get_ban_ghi_trang_thai_display }}</span>{% endif %}
+    </div>
+
     {% if chon.ty_le_gia_su is not None %}
-    <div class="row" style="margin:18px 0 10px"><h4 style="margin:0;font-size:14px;font-weight:600">Tham gia Zoom</h4>{% if b.ban_ghi_trang_thai == 'SAN_SANG' %}<a class="sm" style="margin-left:auto" href="{{ b.ban_ghi_url }}" target="_blank" rel="noopener">Xem bản ghi (lưu đến {{ b.ban_ghi_het_han|date:"d/m/Y" }})</a>{% endif %}</div>
+    <div class="row" style="margin:18px 0 10px"><h4 style="margin:0;font-size:14px;font-weight:600">Tham gia Zoom</h4></div>
     <div class="card card-b stack" style="gap:12px">{% localize off %}
       <div><div class="row sm"><span>Gia sư</span><span style="margin-left:auto" class="muted">{{ chon.ty_le_gia_su }}%</span></div><div style="position:relative;height:8px;border-radius:4px;background:#EEF0F5;margin-top:6px"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ chon.ty_le_gia_su }}%;border-radius:4px;background:{% if chon.ty_le_gia_su >= 67 %}#14B8A6{% else %}#E5484D{% endif %}"></span><span style="position:absolute;left:67%;top:-3px;bottom:-3px;border-left:2px solid #4A5068"></span></div></div>
       <div><div class="row sm"><span>Học viên</span><span style="margin-left:auto" class="muted">{{ chon.ty_le_hoc_vien }}%</span></div><div style="position:relative;height:8px;border-radius:4px;background:#EEF0F5;margin-top:6px"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ chon.ty_le_hoc_vien }}%;border-radius:4px;background:{% if chon.ty_le_hoc_vien >= 67 %}#14B8A6{% else %}#E5484D{% endif %}"></span><span style="position:absolute;left:67%;top:-3px;bottom:-3px;border-left:2px solid #4A5068"></span></div></div>
