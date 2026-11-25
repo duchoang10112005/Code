@@ -183,10 +183,11 @@
       </div>
       <div class="field"><span class="lbl">Lịch cố định <span class="opt">(gợi ý cho gia sư khi tạo buổi)</span></span>
         <div class="stack" style="gap:6px">
-          <div class="row">{{ f.lich_thu_1 }}<input type="time" name="lich_gio_1" class="inp" value="{{ f.lich_gio_1.value|default_if_none:'' }}" aria-label="Giờ buổi 1"></div>
-          <div class="row">{{ f.lich_thu_2 }}<input type="time" name="lich_gio_2" class="inp" value="{{ f.lich_gio_2.value|default_if_none:'' }}" aria-label="Giờ buổi 2"></div>
-          <div class="row">{{ f.lich_thu_3 }}<input type="time" name="lich_gio_3" class="inp" value="{{ f.lich_gio_3.value|default_if_none:'' }}" aria-label="Giờ buổi 3"></div>
-        </div><span class="sm muted">Phụ huynh mong muốn: {{ yc.lich_mong_muon }}</span></div>
+          <div class="row">{{ f.lich_thu_1 }}<input type="time" name="lich_gio_1" class="inp" value="{{ f.lich_gio_1.value|default_if_none:'' }}" aria-label="Giờ buổi 1"{% if f.lich_gio_1.errors %} aria-invalid="true" style="border-color:#E5484D"{% endif %}></div>
+          <div class="row">{{ f.lich_thu_2 }}<input type="time" name="lich_gio_2" class="inp" value="{{ f.lich_gio_2.value|default_if_none:'' }}" aria-label="Giờ buổi 2"{% if f.lich_gio_2.errors %} aria-invalid="true" style="border-color:#E5484D"{% endif %}></div>
+          <div class="row">{{ f.lich_thu_3 }}<input type="time" name="lich_gio_3" class="inp" value="{{ f.lich_gio_3.value|default_if_none:'' }}" aria-label="Giờ buổi 3"{% if f.lich_gio_3.errors %} aria-invalid="true" style="border-color:#E5484D"{% endif %}></div>
+        </div>{% for e in f.lich_thu_1.errors|add:f.lich_thu_2.errors|add:f.lich_thu_3.errors|add:f.lich_gio_1.errors|add:f.lich_gio_2.errors|add:f.lich_gio_3.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}
+        <span class="sm muted">Phụ huynh mong muốn: {{ yc.lich_mong_muon }}</span></div>
       <div class="field"><label for="{{ f.zalo_nhom.id_for_label }}">Tên nhóm Zalo lớp</label>{{ f.zalo_nhom }}</div>
       <div class="field"><label for="{{ f.ghi_chu_phu_huynh.id_for_label }}">Ghi chú của phụ huynh <span class="opt">(gia sư thấy)</span></label>{{ f.ghi_chu_phu_huynh }}</div>
       <div class="sm row" style="padding:10px 12px;background:#F7F8FC;border-radius:8px" data-tong-khoa><i class="bi bi-calculator"></i><span>Nhập số buổi và học phí để xem tổng.</span></div>

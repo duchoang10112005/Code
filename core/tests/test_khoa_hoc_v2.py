@@ -129,3 +129,32 @@ class DoiGiaSuV2Test(NgoaiLe):
         r = self.client.get(reverse("khoa_hoc_danh_sach"), {"tinh_trang": "sap_het"})  # 2 buổi → sắp hết
         self.assertEqual([k.pk for k in r.context["trang"]], [self.khoa.pk])
         self.assertContains(r, self.khoa.ma)
+
+
+class MoKhoaLichGoiYTest(NgoaiLe):
+    """Hộp thoại Mở khóa: lịch điền sẵn từ khung phụ huynh mong muốn; lỗi thiếu giờ hiện rõ thay vì im lặng."""
+
+    def yc_cho_mo_khoa(self):
+        yc = self.tao_yc(self.gs2)
+        YeuCauHocTap.objects.filter(pk=yc.pk).update(dang_ky_thang=True, khung_mong_muon=["1-TOI_SOM", "3-TOI_SOM", "5-SANG"])
+        yc.refresh_from_db()
+        return yc
+
+    def test_lich_dien_san_tu_khung_mong_muon(self):
+        from core.views.yeu_cau import _lich_goi_y
+        yc = self.yc_cho_mo_khoa()
+        self.assertEqual(_lich_goi_y(yc), {"lich_thu_1": "1", "lich_gio_1": "17:30", "lich_thu_2": "3",
+                                           "lich_gio_2": "17:30", "lich_thu_3": "5", "lich_gio_3": "08:00"})
+        self.dang_nhap(self.nvts)
+        r = self.client.get(reverse("yeu_cau_chi_tiet", args=[yc.pk]))
+        self.assertContains(r, 'name="lich_gio_1"')
+        self.assertEqual(r.context["form_khoa"].initial["lich_gio_1"], "17:30")
+
+    def test_thieu_gio_hien_thong_bao_loi(self):
+        yc = self.yc_cho_mo_khoa()
+        self.dang_nhap(self.nvts)
+        r = self.client.post(reverse("khoa_hoc_tao", args=[yc.pk]), {
+            "so_buoi_dang_ky": 10, "thoi_luong_phut": 90, "hoc_phi_moi_buoi": 200000, "thu_lao_moi_buoi": 150000,
+            "lich_thu_1": "1", "lich_gio_1": ""})
+        self.assertContains(r, "Chọn đủ thứ và giờ cho buổi cố định này.")
+        self.assertFalse(KhoaHoc.objects.filter(yeu_cau=yc).exists())

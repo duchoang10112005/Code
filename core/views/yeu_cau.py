@@ -119,6 +119,19 @@ BUOC_YC = [("MOI", "Mới"), ("DANG_TIM", "Đang mời gia sư"), ("DA_PHAN_CONG
            ("HOC_THU_XONG", "Học thử"), ("CHINH_THUC", "Đã mở khóa")]
 
 
+GIO_BAT_DAU_KHUNG = {"SANG": "08:00", "CHIEU": "14:00", "TOI_SOM": "17:30", "TOI": "19:00"}
+
+
+def _lich_goi_y(yc):
+    """Điền sẵn "Lịch cố định" từ khung giờ phụ huynh mong muốn (tối đa 3 buổi/tuần), giờ = đầu khung."""
+    kq = {}
+    for i, k in enumerate((yc.khung_mong_muon or [])[:3], start=1):
+        thu, _, khung = str(k).partition("-")
+        if thu.isdigit() and khung in GIO_BAT_DAU_KHUNG:
+            kq[f"lich_thu_{i}"], kq[f"lich_gio_{i}"] = thu, GIO_BAT_DAU_KHUNG[khung]
+    return kq
+
+
 def trang_chi_tiet_yc(request, yc, form_khoa=None, status=None):
     """Tuyển sinh – Chi tiết yêu cầu (SD-06..SD-12)."""
     from core.forms import KhoaHocForm
@@ -143,7 +156,7 @@ def trang_chi_tiet_yc(request, yc, form_khoa=None, status=None):
         "yc": yc, "de_xuat": de_xuat, "co_the_sua": _co_the_sua(yc), "buoc": buoc, "luoi": hang,
         "ds_loi_moi": yc.loi_moi.select_related("gia_su").order_by("-gui_luc"), "dong_tg": dong_tg[:12],
         "mau_tt": dv.MAU_TRANG_THAI_YC.get(yc.trang_thai, "xam"), "buoc_tiep": dv.buoc_tiep_theo(yc),
-        "ly_do_dong": dv.LY_DO_DONG, "form_khoa": form_khoa or KhoaHocForm(initial={"thoi_luong_phut": 90}),
+        "ly_do_dong": dv.LY_DO_DONG, "form_khoa": form_khoa or KhoaHocForm(initial={"thoi_luong_phut": 90, **_lich_goi_y(yc)}),
         "mo": "khoa" if form_khoa is not None else request.GET.get("mo", ""), "KQ": YeuCauHocTap.KetQuaHocThu,
     }
     if yc.trang_thai in (YC.DA_PHAN_CONG, YC.HOC_THU_XONG):
