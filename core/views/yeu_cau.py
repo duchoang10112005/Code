@@ -61,9 +61,8 @@ def danh_sach(request):
     if q:
         cq = chuan_hoa(q)
         so = cq.removeprefix("yc").lstrip("0")
-        ids = [y.pk for y in qs.only("pk", "hoc_vien__ho_ten", "hoc_vien__ten_phu_huynh", "hoc_vien__sdt_phu_huynh")
-               if (so.isdigit() and y.pk == int(so)) or cq in chuan_hoa(y.hoc_vien.ho_ten)
-               or cq in chuan_hoa(y.hoc_vien.ten_phu_huynh) or cq in y.hoc_vien.sdt_phu_huynh]
+        ids = [pk for pk, ten, ph, sdt in qs.values_list("pk", "hoc_vien__ho_ten", "hoc_vien__ten_phu_huynh", "hoc_vien__sdt_phu_huynh")
+               if (so.isdigit() and pk == int(so)) or cq in chuan_hoa(ten) or cq in chuan_hoa(ph) or cq in (sdt or "")]
         qs = qs.filter(pk__in=ids)
     trang = Paginator(qs, 20).get_page(request.GET.get("page"))
     dong = [{"yc": y, "buoc": dv.buoc_tiep_theo(y), "mau": dv.MAU_TRANG_THAI_YC.get(y.trang_thai, "xam"),

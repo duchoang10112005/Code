@@ -158,3 +158,17 @@ class MoKhoaLichGoiYTest(NgoaiLe):
             "lich_thu_1": "1", "lich_gio_1": ""})
         self.assertContains(r, "Chọn đủ thứ và giờ cho buổi cố định này.")
         self.assertFalse(KhoaHoc.objects.filter(yeu_cau=yc).exists())
+
+
+class TimKiemYeuCauTest(NgoaiLe):
+    """Ô tìm ở trang Yêu cầu học tập từng lỗi 500 (only + select_related)."""
+
+    def test_tim_theo_ma_va_ten(self):
+        yc = self.tao_yc(self.gs2)
+        self.dang_nhap(self.nvts)
+        for q in (f"YC-{yc.pk:04d}", f"yc{yc.pk}", yc.hoc_vien.ho_ten.split()[-1].lower()):
+            r = self.client.get(reverse("yeu_cau_danh_sach"), {"q": q})
+            self.assertEqual(r.status_code, 200, q)
+            self.assertIn(yc, [d["yc"] for d in r.context["dong"]], q)
+        r = self.client.get(reverse("yeu_cau_danh_sach"), {"q": "khongco999"})
+        self.assertEqual(len(r.context["dong"]), 0)
