@@ -119,6 +119,8 @@ class Command(BaseCommand):
         self._thu_lao_doi_soat()
         self._xu_ly_ngoai_le()
         self._thong_bao_nhat_ky()
+        from core.management.commands.gon_demo import don_buoi_tuong_lai
+        don_buoi_tuong_lai()  # không để buổi sắp tới chiếm phòng Zoom duy nhất
         self.stdout.write(self.style.SUCCESS(
             f"Xong. Tổng: {User.objects.count()} tài khoản · {HocVien.objects.count()} học viên · "
             f"{YeuCauHocTap.objects.count()} yêu cầu · {KhoaHoc.objects.count()} khóa · {BuoiHoc.objects.count()} buổi · "
