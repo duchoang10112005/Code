@@ -349,7 +349,6 @@ Giữ `ThuLao`, `DieuChinhThuLao`. **`DoiSoatThang` [SỬA]**: + `DA_CHI_TRA` "�
 |---|---|---|
 | `MO_PHONG_TRUOC_PHUT` | 10 | `/lop/<ma>/` cho vào trước giờ học; tác vụ mở phòng |
 | `DONG_PHONG_SAU_PHUT` | 5 | Tác vụ kết thúc phòng Zoom sau giờ kết thúc |
-| `GIO_KET_THUC_MUON_NHAT` | "22:00" | Tạo buổi: buổi phải kết thúc trước giờ này |
 | `NGUONG_SAP_HET_BUOI` | 2 | "Sắp hết buổi" |
 | `TRE_TOI_DA_PHUT` | 5 | Hậu kiểm tiêu chí 1 |
 | `DO_DAI_NHAN_XET_TOI_THIEU` | 30 | Hậu kiểm tiêu chí 4 + kiểm tra form đánh giá |

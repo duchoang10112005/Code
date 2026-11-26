@@ -103,7 +103,7 @@
   </div>
 
   <div class="phan">
-    <div><h3><span class="so">3</span>Ngày và giờ</h3><p class="mo">Mỗi buổi phải kết thúc trước 22:00 và không trùng giờ buổi khác của bạn.</p></div>
+    <div><h3><span class="so">3</span>Ngày và giờ</h3><p class="mo">Mỗi buổi không được trùng giờ buổi khác của bạn.</p></div>
     <div class="stack" style="gap:14px">
       <div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px;align-items:start">
         <div class="lich-chon">
@@ -197,7 +197,7 @@
   var lech = 0;
 
   /* Giờ: 07:00 → 21:00, mỗi 15 phút */
-  for (var h = 7; h <= 21; h++) { for (var m = 0; m < 60; m += 15) {
+  for (var h = 6; h <= 23; h++) { for (var m = 0; m < 60; m += 15) {
     var o = document.createElement("option"); o.value = o.textContent = hai(h) + ":" + hai(m); gio.appendChild(o); } }
   {% if form.gio.value %}gio.value = "{{ form.gio.value }}";{% endif %}
 

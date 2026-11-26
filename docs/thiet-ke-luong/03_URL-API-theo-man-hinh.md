@@ -23,7 +23,7 @@ Cột **URL** giữ URL cũ (`core/urls.py`) nếu đã có. **[MỚI]** = thêm
 | ↳ Từ chối | `POST /loi-moi/<pk>/tu-choi/` | `yeu_cau.tu_choi_loi_moi` [SỬA: lý do bắt buộc từ danh mục] | `yeu_cau.tu_choi` | SD-08 |
 | Lớp của tôi | `/lop-cua-toi/`, `/lop-cua-toi/khoa/<pk>/` | giữ | | |
 | `Gia su - Tao buoi hoc v2` | `/buoi-hoc/tao/` | `buoi_hoc.tao` [SỬA: nhiều buổi, học bù] | `buoi_hoc.tao_nhieu_buoi` [MỚI] → `tao_buoi_chinh_thuc` / `tao_buoi_hoc_thu` | SD-13 |
-| ↳ Kiểm tra trước khi tạo | `POST /api/buoi-hoc/kiem-tra-lich/` [MỚI] | trả từng buổi: OK / trùng / quá 22:00 / ngoài giờ rảnh (cảnh báo) | `buoi_hoc.kiem_tra_ke_hoach` [MỚI] | SD-13 |
+| ↳ Kiểm tra trước khi tạo | `POST /api/buoi-hoc/kiem-tra-lich/` [MỚI] | trả từng buổi: OK / trùng / ngoài giờ rảnh (cảnh báo) | `buoi_hoc.kiem_tra_ke_hoach` [MỚI] | SD-13 |
 | ↳ Thử lại Zoom | `POST /buoi-hoc/<pk>/thu-lai-zoom/` | giữ | `thu_lai_zoom` | SD-13 |
 | ↳ Sao chép tin nhắn Zalo | `GET /api/buoi-hoc/<pk>/tin-nhan-lop/` [MỚI] | | `buoi_hoc.noi_dung_moi_vao_lop` [MỚI] | SD-13 |
 | `Gia su - Chi tiet buoi hoc v2` | `/buoi-hoc/<pk>/` | `buoi_hoc.chi_tiet` [SỬA] | | SD-15 |

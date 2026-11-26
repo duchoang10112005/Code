@@ -58,7 +58,7 @@ Test mới đề xuất: `test_hau_kiem`, `test_doi_gia_su_v2`, `test_dang_ky_mo
 | BH-01 | Tạo 3 buổi lặp tuần, hợp lệ | 3 buổi DA_LEN_LICH, mã liên tiếp, nhãn "Buổi 6/16, 7/16, 8/16" | 13 | test_tao_nhieu_buoi |
 | BH-02 | Một buổi trùng giờ buổi của chính gia sư | Chặn buổi đó, các buổi khác vẫn tạo | 13 | test_tao_nhieu_buoi |
 | BH-03 | Số buổi giao nhau ≥ số host Zoom | Chặn "Khung giờ này đã có buổi khác dùng phòng Zoom" | 13 | pb11 (giữ) |
-| BH-04 | Kết thúc sau 22:00 | Chặn | 13 | mới |
+| BH-04 | Kết thúc sau 22:00 | Tạo được (đã bỏ giới hạn giờ kết thúc) | 13 | test_BH04 |
 | BH-05 | Ngoài giờ rảnh | Tạo được, có cảnh báo | 13 | mới |
 | BH-06 | Vượt số buổi còn xếp được | Chặn (trừ học bù / dời lịch) | 13 | pb11 (giữ) |
 | BH-07 | Zoom lỗi khi tạo | LOI_ZOOM, thử lại OK → DA_LEN_LICH | 13 | pb11 (giữ) |

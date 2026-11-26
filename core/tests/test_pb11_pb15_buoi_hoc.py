@@ -143,7 +143,7 @@ class TaoBuoiTest(DuLieu):
 class CheDoChayThuTest(DuLieu):
     def test_buoi_hoc_dai_1_phut_khi_bat_che_do_chay_thu(self):
         with override_settings(NGHIEP_VU={**settings.NGHIEP_VU, "THOI_LUONG_BUOI_DEMO": 1}):
-            # Giờ cố định (08:00 giờ VN ngày mai): test không phụ thuộc lúc chạy (quy tắc kết thúc trước 22:00).
+            # Giờ cố định (08:00 giờ VN ngày mai): test không phụ thuộc lúc chạy.
             b = dv.tao_buoi_chinh_thuc(self.gs, self.khoa, ngay_mai(1))
             self.assertEqual(b.thoi_luong_phut, 1)
             BuoiHoc.objects.filter(pk=b.pk).update(bat_dau=timezone.now() - timedelta(minutes=2))

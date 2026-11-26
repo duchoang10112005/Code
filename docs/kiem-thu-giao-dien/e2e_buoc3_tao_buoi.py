@@ -64,8 +64,7 @@ with sync_playwright() as p:
     kiem(page.locator("[data-nut-tao]").is_disabled(), "trùng giờ → nút Tạo khóa")
     page.select_option("#gio", "21:00")
     page.wait_for_timeout(1200)
-    kiem("22:00" in page.locator("[data-xem-truoc]").inner_text() or page.locator("[data-xem-truoc] .chip.do").count() == 0,
-         "giờ 21:00 kiểm tra quy tắc kết thúc trước 22:00")
+    kiem(page.locator("[data-xem-truoc] .chip.do").count() == 0, "giờ 21:00 không bị chặn vì quá muộn")
     page.screenshot(path=os.path.join(OUT, "tao_buoi_bi_chan.png"), full_page=True)
     b.close()
 

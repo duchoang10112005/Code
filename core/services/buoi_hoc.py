@@ -69,11 +69,6 @@ def so_phong_zoom():
     return n or NV["SO_PHONG_ZOOM_DONG_THOI"]
 
 
-def _gio_muon_nhat():
-    h, m = (settings.NGHIEP_VU.get("GIO_KET_THUC_MUON_NHAT") or "22:00").split(":")
-    return int(h) * 60 + int(m)
-
-
 def kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=None):
     now = timezone.now()
     if bat_dau <= now:
@@ -81,10 +76,6 @@ def kiem_tra_khung_gio(gia_su, bat_dau, thoi_luong, bo_qua_pk=None):
     if bat_dau > now + timedelta(days=60):
         raise ValidationError({"bat_dau": "Chỉ xếp lịch trước tối đa 60 ngày."})
     ket_thuc = bat_dau + timedelta(minutes=thoi_luong)
-    bd, kt = timezone.localtime(bat_dau), timezone.localtime(ket_thuc)
-    if kt.date() != bd.date() or kt.hour * 60 + kt.minute > _gio_muon_nhat():
-        raise ValidationError({"bat_dau": f"Buổi học phải kết thúc trước {NV.get('GIO_KET_THUC_MUON_NHAT', '22:00')} "
-                                          f"(buổi này kết thúc {kt:%H:%M})."})
     trung = _buoi_trung_gio(bat_dau, ket_thuc, bo_qua_pk)
     cua_minh = [b for b in trung if b.gia_su_id == gia_su.pk]
     if cua_minh:

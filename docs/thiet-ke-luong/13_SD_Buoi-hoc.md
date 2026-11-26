@@ -25,7 +25,7 @@ sequenceDiagram
     UI->>API: POST lop, ke_hoach[{bat_dau}], hoc_bu_cho?
     API->>S: kiem_tra_ke_hoach(gs, lop, ke_hoach)
     loop Mỗi buổi dự kiến
-        S->>S: quá khứ? quá 60 ngày? kết thúc sau 22:00?
+        S->>S: quá khứ? quá 60 ngày?
         S->>DB: Trùng buổi của chính gia sư? (BuoiHoc chiếm chỗ giao nhau)
         S->>DB: Số buổi giao nhau ≥ số host Zoom đang bật?
         S->>DB: Ngoài giờ rảnh đã đăng ký? (chỉ cảnh báo)

@@ -44,10 +44,10 @@ class TaoNhieuBuoiTest(DuLieu):
         self.assertEqual(sum(1 for x in kq if x["buoi"]), 2)
         self.assertIn("trùng", kq[1]["loi"])
 
-    def test_BH04_ket_thuc_sau_22h_bi_chan(self):
+    def test_BH04_buoi_toi_muon_khong_bi_chan(self):
+        """Không còn giới hạn giờ kết thúc: buổi 21:30 (kết thúc sau 22:00) vẫn hợp lệ."""
         ke = dv.kiem_tra_ke_hoach(self.gs, self.khoa, [gio_dia_phuong(gio=21, phut=30)])
-        self.assertEqual(ke[0]["muc"], "chan")
-        self.assertIn("22:00", ke[0]["ly_do"])
+        self.assertNotEqual(ke[0]["muc"], "chan")
 
     def test_BH05_ngoai_gio_ranh_chi_canh_bao(self):
         bd = gio_dia_phuong()
