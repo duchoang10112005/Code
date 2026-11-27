@@ -172,3 +172,17 @@ class TimKiemYeuCauTest(NgoaiLe):
             self.assertIn(yc, [d["yc"] for d in r.context["dong"]], q)
         r = self.client.get(reverse("yeu_cau_danh_sach"), {"q": "khongco999"})
         self.assertEqual(len(r.context["dong"]), 0)
+
+
+class LocLoaiBuoiTest(NgoaiLe):
+    """Trang Buổi học của gia sư có bộ lọc loại buổi (học thử / chính thức)."""
+
+    def test_loc_hoc_thu(self):
+        yc = self.tao_yc(self.gs2)
+        self.dang_nhap(self.gs2)
+        r = self.client.get(reverse("buoi_cua_toi"), {"loai": "HOC_THU"})
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(all(d["b"].loai == "HOC_THU" for d in r.context["ds"]))
+        self.assertContains(r, 'name="loai"')
+        r = self.client.get(reverse("buoi_cua_toi"), {"loai": "CHINH_THUC"})
+        self.assertTrue(all(d["b"].loai == "CHINH_THUC" for d in r.context["ds"]))

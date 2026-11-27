@@ -37,10 +37,11 @@ def danh_sach(request):
     u = request.user
     form = LocBuoiForm(request.GET or None)
     thang = timezone.localdate().replace(day=1)
-    trang_thai = ""
+    trang_thai = loai = ""
     if form.is_valid():
         thang = form.cleaned_data["thang"] or thang
         trang_thai = form.cleaned_data["trang_thai"]
+        loai = form.cleaned_data["loai"]
     elif not request.GET:
         form = LocBuoiForm(initial={"thang": thang})
     den = date(thang.year + (thang.month == 12), thang.month % 12 + 1, 1)
@@ -48,6 +49,8 @@ def danh_sach(request):
     trong_thang = goc.filter(bat_dau__date__gte=thang, bat_dau__date__lt=den).order_by("bat_dau")
     if trang_thai:
         trong_thang = trong_thang.filter(trang_thai=trang_thai)
+    if loai:
+        trong_thang = trong_thang.filter(loai=loai)
     now = timezone.now()
     cho_xac_nhan = [b for b in goc.filter(trang_thai=TT.DA_LEN_LICH, bat_dau__lte=now).order_by("bat_dau")
                     if b.cho_xac_nhan]
@@ -55,7 +58,7 @@ def danh_sach(request):
         "form": form, "thang": thang,
         "ds": [{"b": b, "nhan": dv.nhan_buoi(b), "tt": b.trang_thai_hien_thi} for b in trong_thang],
         "thang_truoc": (thang - timedelta(days=1)).replace(day=1), "thang_sau": den, "trang_thai": trang_thai,
-        "ds_trang_thai": BuoiHoc.TrangThai.choices,
+        "ds_trang_thai": BuoiHoc.TrangThai.choices, "loai": loai, "ds_loai": BuoiHoc.Loai.choices,
         "cho_xac_nhan": cho_xac_nhan,
         "sap_toi": goc.filter(trang_thai__in=BuoiHoc.TRANG_THAI_CHIEM_CHO, bat_dau__gt=now).order_by("bat_dau")[:10],
         "co_lop": bool(dv.khoa_co_the_xep(u) or dv.yeu_cau_co_the_hoc_thu(u)),

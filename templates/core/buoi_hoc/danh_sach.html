@@ -34,9 +34,10 @@
 
 <section class="card" style="overflow:hidden">
   <div class="card-h"><h3>Tháng {{ thang|date:"m/Y" }}</h3>
-    <a class="icon-btn sm" style="margin-left:auto" href="?thang={{ thang_truoc|date:'Y-m' }}{% if trang_thai %}&trang_thai={{ trang_thai }}{% endif %}" aria-label="Tháng trước"><i class="bi bi-chevron-left"></i></a>
-    <a class="icon-btn sm" href="?thang={{ thang_sau|date:'Y-m' }}{% if trang_thai %}&trang_thai={{ trang_thai }}{% endif %}" aria-label="Tháng sau"><i class="bi bi-chevron-right"></i></a>
+    <a class="icon-btn sm" style="margin-left:auto" href="?thang={{ thang_truoc|date:'Y-m' }}{% if trang_thai %}&trang_thai={{ trang_thai }}{% endif %}{% if loai %}&loai={{ loai }}{% endif %}" aria-label="Tháng trước"><i class="bi bi-chevron-left"></i></a>
+    <a class="icon-btn sm" href="?thang={{ thang_sau|date:'Y-m' }}{% if trang_thai %}&trang_thai={{ trang_thai }}{% endif %}{% if loai %}&loai={{ loai }}{% endif %}" aria-label="Tháng sau"><i class="bi bi-chevron-right"></i></a>
     <form method="get" class="row"><input type="hidden" name="thang" value="{{ thang|date:'Y-m' }}">
+      <select name="loai" class="inp" style="width:160px;height:32px" onchange="this.form.submit()" aria-label="Lọc loại buổi"><option value="">Mọi loại buổi</option>{% for v, n in ds_loai %}<option value="{{ v }}"{% if v == loai %} selected{% endif %}>{{ n }}</option>{% endfor %}</select>
       <select name="trang_thai" class="inp" style="width:180px;height:32px" onchange="this.form.submit()" aria-label="Lọc trạng thái"><option value="">Mọi trạng thái</option>{% for v, n in ds_trang_thai %}<option value="{{ v }}"{% if v == trang_thai %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></form>
   </div>
   {% if ds %}

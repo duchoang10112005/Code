@@ -562,6 +562,8 @@ class LocBuoiForm(BootstrapMixin, forms.Form):
                             widget=forms.DateInput(attrs={"type": "month"}, format="%Y-%m"))
     trang_thai = forms.ChoiceField(label="Trạng thái", required=False,
                                    choices=[("", "Mọi trạng thái")] + list(BuoiHoc.TrangThai.choices))
+    loai = forms.ChoiceField(label="Loại buổi", required=False,
+                             choices=[("", "Mọi loại buổi")] + list(BuoiHoc.Loai.choices))
 
 
 class DangKyGiaSuForm(GsoMixin, forms.Form):
