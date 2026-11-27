@@ -43,7 +43,7 @@ Python 3 · Django 6 · SQLite · Bootstrap 5 · Zoom Server-to-Server OAuth · 
 ├── templates/             # Giao diện (Django template)
 ├── static/                # CSS, JS
 ├── database/schema.sql    # Schema SQLite đã xuất
-├── docs/                  # Tài liệu thiết kế luồng, phân vai, bằng chứng kiểm thử
+├── docs/                  # Thiết kế UI, thiết kế luồng, phân vai, bằng chứng kiểm thử
 ├── README_DEMO.md         # Hướng dẫn chạy thử chi tiết, bật Zoom/Zalo thật
 ├── .env.example           # Mẫu biến môi trường
 ├── requirements.txt
@@ -87,6 +87,7 @@ Mật khẩu chung: `Demo@2026` (chỉ dùng trên máy dev).
 Không đưa file `.env` (chứa khóa Zoom, Zalo) lên Git.
 
 ## Tài liệu liên quan
+- [`docs/thiet-ke-ui/`](docs/thiet-ke-ui/): bản thiết kế giao diện các màn hình (HTML), kèm ảnh xem nhanh.
 - [`docs/phan_vai.md`](docs/phan_vai.md): phân vai NV tuyển sinh / Admin / Hệ thống.
 - [`docs/thiet-ke-luong/`](docs/thiet-ke-luong/): kiến trúc, thay đổi database, URL/API, sơ đồ tuần tự.
 - [`docs/kiem-thu-giao-dien/`](docs/kiem-thu-giao-dien/): kịch bản và bằng chứng kiểm thử.

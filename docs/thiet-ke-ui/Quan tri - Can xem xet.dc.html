@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Cần xem xét · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#0F766E">Trung tâm điều hành</small></div></div>
+<nav class="nav">
+<div class="nav-h">TỔNG QUAN</div>
+<a href="Trang chu Quan tri vien.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="#" aria-current="page"><i class="bi bi-exclamation-triangle"></i><span>Cần xem xét</span><sc-if value="{{ navBadge }}" hint-placeholder-val="{{ true }}"><b class="badge">{{ navBadge }}</b></sc-if></a>
+<div class="nav-h">VẬN HÀNH</div>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html"><i class="bi bi-inbox"></i><span>Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Chi tiet khoa hoc.dc.html"><i class="bi bi-journal-bookmark"></i><span>Khóa học</span></a>
+<a href="Quan tri - Ho so gia su.dc.html"><i class="bi bi-mortarboard"></i><span>Gia sư</span></a>
+<div class="nav-h">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html"><i class="bi bi-calculator"></i><span>Đối soát thù lao</span></a>
+<div class="nav-h">HỆ THỐNG</div>
+<a href="Quan tri - Tai khoan.dc.html"><i class="bi bi-people"></i><span>Tài khoản</span></a>
+<a href="Quan tri - Nhat ky thao tac.dc.html"><i class="bi bi-clock-history"></i><span>Nhật ký thao tác</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#D5F5EF;color:#0F766E;font-size:12px">HM</div><div style="flex:1;min-width:0"><b>Hoàng Văn Minh</b><span class="role" style="background:#E6FAF7;color:#0F766E">Quản trị viên</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><h1>Cần xem xét</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo" style="margin-left:auto"><i class="bi bi-bell"></i></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<div class="head">
+<div style="flex:1;min-width:320px"><h2 class="h2">Cần xem xét</h2><p class="lead">Việc chỉ Quản trị viên xử lý: gia sư quên xác nhận xin mở lại buổi, lỗi hệ thống, đổi gia sư, duyệt hồ sơ và môn. Hậu kiểm buổi học do Tuyển sinh phụ trách gia sư đó thực hiện.</p></div>
+</div>
+<div class="row" style="gap:12px;flex-wrap:wrap;margin-top:-4px">
+<div class="search" style="width:380px"><i class="bi bi-search" aria-hidden="true"></i><label for="tim" class="sr">Tìm theo mã buổi, mã khóa, tên</label><input id="tim" class="inp" value="{{ q }}" onChange="{{ onQ }}" placeholder="Nhập mã buổi (VD: BH-00399), mã khóa hoặc tên"></div>
+<sc-if value="{{ hasQ }}"><button type="button" class="btn sm" onClick="{{ clearQ }}"><i class="bi bi-x-lg" aria-hidden="true"></i>Xóa tìm</button></sc-if>
+<div class="tabs" role="tablist" aria-label="Lọc loại việc" style="margin-left:auto"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="cnt">{{ t.n }}</span></button></sc-for></div>
+</div>
+
+<div style="display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:start">
+<section aria-label="Danh sách việc" style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ items }}" as="it" hint-placeholder-count="4">
+<button type="button" onClick="{{ it.pick }}" aria-current="{{ it.sel }}" class="card fade-in" style="position:relative;width:100%;text-align:left;padding:14px 16px;border-color:{{ it.bd }};box-shadow:{{ it.sh }};cursor:pointer;display:flex;gap:12px;color:#1E2235">
+<span style="position:absolute;left:-1px;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:{{ it.rail }}"></span>
+<span class="tile" style="background:{{ it.tBg }};color:{{ it.tC }}"><i class="bi {{ it.icon }}" aria-hidden="true"></i></span>
+<span style="flex:1;min-width:0"><span class="row" style="gap:6px"><span class="sm b6" style="color:{{ it.tC }}">{{ it.kind }}</span><span class="sm muted" style="margin-left:auto;white-space:nowrap">{{ it.age }}</span></span><span class="b6 ell" style="display:block;margin-top:2px">{{ it.title }}</span><span class="sm muted ell" style="display:block;margin-top:1px">{{ it.sub }}</span></span>
+</button>
+</sc-for>
+<sc-if value="{{ outside.show }}"><div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;border-style:dashed"><div class="row"><span class="tile" style="background:#EAF2FF;color:#1D4ED8"><i class="bi bi-search" aria-hidden="true"></i></span><div style="min-width:0"><div class="b6">{{ outside.title }}</div><div class="sm muted">{{ outside.sub }}</div></div></div><a href="Gia su - Chi tiet buoi hoc v2.dc.html" class="btn sm"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở chi tiết buổi {{ outside.code }}</a></div></sc-if>
+<sc-if value="{{ listEmpty }}"><div class="card empty"><span class="ring" style="border-style:solid;border-color:#B5ECE3;color:#0F766E"><i class="bi bi-check-lg"></i></span><b class="b6" style="color:#1E2235">Đã xử lý hết</b>Không còn việc nào cần bạn quyết định trong mục này.</div></sc-if>
+</section>
+
+<sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ true }}">
+<article class="card" aria-labelledby="ct-t">
+<div style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border-bottom:1px solid #EEF0F5">
+<span class="tile" style="width:44px;height:44px;border-radius:12px;font-size:18px;background:{{ d.tBg }};color:{{ d.tC }}"><i class="bi {{ d.icon }}" aria-hidden="true"></i></span>
+<div style="flex:1;min-width:0"><div class="row"><span class="chip" style="background:{{ d.tBg }};color:{{ d.tC }}">{{ d.kind }}</span><span class="sm muted">{{ d.age }}</span></div><h3 id="ct-t" style="margin:6px 0 0;font-size:18px;line-height:26px;font-weight:600">{{ d.title }}</h3><div class="sm muted" style="margin-top:2px">{{ d.sub }}</div></div>
+<sc-if value="{{ d.hasLink }}"><a href="{{ d.link }}" class="btn sm"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>{{ d.linkLabel }}</a></sc-if>
+</div>
+<div style="padding:20px 24px;display:flex;flex-direction:column;gap:20px">
+<div class="banner" style="background:#FFF8EC;border-color:#F6DDB0;align-items:flex-start"><span class="ic" style="color:#B45309"><i class="bi bi-info-circle" aria-hidden="true"></i></span><div><div class="b6">Vì sao cần xem xét</div><div style="font-size:13px;line-height:20px;color:#4A5068;margin-top:2px">{{ d.reason }}</div></div></div>
+
+<div class="info" style="border:1px solid #EEF0F5;border-radius:10px">
+<dl><sc-for list="{{ d.factsL }}" as="x" hint-placeholder-count="3"><div><dt>{{ x.k }}</dt><dd class="b5">{{ x.v }}</dd></div></sc-for></dl>
+<dl><sc-for list="{{ d.factsR }}" as="x" hint-placeholder-count="3"><div><dt>{{ x.k }}</dt><dd>{{ x.v }}</dd></div></sc-for></dl>
+</div>
+
+<sc-if value="{{ d.hasAttend }}">
+<section aria-labelledby="tg-t"><h4 id="tg-t" style="margin:0 0 10px;font-size:14px;font-weight:600">Dữ liệu tham gia Zoom</h4>
+<div style="display:flex;flex-direction:column;gap:12px;padding:14px 16px;border:1px solid #EEF0F5;border-radius:10px">
+<sc-for list="{{ d.attend }}" as="a"><div><div class="row sm" style="margin-bottom:6px"><span class="b5" style="font-size:13px">{{ a.who }}</span><span style="margin-left:auto;color:#4A5068">{{ a.mins }} phút · <b class="b6" style="color:{{ a.c }}">{{ a.pct }}%</b></span></div><div role="img" aria-label="{{ a.aria }}" style="position:relative;height:8px;border-radius:4px;background:#EEF0F5"><div style="height:100%;width:{{ a.w }};border-radius:4px;background:{{ a.bar }}"></div><span aria-hidden="true" style="position:absolute;left:67%;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:#1E2235;opacity:.55"></span></div></div></sc-for>
+<div class="row sm muted"><span style="width:2px;height:10px;background:#1E2235;opacity:.55"></span>Ngưỡng hợp lệ 67% thời lượng · <a href="#">Xem bản ghi Zoom</a></div>
+</div></section>
+</sc-if>
+
+<sc-if value="{{ d.hasQuote }}"><section aria-labelledby="gc-t"><h4 id="gc-t" style="margin:0 0 10px;font-size:14px;font-weight:600">{{ d.quoteBy }}</h4><div style="padding:12px 14px;border-radius:4px 12px 12px 12px;background:#F7F8FC;border:1px solid #EEF0F5;font-size:14px;line-height:22px">{{ d.quote }}</div></section></sc-if>
+
+<div class="field"><label for="gc">Ghi chú quyết định <span class="opt">{{ d.noteHint }}</span></label><textarea id="gc" class="inp" rows="2" value="{{ note }}" onChange="{{ onNote }}" aria-invalid="{{ noteErr }}" placeholder="Ghi chú này lưu vào nhật ký và gửi cho người liên quan"></textarea><sc-if value="{{ noteErr }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Cần ghi chú khi từ chối hoặc đánh giá không hợp lệ.</span></sc-if></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid #E6E9F2;background:#FAFBFE;border-radius:0 0 12px 12px">
+<span class="sm muted" style="flex:1">{{ d.effect }}</span>
+<sc-if value="{{ d.footLink }}"><a href="{{ d.link }}" class="btn pri"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở hồ sơ để duyệt</a></sc-if>
+<sc-for list="{{ d.acts }}" as="a"><button type="button" class="btn {{ a.cls }}" onClick="{{ a.run }}"><i class="bi {{ a.icon }}" aria-hidden="true"></i>{{ a.label }}</button></sc-for>
+</div>
+</article>
+</sc-if>
+<sc-if value="{{ noDetail }}"><div class="card empty" style="min-height:360px;justify-content:center"><span class="ring"><i class="bi bi-check-circle"></i></span><b class="b6" style="color:#1E2235">Không có việc nào được chọn</b>Khi có việc mới cần duyệt, bạn sẽ thấy ở đây và trên trang chủ.</div></sc-if>
+</div>
+</main>
+</div>
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><button type="button" class="btn sm" onClick="{{ undo }}">Hoàn tác</button><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Có việc cần xử lý","Đã xử lý hết"],"default":"Có việc cần xử lý","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, done: [], tab: 'all', sel: null, note: '', tried: false, toast: null, last: null };
+  componentWillUnmount() { clearTimeout(this.tt); }
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Có việc cần xử lý';
+    const S = S0.key === key ? S0 : { ...S0, done: [], sel: null };
+    const set = p => this.setState(S0.key === key ? p : { done: [], sel: null, ...p, key });
+    const T = { reopen: { kind: 'Xin mở lại buổi', icon: 'bi-hourglass-split', tBg: '#FFF4E5', tC: '#B45309', grp: 'reopen' }, sys: { kind: 'Lỗi hệ thống', icon: 'bi-cpu', tBg: '#FDECEC', tC: '#C2292E', grp: 'sys' }, swap: { kind: 'Đổi gia sư', icon: 'bi-arrow-repeat', tBg: '#EEF0FF', tC: '#4F46E5', grp: 'swap' }, profile: { kind: 'Hồ sơ gia sư mới', icon: 'bi-person', tBg: '#EAF2FF', tC: '#1D4ED8', grp: 'profile' }, subject: { kind: 'Môn dạy chờ duyệt', icon: 'bi-journal-plus', tBg: '#EAF2FF', tC: '#1D4ED8', grp: 'profile' }, zoom: { kind: 'Lỗi Zoom', icon: 'bi-exclamation-triangle', tBg: '#FDECEC', tC: '#C2292E', grp: 'sys' } };
+    const att = (who, mins, pct) => ({ who, mins, pct, w: Math.min(100, pct) + '%', c: pct < 67 ? '#C2292E' : '#0F766E', bar: pct < 67 ? '#E5484D' : '#14B8A6', aria: `${who} ${mins} phút, ${pct}%, ngưỡng 67%` });
+    const ALL = [
+      { id: 'r1', t: 'reopen', age: 'Chờ 1 ngày · hạn 10/11', title: 'Ngữ văn 8 · Lê Thu Hà · 03/11', sub: 'BH-00399 · Gia sư Phạm Ngọc Lan xin mở lại buổi tự hủy', code: 'BH-00399',
+        reason: 'Buổi tự hủy vì quá 12 giờ chưa xác nhận. Gia sư cho biết đã dạy đủ nhưng quên xác nhận. Zoom ghi nhận cả gia sư và học viên tham gia trên 90%. Hạn mở lại là 7 ngày sau buổi học (đến 10/11).',
+        factsL: [{ k: 'Buổi', v: 'Buổi 3/10' }, { k: 'Thời gian', v: 'T3 03/11 · 18:00–19:00' }, { k: 'Tự hủy lúc', v: '04/11 · 07:00' }], factsR: [{ k: 'Khóa', v: 'KH-0009 · Ngữ văn 8' }, { k: 'Lần xin mở lại', v: 'Lần đầu trong tháng' }, { k: 'Tuyển sinh phụ trách', v: 'Trần Thu Trang' }],
+        attend: [att('Gia sư', 62, 100), att('Học viên', 58, 97)], quoteBy: 'Lý do gia sư gửi', quote: 'Tối hôm đó em bị sốt nên quên xác nhận, buổi học vẫn diễn ra đủ giờ. Em xin mở lại để đánh giá cho học viên ạ.',
+        acts: [{ label: 'Từ chối', cls: 'danger', icon: 'bi-x-circle', need: true, msg: 'Đã từ chối mở lại BH-00399' }, { label: 'Mở lại · thêm 24 giờ', cls: 'pri', icon: 'bi-arrow-repeat', need: false, msg: 'Đã mở lại BH-00399 · gia sư có 24 giờ để đánh giá và xác nhận' }],
+        effect: 'Mở lại: buổi về trạng thái Chờ xác nhận, gia sư nhận email và có thêm 24 giờ.', link: 'Gia su - Chi tiet buoi hoc v2.dc.html', linkLabel: 'Mở buổi học' },
+      { id: 'r2', t: 'sys', age: 'Chờ 6 giờ', title: 'Vật lý 10 · Đỗ Quang Huy · 02/11', sub: 'BH-00381 · Gia sư Đỗ Thanh Tùng báo lỗi không xác nhận được', code: 'BH-00381',
+        reason: 'Gia sư báo bấm Xác nhận hoàn tất nhưng trang báo lỗi. Hệ thống ghi nhận lỗi máy chủ (500) lúc 21:10 ngày 02/11, buổi sau đó tự hủy lúc 07:30 ngày 03/11.',
+        factsL: [{ k: 'Buổi', v: 'Buổi 2/24' }, { k: 'Thời gian', v: 'T2 02/11 · 19:00–20:30' }, { k: 'Mã lỗi', v: 'HTTP 500 · /buoi-hoc/381/xac-nhan' }], factsR: [{ k: 'Khóa', v: 'KH-0014 · Vật lý 10' }, { k: 'Bản nháp đánh giá', v: 'Đã lưu lúc 21:08' }, { k: 'Tuyển sinh phụ trách', v: 'Lý Hồng Nhung' }],
+        attend: [att('Gia sư', 91, 100), att('Học viên', 88, 98)],
+        acts: [{ label: 'Chuyển kỹ thuật', cls: '', icon: 'bi-send', need: false, msg: 'Đã chuyển lỗi cho bộ phận kỹ thuật' }, { label: 'Khôi phục & xác nhận từ bản nháp', cls: 'pri', icon: 'bi-check-lg', need: false, msg: 'Đã khôi phục BH-00381 từ bản nháp · buổi Hoàn tất, thù lao Tạm tính' }],
+        effect: 'Do lỗi hệ thống nên không tính là quá hạn của gia sư; ghi vào nhật ký thao tác.', link: 'Gia su - Chi tiet buoi hoc v2.dc.html', linkLabel: 'Mở buổi học' },
+      { id: 'w1', t: 'swap', age: 'Chờ 4 giờ', title: 'KH-0005 · IELTS · đổi sang Nguyễn Hoài An', sub: 'Đề xuất bởi Trần Thu Trang (Tuyển sinh)', code: 'KH-0005',
+        reason: 'Gia sư hiện tại Phạm Ngọc Lan bận lịch thi từ tháng 12. Gia sư mới khớp 2/2 khung giờ cố định và đã được duyệt môn IELTS.',
+        factsL: [{ k: 'Học viên', v: 'Trần Gia Bảo · Lớp 11' }, { k: 'Tiến độ', v: '5/16 buổi đã học' }, { k: 'Buổi sẽ chuyển', v: '2 buổi đã xếp lịch' }], factsR: [{ k: 'Gia sư cũ', v: 'Phạm Ngọc Lan · 150.000đ/buổi' }, { k: 'Gia sư mới', v: 'Nguyễn Hoài An · 140.000đ/buổi' }, { k: 'Phụ huynh', v: 'Đã đồng ý qua Zalo' }],
+        acts: [{ label: 'Từ chối', cls: 'danger', icon: 'bi-x-circle', need: true, msg: 'Đã từ chối đề xuất đổi gia sư' }, { label: 'Duyệt đổi gia sư', cls: 'pri', icon: 'bi-check-lg', need: false, msg: 'Đã duyệt · KH-0005 chuyển sang Nguyễn Hoài An' }],
+        effect: 'Duyệt: các buổi đã xếp lịch chuyển sang gia sư mới, cả hai gia sư nhận email.', link: 'Tuyen sinh - Chi tiet khoa hoc.dc.html', linkLabel: 'Mở khóa học' },
+      { id: 'p1', t: 'profile', age: 'Chờ 3 ngày', title: 'Trương Bảo Ngọc · gia sư mới', sub: 'Đăng ký: Toán 8, Toán 9 · Sinh viên năm 3 ĐH Sư phạm Đà Nẵng', code: '',
+        reason: 'Hồ sơ đã đủ giấy tờ. Cần kiểm tra bằng cấp, bài test, môn dạy và giờ rảnh trước khi kích hoạt tài khoản nhận lời mời.',
+        factsL: [{ k: 'Email', v: 'baongoc.tr@gmail.com' }, { k: 'Môn đăng ký', v: 'Toán 8 · Toán 9' }, { k: 'Bài test', v: 'Toán 8: 8,0 · Toán 9: 7,5' }], factsR: [{ k: 'Học vấn', v: 'SV năm 3 · Sư phạm Toán' }, { k: 'Kinh nghiệm', v: '2 năm dạy kèm THCS' }, { k: 'Minh chứng', v: 'Thẻ SV, bảng điểm (link Drive)' }],
+        acts: [], footLink: true,
+        effect: 'Duyệt từng môn ngay trong trang hồ sơ gia sư.', link: 'Quan tri - Ho so gia su.dc.html', linkLabel: 'Mở hồ sơ' },
+      { id: 'm1', t: 'subject', age: 'Chờ 1 ngày', title: 'Phạm Ngọc Lan · thêm môn Tiếng Anh 9', sub: 'Gia sư đang hoạt động · 52 buổi đã dạy', code: '',
+        reason: 'Gia sư đăng ký thêm môn mới: đã làm bài test năng lực đúng môn (đạt ngưỡng 7,0) và nộp chứng chỉ IELTS 8.0 còn hạn đến 03/2027.',
+        factsL: [{ k: 'Môn · cấp độ', v: 'Tiếng Anh 9 · Ôn thi vào 10' }, { k: 'Bài test', v: '8,8/10 · đạt ngưỡng 7,0' }, { k: 'Ảnh kết quả', v: 'ket-qua-test-tieng-anh-9.png' }], factsR: [{ k: 'Minh chứng', v: 'Chứng chỉ IELTS 8.0 · Bằng cử nhân (link Drive)' }, { k: 'Môn đã duyệt', v: 'IELTS, Toán 9, Ngữ văn 8' }, { k: 'Đánh giá TB', v: 'Tiếp thu tốt 64%' }],
+        quoteBy: 'Kinh nghiệm gia sư mô tả', quote: 'Em có 3 năm luyện thi vào 10 môn Tiếng Anh, muốn nhận thêm lớp cuối tuần.',
+        acts: [{ label: 'Từ chối', cls: 'danger', icon: 'bi-x-circle', need: true, msg: 'Đã từ chối môn Tiếng Anh 9' }, { label: 'Duyệt môn', cls: 'pri', icon: 'bi-check-lg', need: false, msg: 'Đã duyệt môn Tiếng Anh 9 cho Phạm Ngọc Lan' }],
+        effect: 'Duyệt: gia sư bắt đầu nhận lời mời môn này.', link: 'Quan tri - Ho so gia su.dc.html', linkLabel: 'Mở hồ sơ' },
+      { id: 'z1', t: 'zoom', age: 'Chờ 30 phút', title: 'Ngữ văn 8 · Lê Thu Hà · 12/11 18:00', sub: 'BH-00433 · Gia sư Phạm Ngọc Lan đã thử lại 2 lần', code: 'BH-00433',
+        reason: 'Zoom trả lỗi “Tài khoản host đã đạt giới hạn phòng đồng thời”. Buổi diễn ra sau 3 ngày nên vẫn kịp xử lý.',
+        factsL: [{ k: 'Mã lỗi', v: 'Zoom 3161 · quá giới hạn host' }, { k: 'Lần thử', v: '2 lần · 20:02, 20:15' }], factsR: [{ k: 'Tài khoản Zoom', v: 'host03@giasuonline.vn' }, { k: 'Phụ huynh', v: 'Chưa nhận link' }],
+        acts: [{ label: 'Chuyển kỹ thuật', cls: '', icon: 'bi-send', need: false, msg: 'Đã chuyển cho bộ phận kỹ thuật' }, { label: 'Tạo lại bằng host khác', cls: 'pri', icon: 'bi-arrow-repeat', need: false, msg: 'Đã tạo phòng bằng host04 · link đã gửi phụ huynh' }],
+        effect: 'Hệ thống chỉ cho 1 phòng Zoom đồng thời trên mỗi host.', link: 'Gia su - Chi tiet buoi hoc v2.dc.html', linkLabel: 'Mở buổi học' }
+    ];
+    const pool = key === 'Đã xử lý hết' ? [] : ALL.filter(x => !S.done.includes(x.id));
+    const grpOf = x => T[x.t].grp;
+    const q = (S.q || '').trim(), norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/[\s-]/g, '');
+    const nq = norm(q);
+    const list = pool.filter(x => (S.tab === 'all' || grpOf(x) === S.tab) && (!nq || norm([x.code, x.title, x.sub].join(' ')).includes(nq)));
+    const codeM = q.match(/^bh-?\s*(\d{3,6})$/i);
+    const outside = codeM && !list.length ? { show: true, code: `BH-${codeM[1].padStart(5, '0')}`, title: `Buổi BH-${codeM[1].padStart(5, '0')} không nằm trong hàng chờ`, sub: 'Buổi này không có yêu cầu nào cần Quản trị viên xử lý. Bạn vẫn mở được chi tiết để kiểm tra.' } : { show: false, code: '', title: '', sub: '' };
+    const selId = S.sel && list.find(x => x.id === S.sel) ? S.sel : (list[0] ? list[0].id : null);
+    const cur = list.find(x => x.id === selId);
+    const items = list.map(x => { const sel = x.id === selId; return { ...T[x.t], age: x.age, title: x.title, sub: x.sub, sel: sel ? 'true' : 'false', bd: sel ? '#6366F1' : '#E6E9F2', sh: sel ? '0 0 0 3px #EEF0FF' : '0 1px 2px rgba(16,24,40,.05)', rail: sel ? '#6366F1' : 'transparent', pick: () => set({ sel: x.id, note: '', tried: false }) }; });
+    const tabs = [['all', 'Tất cả'], ['reopen', 'Mở lại buổi'], ['sys', 'Lỗi hệ thống'], ['swap', 'Đổi gia sư'], ['profile', 'Hồ sơ & môn']].map(([v, label]) => ({ label, n: pool.filter(x => v === 'all' || grpOf(x) === v).length, on: S.tab === v ? 'true' : 'false', pick: () => set({ tab: v, sel: null, note: '', tried: false }) }));
+    const needErr = S.tried && S.note.trim().length < 5;
+    let d = {};
+    if (cur) {
+      d = { ...T[cur.t], ...cur, factsL: cur.factsL, factsR: cur.factsR, hasAttend: !!cur.attend, attend: cur.attend || [], hasQuote: !!cur.quote, quote: cur.quote || '', quoteBy: cur.quoteBy || '', hasLink: !!cur.link && !cur.footLink, footLink: !!cur.footLink,
+        noteHint: cur.acts.some(a => a.need) ? '(bắt buộc khi từ chối)' : '(không bắt buộc)',
+        acts: cur.acts.map(a => ({ label: a.label, cls: a.cls, icon: a.icon, run: () => {
+          if (a.need && S.note.trim().length < 5) { set({ tried: true }); return; }
+          clearTimeout(this.tt); set({ done: S.done.concat([cur.id]), sel: null, note: '', tried: false, toast: a.msg, last: cur.id });
+          this.tt = setTimeout(() => this.setState({ toast: null }), 6000);
+        } })) };
+    }
+    return {
+      q: S.q || '', onQ: e => set({ q: e.target.value, sel: null }), hasQ: !!q, clearQ: () => set({ q: '', sel: null }), outside,
+      tabs, items, listEmpty: items.length === 0 && !outside.show, hasDetail: !!cur, noDetail: !cur, d, navBadge: pool.length,
+      note: S.note, onNote: e => set({ note: e.target.value }), noteErr: needErr,
+      hasToast: !!S.toast, toastText: S.toast || '',
+      undo: () => { clearTimeout(this.tt); const id = S.last; set({ toast: null, done: S.done.filter(x => x !== id), sel: id }); },
+      hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Tạo buổi học · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><style>body{margin:0;background:#F7F8FC;font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;color:#1E2235;font-size:14px;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#4F46E5;text-decoration:none}a:hover{color:#4338CA;text-decoration:underline}button,input,select,textarea{font-family:inherit}button:disabled{cursor:not-allowed}:focus-visible{outline:2px solid #6366F1;outline-offset:2px}textarea::placeholder,input::placeholder{color:#8A91A8}@keyframes gso-spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}</style></helmet>
+<div style="display:flex;min-height:100vh;min-width:1280px;background:#F7F8FC;font-variant-numeric:tabular-nums">
+<a href="#noi-dung" style="position:absolute;left:-9999px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50" style-focus="left:8px">Bỏ qua menu</a>
+
+<aside aria-label="Menu chính" style="width:{{ sideW }};flex:none;background:#fff;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .2s ease">
+<div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 16px">
+<div style="width:32px;height:32px;flex:none;border-radius:8px;background:#6366F1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px">G</div>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-weight:600;font-size:14px;line-height:18px">Gia Sư Online</div><div style="font-size:12px;line-height:16px;color:#C2410C;font-weight:500">Góc giảng dạy</div></div></sc-if>
+<button type="button" onClick="{{ toggleSide }}" aria-label="Thu gọn hoặc mở rộng menu" style="width:28px;height:28px;flex:none;border:none;background:transparent;border-radius:6px;color:#646B85;cursor:pointer;display:grid;place-items:center" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-layout-sidebar"></i></button>
+</div>
+<nav style="padding:8px 12px;display:flex;flex-direction:column;gap:2px;flex:1">
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#646B85;padding:8px 10px 6px">GIẢNG DẠY</div></sc-if>
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+<a href="{{ n.href }}" aria-current="{{ n.cur }}" style="position:relative;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;background:{{ n.bg }};color:{{ n.c }};font-weight:{{ n.fw }};text-decoration:none" style-hover="background:#F1F3F9;color:#1E2235;text-decoration:none"><span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:{{ n.rail }}"></span><i class="bi {{ n.icon }}" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1">{{ n.label }}</span></sc-if><sc-if value="{{ n.badge }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#C2410C;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">{{ n.badge }}</span></sc-if></a>
+</sc-for>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#646B85;padding:16px 10px 6px">CÁ NHÂN</div></sc-if>
+<a href="#" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-person-circle" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span>Hồ sơ của tôi</span></sc-if></a>
+</nav>
+<div style="border-top:1px solid #E6E9F2;padding:12px 16px;display:flex;align-items:center;gap:10px">
+<div style="width:32px;height:32px;flex:none;border-radius:50%;background:#FFE4DA;color:#C2410C;display:grid;place-items:center;font-weight:600;font-size:12px">NL</div>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Phạm Ngọc Lan</div><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:#FFEFEA;color:#C2410C;font-size:11px;font-weight:500">Gia sư</span></div><button type="button" aria-label="Tài khoản: Đổi mật khẩu, Đăng xuất" style="width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-three-dots-vertical"></i></button></sc-if>
+</div>
+</aside>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;height:56px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid #E6E9F2;display:flex;align-items:center;gap:16px;padding:0 32px">
+<nav aria-label="Đường dẫn" style="display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap"><a href="#" style="color:#646B85">Buổi học</a><i class="bi bi-chevron-right" aria-hidden="true" style="font-size:11px;color:#646B85"></i><h1 style="margin:0;font-size:16px;font-weight:600">Tạo buổi học</h1></nav>
+<button type="button" aria-label="Thông báo, 3 chưa đọc" style="margin-left:auto;position:relative;width:36px;height:36px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer;font-size:17px" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-bell"></i><span style="position:absolute;top:5px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#C2410C;color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;border:2px solid #fff">3</span></button>
+<span style="color:#646B85;font-size:13px">Thứ Hai, 09/11/2026 · 20:30</span>
+</header>
+
+<main id="noi-dung" style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:24px 32px 48px;display:flex;flex-direction:column;gap:20px;opacity:{{ op }};transform:translateY({{ ty }}px);transition:opacity .3s ease,transform .3s ease">
+
+<div>
+<h2 style="margin:0;font-size:22px;line-height:30px;font-weight:600;letter-spacing:-.01em">Tạo buổi học</h2>
+<p style="margin:4px 0 0;color:#4A5068;font-size:14px;line-height:22px">Xếp lịch cho khóa bạn đang dạy. Hệ thống tự tạo phòng Zoom và gửi lịch cho phụ huynh qua Zalo.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:20px;align-items:start">
+
+<sc-if value="{{ showForm }}" hint-placeholder-val="{{ true }}">
+<form onSubmit="{{ submit }}" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+
+<section aria-labelledby="s1" style="display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:24px">
+<div><div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;background:#EEF0FF;color:#4F46E5;display:grid;place-items:center;font-size:12px;font-weight:600">1</span><h3 id="s1" style="margin:0;font-size:15px;font-weight:600">Khóa học</h3></div><p style="margin:6px 0 0 30px;font-size:12px;line-height:18px;color:#646B85">Chỉ hiện khóa đang học của bạn.</p></div>
+<div role="radiogroup" aria-labelledby="s1" aria-describedby="kh-loi" style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ courses }}" as="c" hint-placeholder-count="3">
+<label style="display:grid;grid-template-columns:16px 40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid {{ c.bd }};border-radius:10px;background:{{ c.bg }};box-shadow:{{ c.sh }};cursor:pointer;transition:border-color .15s,background .15s" style-hover="border-color:#A5B4FC">
+<input type="radio" name="khoa" value="{{ c.id }}" checked="{{ c.on }}" onChange="{{ c.pick }}" style="width:16px;height:16px;margin:0;accent-color:#6366F1;cursor:pointer">
+<span style="width:40px;height:40px;border-radius:10px;background:{{ c.avBg }};color:{{ c.avC }};display:grid;place-items:center;font-size:13px;font-weight:600">{{ c.initials }}</span>
+<span style="min-width:0"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-weight:600;white-space:nowrap">{{ c.name }}</span><span style="font-size:12px;color:#646B85;white-space:nowrap">{{ c.code }}</span></span><span style="display:block;font-size:13px;color:#4A5068;margin-top:1px">{{ c.student }} · {{ c.dur }} phút/buổi</span><span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#646B85;margin-top:2px"><i class="bi bi-calendar3" aria-hidden="true"></i>Lịch cố định {{ c.fixedText }}</span></span>
+<span style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:112px"><span style="font-size:12px;color:#4A5068;white-space:nowrap"><b style="font-weight:600;color:#1E2235">{{ c.done }}</b>/{{ c.total }} đã học</span><span aria-hidden="true" style="display:flex;width:112px;height:5px;border-radius:3px;background:#EEF0F5;overflow:hidden"><span style="width:{{ c.doneW }};background:#14B8A6"></span><span style="width:{{ c.schedW }};background:#99E6DA"></span></span><span style="font-size:12px;color:{{ c.leftC }};white-space:nowrap">{{ c.leftText }}</span></span>
+</label>
+</sc-for>
+<sc-if value="{{ err.course }}"><span id="kh-loi" role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn khóa học cần tạo buổi.</span></sc-if>
+</div>
+</section>
+
+<section aria-labelledby="s2" style="display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:24px;border-top:1px solid #EEF0F5">
+<div><div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;background:#EEF0FF;color:#4F46E5;display:grid;place-items:center;font-size:12px;font-weight:600">2</span><h3 id="s2" style="margin:0;font-size:15px;font-weight:600">Loại buổi</h3></div><p style="margin:6px 0 0 30px;font-size:12px;line-height:18px;color:#646B85">Buổi học bù thay cho buổi đã hủy, không trừ vào số buổi còn lại.</p></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div role="radiogroup" aria-labelledby="s2" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;padding:3px;background:#EEF0F5;border-radius:10px;width:360px">
+<sc-for list="{{ kinds }}" as="k" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ k.on }}" onClick="{{ k.pick }}" style="height:32px;border:none;border-radius:8px;background:{{ k.bg }};color:{{ k.c }};box-shadow:{{ k.sh }};font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap"><i class="bi {{ k.icon }}" aria-hidden="true"></i>{{ k.label }}</button></sc-for>
+</div>
+<sc-if value="{{ isMakeup }}">
+<div style="display:flex;flex-direction:column;gap:6px;max-width:480px">
+<label for="bu-cho" style="font-size:13px;font-weight:600">Bù cho buổi <span style="color:#C2292E">*</span></label>
+<sc-if value="{{ hasMakeupSrc }}">
+<select id="bu-cho" value="{{ f.src }}" onChange="{{ onSrc }}" aria-invalid="{{ err.src }}" aria-describedby="bu-loi" style="height:36px;border:1px solid {{ bd.src }};border-radius:8px;padding:0 10px;font-size:14px;color:#1E2235;background:#fff"><option value="">Chọn buổi đã hủy</option><sc-for list="{{ makeupSrc }}" as="m"><option value="{{ m.v }}">{{ m.label }}</option></sc-for></select>
+</sc-if>
+<sc-if value="{{ noMakeupSrc }}"><div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:#F7F8FC;font-size:13px;color:#4A5068"><i class="bi bi-info-circle" aria-hidden="true"></i>{{ noMakeupText }}</div></sc-if>
+<sc-if value="{{ err.src }}"><span id="bu-loi" role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn buổi đã hủy cần bù.</span></sc-if>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section aria-labelledby="s3" style="display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:24px;border-top:1px solid #EEF0F5">
+<div><div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;background:#EEF0FF;color:#4F46E5;display:grid;place-items:center;font-size:12px;font-weight:600">3</span><h3 id="s3" style="margin:0;font-size:15px;font-weight:600">Ngày và giờ</h3></div><p style="margin:6px 0 0 30px;font-size:12px;line-height:18px;color:#646B85">Mỗi lúc chỉ có 1 phòng Zoom, nên các buổi của bạn không được trùng giờ.</p></div>
+<div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px;align-items:start">
+<div style="border:1px solid {{ bd.date }};border-radius:10px;padding:12px">
+<div style="display:flex;align-items:center;margin-bottom:8px"><span id="lich-t" style="font-size:13px;font-weight:600">09/11 – 29/11/2026</span><span style="margin-left:auto;font-size:12px;color:#646B85">Chọn ngày học <span style="color:#C2292E">*</span></span></div>
+<div aria-hidden="true" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:4px"><sc-for list="{{ dows }}" as="w"><span style="text-align:center;font-size:11px;font-weight:600;color:#646B85">{{ w }}</span></sc-for></div>
+<div role="grid" aria-labelledby="lich-t" aria-describedby="ngay-loi" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">
+<sc-for list="{{ cal }}" as="d" hint-placeholder-count="21">
+<button type="button" role="gridcell" aria-label="{{ d.aria }}" aria-selected="{{ d.sel }}" onClick="{{ d.pick }}" style="position:relative;height:48px;border:1px {{ d.bs }} {{ d.bd }};border-radius:8px;background:{{ d.bg }};color:{{ d.c }};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background .12s,border-color .12s" style-hover="border-color:#A5B4FC">
+<span style="font-size:13px;font-weight:{{ d.fw }};line-height:16px">{{ d.n }}</span>
+<span style="display:flex;gap:3px;height:5px"><sc-for list="{{ d.dots }}" as="dot"><span style="width:5px;height:5px;border-radius:50%;background:{{ dot }}"></span></sc-for></span>
+<sc-if value="{{ d.today }}"><span style="position:absolute;top:3px;right:4px;font-size:9px;font-weight:600;color:{{ d.todayC }}">Nay</span></sc-if>
+</button>
+</sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid #EEF0F5;font-size:11px;color:#4A5068">
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#6366F1"></span>Toán 9</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#14B8A6"></span>IELTS</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#FF7A59"></span>Ngữ văn 8</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;border:1px dashed #6366F1;background:#F5F6FF"></span>Buổi sẽ tạo</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><label for="gio" style="font-size:13px;font-weight:600">Giờ bắt đầu <span style="color:#C2292E">*</span></label>
+<select id="gio" value="{{ f.time }}" onChange="{{ onTime }}" aria-invalid="{{ err.time }}" aria-describedby="gio-loi" style="height:36px;border:1px solid {{ bd.time }};border-radius:8px;padding:0 10px;font-size:14px;color:#1E2235;background:#fff"><option value="">Chọn giờ</option><sc-for list="{{ times }}" as="t"><option value="{{ t }}">{{ t }}</option></sc-for></select>
+<sc-if value="{{ hasFixedHint }}"><button type="button" onClick="{{ useFixed }}" style="align-self:flex-start;height:24px;padding:0 9px;border:1px dashed #A5B4FC;border-radius:12px;background:#F5F6FF;color:#4338CA;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:#EEF0FF;border-style:solid">Theo lịch cố định: {{ fixedHint }}</button></sc-if>
+<sc-if value="{{ err.time }}"><span id="gio-loi" role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn giờ bắt đầu.</span></sc-if>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+<div style="padding:8px 10px;border-radius:8px;background:#F7F8FC;border:1px solid #EEF0F5"><div style="font-size:11px;color:#646B85">Thời lượng</div><div style="font-size:14px;font-weight:600;margin-top:1px">{{ durText }}</div></div>
+<div style="padding:8px 10px;border-radius:8px;background:#F7F8FC;border:1px solid #EEF0F5"><div style="font-size:11px;color:#646B85">Kết thúc</div><div style="font-size:14px;font-weight:600;margin-top:1px">{{ endText }}</div></div>
+</div>
+<div style="font-size:12px;line-height:18px;color:#646B85">Thời lượng theo khóa. Cần đổi, nhắn Tuyển sinh.</div>
+</div>
+</div>
+<sc-if value="{{ err.date }}"><span id="ngay-loi" role="alert" style="margin-top:-8px;font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn ngày học trên lịch.</span></sc-if>
+
+<sc-if value="{{ canRepeat }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:16px;padding:12px 14px;border-radius:10px;background:#F7F8FC;border:1px solid #EEF0F5">
+<label style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;cursor:pointer"><input type="checkbox" checked="{{ f.repeat }}" onChange="{{ onRepeat }}" style="width:16px;height:16px;margin:2px 0 0;flex:none;accent-color:#6366F1"><span><span style="display:block;font-size:14px;font-weight:500">Lặp lại hằng tuần</span><span style="display:block;font-size:12px;color:#646B85;line-height:18px;margin-top:1px">{{ repeatHint }}</span></span></label>
+<div role="group" aria-label="Số buổi" style="display:flex;align-items:center;border:1px solid #E6E9F2;border-radius:8px;background:#fff;opacity:{{ stepOp }}">
+<button type="button" onClick="{{ dec }}" disabled="{{ decOff }}" aria-label="Bớt 1 buổi" style="width:34px;height:34px;border:none;background:transparent;color:#4A5068;cursor:pointer;display:grid;place-items:center" style-hover="color:#1E2235"><i class="bi bi-dash-lg"></i></button>
+<span aria-live="polite" style="min-width:64px;text-align:center;font-size:14px;font-weight:600;border-left:1px solid #EEF0F5;border-right:1px solid #EEF0F5;line-height:34px">{{ countText }}</span>
+<button type="button" onClick="{{ inc }}" disabled="{{ incOff }}" aria-label="Thêm 1 buổi" style="width:34px;height:34px;border:none;background:transparent;color:#4A5068;cursor:pointer;display:grid;place-items:center" style-hover="color:#1E2235"><i class="bi bi-plus-lg"></i></button>
+</div>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section aria-labelledby="s4" style="display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:24px;border-top:1px solid #EEF0F5">
+<div><div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;background:#EEF0FF;color:#4F46E5;display:grid;place-items:center;font-size:12px;font-weight:600">4</span><h3 id="s4" style="margin:0;font-size:15px;font-weight:600">Nội dung</h3></div><p style="margin:6px 0 0 30px;font-size:12px;line-height:18px;color:#646B85">Giúp học viên chuẩn bị trước. Không bắt buộc.</p></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:6px"><label for="nd" style="font-size:13px;font-weight:600">Nội dung dự kiến</label>
+<textarea id="nd" rows="2" value="{{ f.plan }}" onChange="{{ onPlan }}" placeholder="{{ planPh }}" style="width:100%;border:1px solid #E6E9F2;border-radius:8px;padding:9px 12px;font-size:14px;line-height:21px;color:#1E2235;resize:vertical" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></textarea></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="dd" style="font-size:13px;font-weight:600">Dặn học viên chuẩn bị</label>
+<input id="dd" value="{{ f.prep }}" onChange="{{ onPrep }}" placeholder="VD: Mang máy tính bỏ túi, xem lại bài tập trang 42" style="height:36px;border:1px solid #E6E9F2;border-radius:8px;padding:0 12px;font-size:14px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></div>
+<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" checked="{{ f.zalo }}" onChange="{{ onZalo }}" style="width:16px;height:16px;margin:2px 0 0;flex:none;accent-color:#6366F1"><span><span style="display:block;font-size:14px;font-weight:500">Gửi lịch và link Zoom cho phụ huynh qua Zalo</span><span style="display:block;font-size:12px;color:#646B85;line-height:18px;margin-top:1px">Gửi ngay sau khi tạo phòng. Phụ huynh vẫn được nhắc trước 3 giờ.</span></span></label>
+</div>
+</section>
+
+<div style="position:sticky;bottom:0;display:flex;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid #E6E9F2;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-radius:0 0 12px 12px">
+<span style="flex:1;min-width:0;font-size:13px;color:{{ footC }};display:inline-flex;align-items:center;gap:6px;font-weight:{{ footW }}"><i class="bi {{ footIcon }}" aria-hidden="true"></i>{{ footText }}</span>
+<a href="#" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-weight:500;font-size:14px;display:inline-flex;align-items:center;white-space:nowrap;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none">Hủy</a>
+<button type="submit" disabled="{{ creating }}" style="height:36px;min-width:168px;padding:0 18px;border:none;border-radius:8px;background:{{ submitBg }};color:#fff;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:background .15s" style-hover="background:#4F46E5"><sc-if value="{{ creating }}"><i class="bi bi-arrow-repeat" aria-hidden="true" style="animation:gso-spin 1s linear infinite"></i></sc-if>{{ submitText }}</button>
+</div>
+</form>
+</sc-if>
+
+<sc-if value="{{ showResult }}">
+<section aria-labelledby="kq-t" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+<div style="display:flex;align-items:center;gap:14px;padding:24px;border-bottom:1px solid #EEF0F5">
+<span style="width:44px;height:44px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:20px"><i class="bi bi-check-lg"></i></span>
+<div style="flex:1;min-width:0"><h3 id="kq-t" style="margin:0;font-size:18px;font-weight:600">{{ resTitle }}</h3><div style="font-size:13px;color:#646B85;margin-top:2px">{{ resSub }}</div></div>
+<sc-if value="{{ canCopyAll }}"><button type="button" onClick="{{ copyAll }}" style="height:36px;padding:0 14px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap" style-hover="background:#F7F8FC;border-color:#D5D9E6"><i class="bi {{ copyAllIcon }}" aria-hidden="true" style="color:#4F46E5"></i>{{ copyAllText }}</button></sc-if>
+</div>
+<ul style="list-style:none;margin:0;padding:8px 24px">
+<sc-for list="{{ results }}" as="r" hint-placeholder-count="3">
+<li style="padding:14px 0;border-bottom:1px solid {{ r.bb }}">
+<div style="display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;gap:14px;align-items:center">
+<span style="width:44px;text-align:center;border-radius:8px;padding:4px 0;background:#F7F8FC"><span style="display:block;font-size:10px;font-weight:600;color:#646B85;letter-spacing:.04em">{{ r.dow }}</span><span style="display:block;font-size:15px;font-weight:600;line-height:18px">{{ r.day }}</span></span>
+<span style="min-width:0"><span style="display:block;font-weight:500">{{ r.title }}</span><span style="display:block;font-size:12px;color:#646B85">{{ r.code }} · {{ r.time }}</span></span>
+<span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ r.bg }};color:{{ r.c }};font-size:12px;font-weight:500;white-space:nowrap"><sc-if value="{{ r.spin }}"><i class="bi bi-arrow-repeat" aria-hidden="true" style="animation:gso-spin 1s linear infinite"></i></sc-if><sc-if value="{{ r.noSpin }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.dot }}"></span></sc-if>{{ r.chip }}</span>
+<span style="width:96px;display:flex;justify-content:flex-end"><sc-if value="{{ r.canRetry }}"><button type="button" onClick="{{ r.retry }}" style="height:30px;padding:0 10px;border:1px solid #F3C1C3;border-radius:8px;background:#fff;color:#C2292E;font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:#FFF7F7">Thử lại</button></sc-if><sc-if value="{{ r.canOpen }}"><a href="Gia su - Chi tiet buoi hoc.dc.html" style="font-size:13px;font-weight:500;white-space:nowrap">Xem buổi</a></sc-if></span>
+</div>
+<sc-if value="{{ r.canOpen }}">
+<div style="margin:12px 0 0 58px;border:1px solid #E6E9F2;border-radius:10px;overflow:hidden">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 150px 120px;border-bottom:1px solid #EEF0F5">
+<div style="padding:10px 14px;min-width:0"><div style="font-size:11px;color:#646B85">Link vào lớp</div><div style="display:flex;align-items:center;gap:6px;margin-top:2px;min-width:0"><a href="{{ r.link }}" target="_blank" rel="noopener" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ r.linkShort }}</a><button type="button" onClick="{{ r.copyLink }}" aria-label="Sao chép link vào lớp" style="width:26px;height:26px;flex:none;border:none;border-radius:6px;background:transparent;color:{{ r.linkC }};cursor:pointer;display:grid;place-items:center;font-size:13px" style-hover="background:#F1F3F9"><i class="bi {{ r.linkIcon }}"></i></button></div></div>
+<div style="padding:10px 14px;border-left:1px solid #EEF0F5"><div style="font-size:11px;color:#646B85">Zoom ID</div><div style="font-size:13px;font-weight:600;margin-top:2px;line-height:26px;letter-spacing:.02em">{{ r.zid }}</div></div>
+<div style="padding:10px 14px;border-left:1px solid #EEF0F5"><div style="font-size:11px;color:#646B85">Mật khẩu</div><div style="font-size:13px;font-weight:600;margin-top:2px;line-height:26px;letter-spacing:.04em">{{ r.pwd }}</div></div>
+</div>
+<div style="padding:12px 14px;background:#FAFBFE">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><i class="bi bi-chat-dots" aria-hidden="true" style="color:#1D4ED8"></i><span style="font-size:13px;font-weight:600">Tin nhắn gửi nhóm Zalo</span><span style="font-size:12px;color:#646B85">Sao chép rồi dán vào nhóm lớp là học viên vào học được</span><button type="button" onClick="{{ r.copyMsg }}" style="margin-left:auto;height:30px;padding:0 12px;border:1px solid {{ r.copyBd }};border-radius:8px;background:{{ r.copyBg }};color:{{ r.copyC }};font-weight:500;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s" style-hover="border-color:#A5B4FC"><i class="bi {{ r.copyIcon }}" aria-hidden="true"></i>{{ r.copyText }}</button></div>
+<div style="padding:12px 14px;border-radius:4px 12px 12px 12px;background:#EAF2FF;font-size:13px;line-height:20px;color:#1E2235;white-space:pre-line;word-break:break-word">{{ r.msg }}</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ r.canRetry }}"><div style="margin:8px 0 0 58px;font-size:12px;color:#C2292E;display:flex;align-items:center;gap:6px"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Chưa có link vào lớp. Bấm Thử lại để tạo phòng và lấy link.</div></sc-if>
+</li>
+</sc-for>
+</ul>
+<sc-if value="{{ hasZoomErr }}"><div style="margin:0 24px 8px;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:8px;background:#FDECEC;font-size:13px;line-height:20px;color:#7A2A2D"><i class="bi bi-info-circle" aria-hidden="true" style="margin-top:3px"></i><span>Buổi vẫn được giữ lịch nhưng chưa có phòng Zoom. Bấm Thử lại; nếu vẫn lỗi, buổi sẽ hiện ở mục “Việc cần làm” trên trang chủ để xử lý sau.</span></div></sc-if>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid #EEF0F5">
+<button type="button" onClick="{{ again }}" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo buổi khác</button>
+<a href="Trang chu Gia su v2.dc.html" style="height:36px;padding:0 16px;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:8px;text-decoration:none" style-hover="background:#4F46E5;color:#fff;text-decoration:none">Về trang chủ</a>
+</div>
+</section>
+</sc-if>
+
+<aside aria-label="Xem trước" style="display:flex;flex-direction:column;gap:16px;position:sticky;top:80px">
+<section aria-labelledby="xt-t" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+<div style="display:flex;align-items:center;gap:8px;padding:14px 16px 10px"><i class="bi bi-eye" aria-hidden="true" style="color:#4F46E5"></i><h3 id="xt-t" style="margin:0;font-size:14px;font-weight:600">Xem trước</h3><span style="margin-left:auto;font-size:12px;color:#646B85">{{ pvCount }}</span></div>
+<sc-if value="{{ hasPv }}" hint-placeholder-val="{{ true }}">
+<div style="padding:0 16px 12px;font-size:13px;color:#4A5068">{{ pvHead }}</div>
+<ul style="list-style:none;margin:0;padding:0">
+<sc-for list="{{ pv }}" as="p" hint-placeholder-count="2">
+<li style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 16px;border-top:1px solid #EEF0F5">
+<span style="min-width:0"><span style="display:block;font-size:13px;font-weight:500;white-space:nowrap">{{ p.label }}</span><span style="display:block;font-size:12px;color:#646B85;white-space:nowrap">{{ p.time }} · {{ p.num }}</span></span>
+<span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ p.bg }};color:{{ p.c }};font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ p.dot }}"></span>{{ p.chip }}</span>
+<sc-if value="{{ p.note }}"><span style="grid-column:1 / -1;font-size:12px;line-height:18px;color:{{ p.c }};display:flex;gap:5px"><i class="bi {{ p.noteIcon }}" aria-hidden="true" style="margin-top:3px"></i>{{ p.note }}</span></sc-if>
+</li>
+</sc-for>
+</ul>
+</sc-if>
+<sc-if value="{{ noPv }}"><div style="padding:4px 16px 16px;font-size:13px;line-height:20px;color:#646B85">Chọn khóa, ngày và giờ để xem các buổi sẽ được tạo.</div></sc-if>
+</section>
+
+<sc-if value="{{ hasCourse }}" hint-placeholder-val="{{ true }}">
+<section aria-labelledby="td-t" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:14px 16px">
+<div style="display:flex;align-items:baseline;margin-bottom:10px"><h3 id="td-t" style="margin:0;font-size:14px;font-weight:600">Tiến độ {{ cur.name }}</h3><span style="margin-left:auto;font-size:12px;color:#646B85">{{ cur.total }} buổi</span></div>
+<div role="img" aria-label="{{ prog.aria }}" style="display:flex;height:8px;border-radius:4px;background:#EEF0F5;overflow:hidden;gap:1px"><span style="width:{{ prog.doneW }};background:#14B8A6"></span><span style="width:{{ prog.schedW }};background:#99E6DA"></span><span style="width:{{ prog.newW }};background:#6366F1;transition:width .3s ease"></span></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin-top:10px;font-size:12px;color:#4A5068">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#14B8A6"></span>Đã học<b style="margin-left:auto;font-weight:600;color:#1E2235">{{ prog.done }}</b></span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#99E6DA"></span>Đã xếp lịch<b style="margin-left:auto;font-weight:600;color:#1E2235">{{ prog.sched }}</b></span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#6366F1"></span>Sắp tạo<b style="margin-left:auto;font-weight:600;color:#1E2235">{{ prog.add }}</b></span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#E1E4EC"></span>Còn lại<b style="margin-left:auto;font-weight:600;color:#1E2235">{{ prog.left }}</b></span>
+</div>
+</section>
+</sc-if>
+
+<section aria-labelledby="st-t" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:14px 16px">
+<h3 id="st-t" style="margin:0 0 10px;font-size:14px;font-weight:600">Sau khi tạo</h3>
+<ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start"><span style="width:28px;height:28px;border-radius:8px;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-camera-video" aria-hidden="true"></i></span><span style="font-size:13px;line-height:19px"><b style="font-weight:600">Tạo phòng Zoom tự động</b><span style="display:block;color:#646B85;font-size:12px">Nếu lỗi, bạn bấm Thử lại ngay trên trang.</span></span></li>
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start"><span style="width:28px;height:28px;border-radius:8px;background:#EAF2FF;color:#1D4ED8;display:grid;place-items:center;font-size:13px"><i class="bi bi-chat-dots" aria-hidden="true"></i></span><span style="font-size:13px;line-height:19px"><b style="font-weight:600">Gửi lịch cho phụ huynh</b><span style="display:block;color:#646B85;font-size:12px">Có sẵn link Zoom và tin nhắn mẫu để dán vào nhóm Zalo lớp.</span></span></li>
+<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start"><span style="width:28px;height:28px;border-radius:8px;background:#FFF4E5;color:#B45309;display:grid;place-items:center;font-size:13px"><i class="bi bi-bell" aria-hidden="true"></i></span><span style="font-size:13px;line-height:19px"><b style="font-weight:600">Nhắc trước 3 giờ</b><span style="display:block;color:#646B85;font-size:12px">Cho cả bạn và phụ huynh.</span></span></li>
+</ol>
+</section>
+</aside>
+</div>
+</main>
+</div>
+
+<sc-if value="{{ hasToast }}">
+<div role="status" style="position:fixed;top:72px;right:24px;z-index:80;display:flex;align-items:center;gap:12px;min-width:320px;max-width:460px;padding:12px 14px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.14)">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-check-lg"></i></span>
+<span style="flex:1;font-size:13px;font-weight:500;line-height:19px">{{ toastText }}</span>
+<button type="button" onClick="{{ hideToast }}" aria-label="Đóng thông báo" style="width:24px;height:24px;border:none;background:transparent;color:#646B85;cursor:pointer"><i class="bi bi-x-lg"></i></button>
+</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Mới","Đã điền sẵn","Trùng lịch"],"default":"Mới","tsType":"string","section":"Trạng thái màn"},"zoomFail":{"editor":"boolean","default":false,"tsType":"boolean","section":"Trạng thái màn"},"collapsed":{"editor":"boolean","default":false,"tsType":"boolean","section":"Khung"}}'>
+class Component extends DCLogic {
+  state = { mounted: false, collapsed: null, f: null, fFor: null, tried: false, phase: 'form', results: null, toast: null };
+
+  componentDidMount() { setTimeout(() => this.setState({ mounted: true }), 60); }
+  componentWillUnmount() { clearTimeout(this.tt); (this.timers || []).forEach(clearTimeout); }
+
+  later(fn, ms) { this.timers = this.timers || []; this.timers.push(setTimeout(fn, ms)); }
+  showToast(text) { clearTimeout(this.tt); this.setState({ toast: text }); this.tt = setTimeout(() => this.setState({ toast: null }), 5000); }
+  copy(text, key, toast) {
+    try { navigator.clipboard && navigator.clipboard.writeText(text).catch(() => {}); } catch (x) {}
+    clearTimeout(this.ct); this.setState({ copied: key });
+    this.ct = setTimeout(() => this.setState({ copied: null }), 2000);
+    if (toast) this.showToast(toast);
+  }
+
+  preset(p) {
+    const blank = { course: '', kind: 'regular', src: '', day: null, time: '', repeat: false, count: 2, plan: '', prep: '', zalo: true };
+    if (p === 'Đã điền sẵn') return { ...blank, course: 'kh5', day: 12, time: '08:00', repeat: true, count: 3, plan: 'Writing Task 2 – Bài nghị luận đồng ý / không đồng ý' };
+    if (p === 'Trùng lịch') return { ...blank, course: 'kh9', day: 2, time: '20:00' };
+    return blank;
+  }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const presetKey = P.state || 'Mới';
+    const f = (S.f && S.fFor === presetKey) ? S.f : this.preset(presetKey);
+    const upd = patch => this.setState({ f: { ...f, ...patch }, fFor: presetKey });
+    const collapsed = S.collapsed ?? (P.collapsed ?? false);
+    const pad = n => String(n).padStart(2, '0');
+    const DOW = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const DOWL = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+    const dayDate = d => { const n = 9 + d; return n > 30 ? `${pad(n - 30)}/12` : `${pad(n)}/11`; };
+    const dayNum = d => { const n = 9 + d; return n > 30 ? n - 30 : n; };
+    const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const toT = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+    const NOW = toMin('20:30');
+    const TONE = {
+      teal: { bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, red: { bg: '#FDECEC', c: '#C2292E', dot: '#E5484D' },
+      orange: { bg: '#FFF4E5', c: '#B45309', dot: '#F59E0B' }, neutral: { bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' }, indigo: { bg: '#EEF0FF', c: '#4F46E5', dot: '#6366F1' }
+    };
+
+    const COURSES = [
+      { id: 'kh7', code: 'KH-0007', name: 'Toán 9', student: 'Nguyễn Minh Anh', initials: 'MA', avBg: '#E0E7FF', avC: '#4338CA', color: '#6366F1', dur: 90, done: 8, sched: 1, total: 10, fixed: [[0, '19:30'], [4, '19:30']], makeup: [] },
+      { id: 'kh5', code: 'KH-0005', name: 'IELTS', student: 'Trần Gia Bảo', initials: 'GB', avBg: '#D5F5EF', avC: '#0F766E', color: '#14B8A6', dur: 90, done: 5, sched: 2, total: 16, fixed: [[2, '20:00'], [5, '08:00']], makeup: [] },
+      { id: 'kh9', code: 'KH-0009', name: 'Ngữ văn 8', student: 'Lê Thu Hà', initials: 'TH', avBg: '#FFE4DA', avC: '#C2410C', color: '#FF7A59', dur: 60, done: 2, sched: 1, total: 10, fixed: [[3, '18:00']], makeup: [{ v: 'b3', label: 'Buổi 3/10 · T5 05/11 · Học viên xin nghỉ' }] }
+    ];
+    const EXIST = [
+      { d: 0, s: '19:30', dur: 90, cid: 'kh7', name: 'Toán 9' },
+      { d: 2, s: '20:00', dur: 90, cid: 'kh5', name: 'IELTS' },
+      { d: 3, s: '18:00', dur: 60, cid: 'kh9', name: 'Ngữ văn 8' },
+      { d: 5, s: '08:00', dur: 90, cid: 'kh5', name: 'IELTS' }
+    ];
+    const FREE = ['0-2', '1-3', '2-2', '3-3', '4-3', '5-1'];
+    const rowOf = m => m >= 480 && m < 660 ? 0 : m >= 840 && m < 1020 ? 1 : m >= 1050 && m < 1140 ? 2 : m >= 1140 && m < 1260 ? 3 : -1;
+
+    const cur = COURSES.find(c => c.id === f.course) || null;
+    const isMakeup = f.kind === 'makeup';
+    const remaining = cur ? cur.total - cur.done - cur.sched : 0;
+    const maxCount = Math.max(1, Math.min(remaining, 6));
+    const count = isMakeup ? 1 : (f.repeat ? Math.min(Math.max(2, f.count), maxCount) : 1);
+
+    // planned sessions
+    const planned = [];
+    if (cur && f.day !== null && f.time) {
+      for (let k = 0; k < count; k++) {
+        const d = f.day + 7 * k, s = toMin(f.time), e = s + cur.dur;
+        let st = 'ok', note = '';
+        const clash = EXIST.find(x => x.d === d && s < toMin(x.s) + x.dur && toMin(x.s) < e);
+        const fixedHere = cur.fixed.some(([w, t]) => w === d % 7 && t === f.time);
+        const r = rowOf(s);
+        if (d === 0 && s <= NOW) { st = 'past'; note = 'Giờ bắt đầu đã qua. Chọn giờ muộn hơn hoặc ngày khác.'; }
+        else if (clash) { st = 'clash'; note = `Trùng buổi ${clash.name} ${clash.s}–${toT(toMin(clash.s) + clash.dur)}. Mỗi lúc chỉ có 1 phòng Zoom.`; }
+        else if (e > 22 * 60) { st = 'late'; note = 'Buổi phải kết thúc trước 22:00.'; }
+        else if (!fixedHere && !FREE.includes(`${d % 7}-${r}`)) { st = 'warn'; note = 'Ngoài giờ rảnh đã đăng ký. Vẫn tạo được, nhớ thống nhất với phụ huynh.'; }
+        const num = isMakeup ? 'Học bù buổi 3' : `Buổi ${cur.done + cur.sched + k + 1}/${cur.total}`;
+        planned.push({ d, s, e, st, note, num });
+      }
+    }
+    const blocking = planned.filter(p => p.st === 'past' || p.st === 'clash' || p.st === 'late').length;
+
+    // validation
+    const errs = { course: !cur, src: isMakeup && cur && cur.makeup.length > 0 && !f.src, date: f.day === null, time: !f.time };
+    const err = {}, bd = {};
+    Object.keys(errs).forEach(k => { err[k] = S.tried && !!errs[k]; bd[k] = err[k] ? '#E5484D' : (k === 'date' ? '#EEF0F5' : '#E6E9F2'); });
+    const makeupBlocked = isMakeup && cur && cur.makeup.length === 0;
+    const fieldErrN = Object.values(errs).filter(Boolean).length;
+
+    const courses = COURSES.map(c => {
+      const on = f.course === c.id, left = c.total - c.done - c.sched;
+      return { ...c, on, fixedText: c.fixed.map(([w, t]) => `${DOW[w]} ${t}`).join(', '),
+        bd: on ? '#6366F1' : (err.course ? '#F3B4B6' : '#E6E9F2'), bg: on ? '#F5F6FF' : '#fff', sh: on ? '0 0 0 3px #EEF0FF' : 'none',
+        doneW: c.done / c.total * 100 + '%', schedW: c.sched / c.total * 100 + '%',
+        leftText: left > 0 ? `Còn ${left} buổi chưa xếp` : 'Đã xếp đủ buổi', leftC: left > 1 ? '#646B85' : '#B45309',
+        pick: () => upd({ course: c.id, src: '', count: 2 }) };
+    });
+    const kinds = [['regular', 'Buổi thường', 'bi-calendar3'], ['makeup', 'Học bù', 'bi-arrow-repeat']].map(([v, label, icon]) => {
+      const on = f.kind === v;
+      return { label, icon, on, pick: () => upd({ kind: v, src: '', repeat: false }), bg: on ? '#fff' : 'transparent', c: on ? '#1E2235' : '#4A5068', sh: on ? '0 1px 2px rgba(16,24,40,.1)' : 'none' };
+    });
+
+    const plannedDays = planned.map(p => p.d);
+    const cal = [];
+    for (let d = 0; d < 21; d++) {
+      const sel = f.day === d, plan = !sel && plannedDays.includes(d);
+      const dots = EXIST.filter(x => x.d === d).map(x => COURSES.find(c => c.id === x.cid).color);
+      const names = EXIST.filter(x => x.d === d).map(x => `${x.name} ${x.s}`).join(', ');
+      cal.push({ n: dayNum(d), today: d === 0, todayC: sel ? '#E0E3FF' : '#4F46E5', dots,
+        sel: sel ? 'true' : 'false', fw: sel || d === 0 ? 600 : 500,
+        bg: sel ? '#6366F1' : plan ? '#F5F6FF' : '#fff', c: sel ? '#fff' : '#1E2235', bd: sel ? '#6366F1' : plan ? '#6366F1' : '#EEF0F5', bs: plan ? 'dashed' : 'solid',
+        aria: `${DOWL[d % 7]} ${dayDate(d)}${names ? ', đã có: ' + names : ''}${plan ? ', buổi lặp sẽ tạo' : ''}`,
+        pick: () => upd({ day: d }) });
+    }
+    const times = [];
+    for (let m = 7 * 60; m <= 21 * 60; m += 30) times.push(toT(m));
+    const fixedForDay = cur && f.day !== null ? cur.fixed.find(([w]) => w === f.day % 7) : null;
+
+    const pv = planned.map(p => {
+      const tone = p.st === 'ok' ? TONE.teal : p.st === 'warn' ? TONE.orange : TONE.red;
+      const chip = { ok: 'Hợp lệ', warn: 'Ngoài giờ rảnh', clash: 'Trùng lịch', past: 'Đã qua giờ', late: 'Quá 22:00' }[p.st];
+      return { label: `${DOWL[p.d % 7]}, ${dayDate(p.d)}`, time: `${toT(p.s)}–${toT(p.e)}`, num: p.num, chip, bg: tone.bg, c: tone.c, dot: tone.dot,
+        note: p.st === 'ok' ? '' : p.note, noteIcon: p.st === 'warn' ? 'bi-info-circle' : 'bi-exclamation-circle' };
+    });
+
+    const add = isMakeup ? 0 : planned.length;
+    const prog = cur ? {
+      done: cur.done, sched: cur.sched, add, left: Math.max(0, cur.total - cur.done - cur.sched - add),
+      doneW: cur.done / cur.total * 100 + '%', schedW: cur.sched / cur.total * 100 + '%', newW: add / cur.total * 100 + '%',
+      aria: `${cur.done} đã học, ${cur.sched} đã xếp lịch, ${add} sắp tạo trên tổng ${cur.total} buổi`
+    } : { done: 0, sched: 0, add: 0, left: 0, doneW: '0%', schedW: '0%', newW: '0%', aria: '' };
+
+    let footText = 'Điền các mục có dấu * để tạo buổi.', footIcon = 'bi-info-circle', footC = '#646B85', footW = 400;
+    if (S.tried && (fieldErrN || makeupBlocked)) { footText = makeupBlocked ? 'Khóa này không có buổi nào cần bù.' : `Còn ${fieldErrN} mục cần điền.`; footIcon = 'bi-exclamation-circle'; footC = '#C2292E'; footW = 500; }
+    else if (blocking) { footText = `${blocking} buổi bị trùng hoặc không hợp lệ. Đổi ngày hoặc giờ để tiếp tục.`; footIcon = 'bi-exclamation-circle'; footC = '#C2292E'; footW = 500; }
+    else if (planned.length) { footText = `Sẵn sàng tạo ${planned.length} buổi cho ${cur.name} · ${cur.student}.`; footIcon = 'bi-check-circle'; footC = '#0F766E'; footW = 500; }
+
+    const creating = S.phase === 'creating';
+    const res = S.results || [];
+    const results = res.map((r, i) => {
+      const tone = r.z === 'ok' ? TONE.teal : r.z === 'err' ? TONE.red : TONE.neutral;
+      const zidRaw = `8451209343${r.i}`, zid = `${zidRaw.slice(0, 3)} ${zidRaw.slice(3, 7)} ${zidRaw.slice(7)}`;
+      const pwd = `48291${r.i}`, link = `https://zoom.us/j/${zidRaw}?pwd=GsoL${r.i}k7Qm2`;
+      const msg = `Topic: Buổi dạy ${r.ccode} - ${r.cname} (${r.num}) của gia sư Phạm Ngọc Lan và học viên ${r.student} vào ${r.start} ${r.dayFull}/2026\n\nLink vào lớp:\n${link}\n\nZoom ID: ${zid}\nMật khẩu: ${pwd}`;
+      const mOn = S.copied === 'm' + r.i, lOn = S.copied === 'l' + r.i;
+      return { ...r, link, linkShort: link.replace('https://', ''), zid, pwd, msg,
+        copyText: mOn ? 'Đã sao chép' : 'Sao chép tin nhắn', copyIcon: mOn ? 'bi-check-lg' : 'bi-copy',
+        copyBg: mOn ? '#E6FAF7' : '#fff', copyC: mOn ? '#0F766E' : '#1E2235', copyBd: mOn ? '#B5ECE3' : '#E6E9F2',
+        linkIcon: lOn ? 'bi-check-lg' : 'bi-copy', linkC: lOn ? '#0F766E' : '#646B85',
+        copyMsg: () => this.copy(msg, 'm' + r.i, 'Đã sao chép tin nhắn. Dán vào nhóm Zalo của lớp để học viên vào học.'),
+        copyLink: () => this.copy(link, 'l' + r.i, 'Đã sao chép link vào lớp'),
+        bg: tone.bg, c: tone.c, dot: tone.dot, chip: r.z === 'ok' ? 'Đã tạo phòng Zoom' : r.z === 'err' ? 'Lỗi Zoom' : 'Đang tạo phòng…',
+        spin: r.z === 'loading', noSpin: r.z !== 'loading', canRetry: r.z === 'err', canOpen: r.z === 'ok', bb: i === res.length - 1 ? 'transparent' : '#EEF0F5',
+        retry: () => {
+          this.setState(s => ({ results: s.results.map((x, j) => j === i ? { ...x, z: 'loading' } : x) }));
+          this.later(() => { this.setState(s => ({ results: s.results.map((x, j) => j === i ? { ...x, z: 'ok' } : x) })); this.showToast(`Đã tạo phòng Zoom cho buổi ${r.dow} ${r.dayFull}`); }, 1400);
+        } };
+    });
+
+    const nav = [
+      { icon: 'bi-house-door', label: 'Trang chủ', href: 'Trang chu Gia su v2.dc.html', badge: 0 },
+      { icon: 'bi-envelope-open', label: 'Lời mời nhận lớp', href: 'Gia su - Loi moi nhan lop.dc.html', badge: 2 },
+      { icon: 'bi-collection', label: 'Lớp của tôi', href: '#', badge: 0 },
+      { icon: 'bi-calendar3', label: 'Buổi học', href: 'Gia su - Chi tiet buoi hoc.dc.html', badge: 1, cur: true },
+      { icon: 'bi-wallet2', label: 'Thu nhập', href: '#', badge: 0 }
+    ].map(n => ({ ...n, cur: n.cur ? 'page' : 'false', bg: n.cur ? '#EEF0FF' : 'transparent', c: n.cur ? '#4F46E5' : '#646B85', fw: n.cur ? 500 : 400, rail: n.cur ? '#6366F1' : 'transparent' }));
+
+    return {
+      sideW: collapsed ? '72px' : '240px', expanded: !collapsed, toggleSide: () => this.setState({ collapsed: !collapsed }), nav,
+      op: S.mounted ? 1 : 0, ty: S.mounted ? 0 : 6,
+      showForm: S.phase !== 'done', showResult: S.phase === 'done',
+      f, err, bd, courses, kinds, isMakeup,
+      hasMakeupSrc: isMakeup && !!cur && cur.makeup.length > 0, noMakeupSrc: isMakeup && (!cur || cur.makeup.length === 0),
+      noMakeupText: cur ? `${cur.name} không có buổi đã hủy nào cần bù.` : 'Chọn khóa học trước để xem buổi cần bù.',
+      makeupSrc: cur ? cur.makeup : [], onSrc: e => upd({ src: e.target.value }),
+      dows: DOW, cal, times, onTime: e => upd({ time: e.target.value }),
+      hasFixedHint: !!fixedForDay && f.time !== (fixedForDay && fixedForDay[1]), fixedHint: fixedForDay ? fixedForDay[1] : '',
+      useFixed: () => fixedForDay && upd({ time: fixedForDay[1] }),
+      durText: cur ? `${cur.dur} phút` : '—', endText: cur && f.time ? toT(toMin(f.time) + cur.dur) : '—',
+      canRepeat: !isMakeup, onRepeat: e => upd({ repeat: e.target.checked }),
+      repeatHint: !cur ? 'Chọn khóa học để biết số buổi còn lại.' : remaining <= 1 ? `${cur.name} chỉ còn ${remaining} buổi chưa xếp lịch.` : `Tạo cùng giờ mỗi tuần, tối đa ${maxCount} buổi (còn ${remaining} buổi chưa xếp).`,
+      countText: `${count} buổi`, stepOp: f.repeat && remaining > 1 ? 1 : .5,
+      decOff: !f.repeat || count <= 2, incOff: !f.repeat || count >= maxCount,
+      dec: () => upd({ count: Math.max(2, count - 1) }), inc: () => upd({ count: Math.min(maxCount, count + 1) }),
+      onPlan: e => upd({ plan: e.target.value }), onPrep: e => upd({ prep: e.target.value }), onZalo: e => upd({ zalo: e.target.checked }),
+      planPh: cur && cur.id === 'kh5' ? 'VD: Writing Task 2 – Bài nghị luận' : 'VD: Ôn tập hệ phương trình bậc nhất hai ẩn',
+      footText, footIcon, footC, footW,
+      creating, submitBg: creating ? '#A5B4FC' : '#6366F1',
+      submitText: creating ? 'Đang tạo phòng Zoom…' : planned.length > 1 ? `Tạo ${planned.length} buổi học` : 'Tạo buổi học',
+      submit: ev => {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        if (creating) return;
+        if (fieldErrN || makeupBlocked || blocking) { this.setState({ tried: true, f, fFor: presetKey }); return; }
+        this.setState({ phase: 'creating', f, fFor: presetKey });
+        const fail = !!P.zoomFail;
+        const list = planned.map((p, i) => ({ dow: DOW[p.d % 7], day: pad(dayNum(p.d)), dayFull: dayDate(p.d), i, ccode: cur.code, cname: cur.name, student: cur.student, num: p.num, start: toT(p.s), title: `${cur.name} · ${cur.student}`, code: `BH-00${430 + i} · ${p.num}`, time: `${toT(p.s)}–${toT(p.e)}`, z: (fail && i === planned.length - 1) ? 'err' : 'ok' }));
+        this.later(() => { this.setState({ phase: 'done', results: list }); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) {} }, 1300);
+      },
+      results, hasZoomErr: res.some(r => r.z === 'err'),
+      canCopyAll: results.filter(r => r.canOpen).length > 1,
+      copyAll: () => { const ok = results.filter(r => r.canOpen); this.copy(ok.map(r => r.msg).join('\n\n— — —\n\n'), 'all', `Đã sao chép ${ok.length} tin nhắn. Dán vào nhóm Zalo của lớp.`); },
+      copyAllText: S.copied === 'all' ? 'Đã sao chép' : `Sao chép tất cả (${results.filter(r => r.canOpen).length})`, copyAllIcon: S.copied === 'all' ? 'bi-check-lg' : 'bi-copy',
+      resTitle: res.length > 1 ? `Đã tạo ${res.length} buổi học` : 'Đã tạo buổi học',
+      resSub: cur ? `${cur.name} · ${cur.student}${f.zalo ? ' · Lịch đã gửi phụ huynh qua Zalo' : ''}` : '',
+      again: () => this.setState({ phase: 'form', results: null, tried: false, f: { ...this.preset('Mới') }, fFor: presetKey }),
+      pv, hasPv: pv.length > 0, noPv: pv.length === 0, pvCount: pv.length ? `${pv.length} buổi` : '',
+      pvHead: cur ? `${cur.name} · ${cur.student}` : '',
+      hasCourse: !!cur, cur: cur || { name: '', total: 0 }, prog,
+      hasToast: !!S.toast, toastText: S.toast || '', hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>KH-0005 · Chi tiết khóa học · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#4F46E5">Bảng điều phối</small></div></div>
+<nav class="nav">
+<div class="nav-h">VẬN HÀNH</div>
+<a href="Trang chu Tuyen sinh.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html"><i class="bi bi-inbox"></i><span>Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Hoc vien.dc.html"><i class="bi bi-people"></i><span>Học viên</span></a>
+<a href="Tuyen sinh - Gia su.dc.html"><i class="bi bi-mortarboard"></i><span>Gia sư</span></a>
+<a href="Tuyen sinh - Khoa hoc.dc.html" aria-current="page"><i class="bi bi-journal-bookmark"></i><span>Khóa học</span><b class="badge">2</b></a>
+<a href="Tuyen sinh - Hau kiem buoi hoc.dc.html"><i class="bi bi-clipboard-check"></i><span>Hậu kiểm buổi học</span><b class="badge">4</b></a>
+<div class="nav-h">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html"><i class="bi bi-calculator"></i><span>Đối soát thù lao</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#E0E7FF;color:#4338CA;font-size:12px">TT</div><div style="flex:1;min-width:0"><b>Trần Thu Trang</b><span class="role" style="background:#EEF0FF;color:#4F46E5">Tuyển sinh</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><a href="Tuyen sinh - Khoa hoc.dc.html">Khóa học</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>KH-0005</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo, 2 chưa đọc" style="margin-left:auto"><i class="bi bi-bell"></i><span class="dot-badge">2</span></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+
+<section class="card" aria-labelledby="kh-t">
+<div style="display:flex;align-items:center;gap:16px;padding:20px 24px">
+<span style="width:52px;height:52px;flex:none;border-radius:12px;background:#D5F5EF;color:#0F766E;display:grid;place-items:center;font-size:15px;font-weight:700">IE</span>
+<div style="flex:1;min-width:0">
+<div class="sm muted b5">KH-0005 · Tạo từ YC-0018 · Bắt đầu 14/10/2026</div>
+<div class="row" style="gap:10px;margin-top:2px;flex-wrap:wrap"><h2 id="kh-t" style="margin:0;font-size:20px;line-height:28px;font-weight:600">IELTS · Trần Gia Bảo</h2><span class="chip" style="background:{{ st.bg }};color:{{ st.c }};height:24px;font-weight:600"><span class="d" style="background:{{ st.dot }}"></span>{{ st.label }}</span></div>
+</div>
+<div class="row" style="flex:none;position:relative">
+<button type="button" class="btn" onClick="{{ openSwap }}" disabled="{{ swapBusy }}"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Đổi gia sư</button>
+<button type="button" class="btn" onClick="{{ openCount }}"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa số buổi</button>
+<button type="button" class="btn pri" onClick="{{ toggleMenu }}" aria-expanded="{{ menuOpen }}" aria-haspopup="menu">Đổi trạng thái<i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+<sc-if value="{{ menuOpen }}">
+<div class="menu" role="menu" style="right:0;top:42px">
+<sc-for list="{{ stOpts }}" as="o"><button type="button" role="menuitem" onClick="{{ o.pick }}" style="color:{{ o.c }}"><i class="bi {{ o.icon }}" aria-hidden="true"></i>{{ o.label }}</button></sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+<div class="info" style="border-top:1px solid #EEF0F5">
+<dl><sc-for list="{{ infoL }}" as="x" hint-placeholder-count="5"><div><dt>{{ x.k }}</dt><dd style="font-weight:{{ x.fw }}">{{ x.v }}</dd></div></sc-for></dl>
+<dl><sc-for list="{{ infoR }}" as="x" hint-placeholder-count="5"><div><dt>{{ x.k }}</dt><dd style="font-weight:{{ x.fw }}">{{ x.v }}</dd></div></sc-for></dl>
+</div>
+</section>
+
+<sc-if value="{{ banner.show }}">
+<div class="banner" role="status" style="background:{{ banner.bg }};border-color:{{ banner.bd }}">
+<span class="ic" style="color:{{ banner.c }}"><i class="bi {{ banner.icon }}" aria-hidden="true"></i></span>
+<div style="flex:1;min-width:0"><div class="b6">{{ banner.title }}</div><div style="font-size:13px;line-height:20px;color:#4A5068">{{ banner.text }}</div></div>
+<sc-if value="{{ banner.canUndo }}"><button type="button" class="btn sm" onClick="{{ banner.act }}">{{ banner.actLabel }}</button></sc-if>
+</div>
+</sc-if>
+
+<div class="grid-aside">
+<div class="stack">
+
+<section class="card" aria-labelledby="td-t">
+<div class="card-h"><h3 id="td-t">Tiến độ khóa</h3><span class="muted sm" style="margin-left:auto">{{ total }} buổi · 90 phút/buổi</span></div>
+<div class="kpis">
+<div class="kpi"><div class="v" style="color:#0F766E">{{ k.done }}</div><div class="l">Đã học</div></div>
+<div class="kpi"><div class="v" style="color:#1D4ED8">{{ k.sched }}</div><div class="l">Đã xếp lịch</div></div>
+<div class="kpi"><div class="v">{{ k.left }}</div><div class="l">Còn lại chưa xếp</div></div>
+<div class="kpi"><div class="v">{{ k.cancel }}</div><div class="l">Buổi đã hủy · đã bù</div></div>
+</div>
+<div style="padding:0 20px 16px">
+<div class="bar" role="img" aria-label="{{ k.aria }}"><span style="width:{{ k.doneW }};background:#14B8A6"></span><span style="width:{{ k.schedW }};background:#99E6DA"></span></div>
+<div class="legend" style="margin-top:10px"><span><i style="background:#14B8A6"></i>Đã học</span><span><i style="background:#99E6DA"></i>Đã xếp lịch</span><span><i style="background:#E1E4EC"></i>Còn lại</span></div>
+</div>
+</section>
+
+<section class="card" aria-labelledby="bh-t">
+<div class="card-h"><h3 id="bh-t">Các buổi học</h3>
+<div class="tabs" role="tablist" aria-label="Lọc buổi học" style="margin-left:auto">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="cnt">{{ t.n }}</span></button></sc-for>
+</div>
+</div>
+<div role="table" aria-label="Các buổi học" style="--cols:48px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr) 44px">
+<div role="row" class="gt-h"><span role="columnheader">Buổi</span><span role="columnheader">Ngày giờ</span><span role="columnheader">Trạng thái</span><span role="columnheader">Mức tiếp thu</span><span role="columnheader">Thù lao</span><span role="columnheader" class="sr">Thao tác</span></div>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+<div role="row" class="gt-r">
+<span role="cell" class="b6">{{ r.no }}</span>
+<span role="cell" style="min-width:0"><span class="b5" style="display:block">{{ r.date }}</span><span class="sm muted" style="display:block">{{ r.time }}{{ r.note }}</span></span>
+<span role="cell"><span class="chip" style="background:{{ r.bg }};color:{{ r.c }}"><span class="d" style="background:{{ r.dot }}"></span>{{ r.st }}</span></span>
+<span role="cell"><sc-if value="{{ r.hasLv }}"><span class="row sm" style="gap:6px;color:{{ r.lvC }}"><i class="bi {{ r.lvIcon }}" aria-hidden="true"></i>{{ r.lv }}</span></sc-if><sc-if value="{{ r.noLv }}"><span class="muted">—</span></sc-if></span>
+<span role="cell" class="sm" style="color:{{ r.payC }}">{{ r.pay }}</span>
+<span role="cell" style="text-align:right"><a href="Gia su - Chi tiet buoi hoc v2.dc.html" class="sm b5">Xem</a></span>
+</div>
+</sc-for>
+</div>
+</section>
+</div>
+
+<aside class="stack-16 sticky" aria-label="Thông tin thêm">
+<section class="card card-b" aria-labelledby="gs-t">
+<h3 id="gs-t" style="margin:0 0 12px;font-size:14px;font-weight:600">Gia sư phụ trách</h3>
+<div class="who"><span class="av" style="width:40px;height:40px;background:#FFE4DA;color:#C2410C;font-size:13px">NL</span><div style="min-width:0;flex:1"><b>Phạm Ngọc Lan</b><small>IELTS 8.0 · 52 buổi đã dạy</small></div><span class="chip" style="background:#E6FAF7;color:#0F766E"><span class="d" style="background:#14B8A6"></span>Đang dạy</span></div>
+<div class="row sm" style="justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #EEF0F5"><span class="muted">Thù lao</span><span class="b6">150.000đ/buổi</span></div>
+<div class="row sm" style="justify-content:space-between;margin-top:6px"><span class="muted">Xác nhận đúng hạn</span><span class="b6">96%</span></div>
+<a href="Quan tri - Ho so gia su.dc.html" class="btn sm" style="width:100%;margin-top:12px">Xem hồ sơ gia sư</a>
+</section>
+
+<section class="card card-b" aria-labelledby="tb-t">
+<div class="row" style="margin-bottom:12px"><h3 id="tb-t" style="margin:0;font-size:14px;font-weight:600">Mức tiếp thu qua các buổi</h3></div>
+<div role="img" aria-label="{{ trendAria }}" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:end;height:84px">
+<sc-for list="{{ trend }}" as="t" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:100%;height:{{ t.h }}px;border-radius:6px 6px 3px 3px;background:{{ t.c }}"></span><span class="sm muted">B{{ t.n }}</span></div></sc-for>
+</div>
+<div class="legend" style="margin-top:12px"><span><i style="background:#14B8A6"></i>Tốt</span><span><i style="background:#60A5FA"></i>Cơ bản</span><span><i style="background:#F59E0B"></i>Cần hỗ trợ</span></div>
+</section>
+
+<section class="card card-b" aria-labelledby="nk-t">
+<div class="row" style="margin-bottom:12px"><h3 id="nk-t" style="margin:0;font-size:14px;font-weight:600">Nhật ký khóa học</h3><span class="sm muted" style="margin-left:auto">KH-0005</span></div>
+<ol class="tl">
+<sc-for list="{{ log }}" as="g" hint-placeholder-count="5">
+<li aria-current="{{ g.cur }}"><span class="rail"><span class="ic" style="background:{{ g.bg }};border-color:{{ g.bd }};border-style:{{ g.bs }};color:{{ g.c }};animation:{{ g.anim }}"><i class="bi {{ g.icon }}" aria-hidden="true"></i></span><span class="ln" style="border-left-style:{{ g.ls }}"></span></span><div class="tx" style="color:{{ g.tc }};font-weight:{{ g.fw }}">{{ g.text }}<small>{{ g.time }}</small></div></li>
+</sc-for>
+</ol>
+</section>
+</aside>
+</div>
+</main>
+</div>
+
+<sc-if value="{{ dlgSwap }}">
+<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dg1">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-arrow-repeat"></i></span><div><h2 id="dg1">Đề xuất đổi gia sư cho KH-0005</h2><p>Quản trị viên cần duyệt. Sau khi duyệt, các buổi đã xếp lịch chuyển sang gia sư mới; buổi đã học giữ nguyên.</p></div></div>
+<div class="field"><label for="gs-moi">Gia sư mới <span class="req">*</span></label>
+<select id="gs-moi" class="inp" value="{{ f.tutor }}" onChange="{{ onTutor }}" aria-invalid="{{ e.tutor }}"><option value="">Chọn gia sư đã duyệt môn IELTS</option><option>Nguyễn Hoài An · IELTS 7.5 · khớp 2/2 khung giờ</option><option>Đỗ Thanh Tùng · IELTS 8.0 · khớp 1/2 khung giờ</option></select>
+<sc-if value="{{ e.tutor }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Chọn gia sư mới.</span></sc-if></div>
+<div class="field"><label for="ld1">Lý do <span class="req">*</span></label>
+<textarea id="ld1" class="inp" rows="3" value="{{ f.reason }}" onChange="{{ onReason }}" aria-invalid="{{ e.reason }}" placeholder="VD: Gia sư hiện tại bận lịch thi từ tháng 12"></textarea>
+<sc-if value="{{ e.reason }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập lý do để Quản trị viên xem xét.</span></sc-if></div>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeDlg }}">Quay lại</button><button type="button" class="btn pri" onClick="{{ submitSwap }}">Gửi đề xuất</button></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ dlgCount }}">
+<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dg2">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-pencil"></i></span><div><h2 id="dg2">Sửa tổng số buổi</h2><p>Không thể ít hơn {{ minCount }} buổi (đã học và đã xếp lịch).</p></div></div>
+<div class="row" style="gap:16px"><div role="group" aria-label="Tổng số buổi" class="row" style="gap:0;border:1px solid #E6E9F2;border-radius:8px">
+<button type="button" class="icon-btn" onClick="{{ decCount }}" disabled="{{ decOff }}" aria-label="Bớt 1 buổi"><i class="bi bi-dash-lg"></i></button>
+<span aria-live="polite" style="min-width:72px;text-align:center;font-weight:600;border-left:1px solid #EEF0F5;border-right:1px solid #EEF0F5;line-height:36px">{{ f.count }} buổi</span>
+<button type="button" class="icon-btn" onClick="{{ incCount }}" aria-label="Thêm 1 buổi"><i class="bi bi-plus-lg"></i></button></div>
+<span class="sm muted">Hiện tại {{ total }} buổi · {{ diffText }}</span></div>
+<div class="field"><label for="ld2">Lý do <span class="req">*</span></label>
+<input id="ld2" class="inp" value="{{ f.reason }}" onChange="{{ onReason }}" aria-invalid="{{ e.reason }}" placeholder="VD: Phụ huynh đăng ký thêm 4 buổi luyện Speaking">
+<sc-if value="{{ e.reason }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập lý do thay đổi.</span></sc-if></div>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeDlg }}">Quay lại</button><button type="button" class="btn pri" onClick="{{ submitCount }}">Lưu thay đổi</button></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ dlgStatus }}">
+<div class="overlay"><div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dg3">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:{{ ds.bg }};color:{{ ds.c }}"><i class="bi {{ ds.icon }}"></i></span><div><h2 id="dg3">{{ ds.title }}</h2><p>{{ ds.text }}</p></div></div>
+<div class="field"><label for="ld3">Lý do <span class="req">*</span></label>
+<input id="ld3" class="inp" value="{{ f.reason }}" onChange="{{ onReason }}" aria-invalid="{{ e.reason }}" placeholder="VD: Học viên nghỉ thi học kỳ 2 tuần">
+<sc-if value="{{ e.reason }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập lý do.</span></sc-if></div>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeDlg }}">Quay lại</button><button type="button" class="btn {{ ds.btn }}" onClick="{{ submitStatus }}">{{ ds.ok }}</button></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Đang học","Chờ duyệt đổi gia sư","Tạm dừng"],"default":"Đang học","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, status: null, swap: null, total: 16, tab: 'all', menu: false, dlg: null, next: null, f: { tutor: '', reason: '', count: 16 }, tried: false, toast: null, extraLog: [] };
+  componentWillUnmount() { clearTimeout(this.tt); }
+  toast(t) { clearTimeout(this.tt); this.setState({ toast: t }); this.tt = setTimeout(() => this.setState({ toast: null }), 5000); }
+
+  renderVals() {
+    const P = this.props, S0 = this.state;
+    const key = P.state || 'Đang học';
+    const S = S0.key === key ? S0 : { ...S0, status: null, swap: null, extraLog: [] };
+    const set = p => this.setState(S0.key === key ? { ...p } : { status: null, swap: null, extraLog: [], ...p, key });
+    const status = S.status || (key === 'Tạm dừng' ? 'paused' : 'active');
+    const swap = S.swap !== null ? S.swap : (key === 'Chờ duyệt đổi gia sư' ? { to: 'Nguyễn Hoài An', at: '09/11 · 16:20' } : false);
+    const TONE = { teal: { bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, blue: { bg: '#EAF2FF', c: '#1D4ED8', dot: '#3B82F6' }, orange: { bg: '#FFF4E5', c: '#B45309', dot: '#F59E0B' }, neutral: { bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' }, red: { bg: '#FDECEC', c: '#C2292E', dot: '#E5484D' } };
+    const STM = { active: { ...TONE.teal, label: 'Đang học' }, paused: { ...TONE.orange, label: 'Tạm dừng' }, done: { ...TONE.blue, label: 'Đã hoàn thành' }, cancelled: { ...TONE.neutral, label: 'Đã hủy' } };
+
+    const SESS = [
+      ['1', 'T4 14/10/2026', '20:00–21:30', 'done', 'good', 'paid'],
+      ['2', 'T7 17/10/2026', '08:00–09:30', 'done', 'basic', 'paid'],
+      ['3', 'T4 21/10/2026', '20:00–21:30', 'done', 'help', 'paid'],
+      ['4', 'T7 24/10/2026', '08:00–09:30', 'done', 'basic', 'paid'],
+      ['—', 'T7 31/10/2026', '08:00–09:30', 'cancel', '', 'void', ' · Học viên xin nghỉ, bù ở buổi 6'],
+      ['5', 'T5 05/11/2026', '08:00–09:30', 'done', 'basic', 'temp'],
+      ['6', 'T2 09/11/2026', '08:00–09:30', 'pending', '', 'wait', ' · Học bù'],
+      ['7', 'T4 11/11/2026', '20:00–21:30', 'sched', '', 'none'],
+      ['8', 'T7 14/11/2026', '08:00–09:30', 'sched', '', 'none']
+    ];
+    const SM = { done: { ...TONE.teal, st: 'Hoàn tất' }, pending: { ...TONE.orange, st: 'Chờ xác nhận' }, sched: { ...TONE.blue, st: 'Đã lên lịch' }, cancel: { ...TONE.neutral, st: 'Đã hủy' } };
+    const LV = { good: ['Tiếp thu tốt', 'bi-check-circle', '#0F766E'], basic: ['Tiếp thu cơ bản', 'bi-circle-half', '#1D4ED8'], help: ['Cần hỗ trợ thêm', 'bi-exclamation-circle', '#B45309'] };
+    const PAY = { paid: ['Đã đối soát', '#0F766E'], temp: ['Tạm tính', '#4A5068'], wait: ['Chờ xác nhận', '#B45309'], void: ['Không tính', '#646B85'], none: ['—', '#646B85'] };
+    const grp = s => s === 'done' ? 'done' : s === 'cancel' ? 'cancel' : 'up';
+    const rows = SESS.filter(x => S.tab === 'all' || grp(x[3]) === S.tab).map(([no, date, time, s, lv, pay, note]) => ({
+      no, date, time, note: note || '', ...SM[s], hasLv: !!lv, noLv: !lv, lv: lv ? LV[lv][0] : '', lvIcon: lv ? LV[lv][1] : '', lvC: lv ? LV[lv][2] : '', pay: PAY[pay][0], payC: PAY[pay][1] }));
+    const cnt = { all: SESS.length, done: SESS.filter(x => x[3] === 'done').length, up: SESS.filter(x => grp(x[3]) === 'up').length, cancel: SESS.filter(x => x[3] === 'cancel').length };
+    const tabs = [['all', 'Tất cả'], ['done', 'Đã học'], ['up', 'Sắp tới'], ['cancel', 'Đã hủy']].map(([v, label]) => ({ label, n: cnt[v], on: S.tab === v ? 'true' : 'false', pick: () => set({ tab: v }) }));
+
+    const total = S.total, done = cnt.done, sched = cnt.up, left = Math.max(0, total - done - sched);
+    const k = { done, sched, left, cancel: '1 · 1', doneW: done / total * 100 + '%', schedW: sched / total * 100 + '%', aria: `${done} đã học, ${sched} đã xếp lịch, ${left} còn lại trên ${total} buổi` };
+    const trend = SESS.filter(x => x[3] === 'done').map(x => ({ n: x[0], h: x[4] === 'good' ? 64 : x[4] === 'basic' ? 44 : 24, c: x[4] === 'good' ? '#14B8A6' : x[4] === 'basic' ? '#60A5FA' : '#F59E0B' }));
+
+    const w5 = { fw: 500 }, w4 = { fw: 400 };
+    const infoL = [
+      { k: 'Gia sư', v: swap ? 'Phạm Ngọc Lan (đang đề xuất đổi)' : 'Phạm Ngọc Lan', ...w5 },
+      { k: 'Thời lượng', v: '90 phút/buổi · Zoom', ...w4 },
+      { k: 'Lịch cố định', v: 'T4 20:00 · T7 08:00', ...w5 },
+      { k: 'Tổng số buổi', v: `${total} buổi`, ...w5 },
+      { k: 'Link lớp cố định', v: 'giasuonline.vn/lop/KH-0005', ...w4 }
+    ];
+    const infoR = [
+      { k: 'Học viên', v: 'Trần Gia Bảo · Nam · Lớp 11', ...w5 },
+      { k: 'Mục tiêu', v: 'IELTS 6.5, thi tháng 3/2027', ...w4 },
+      { k: 'Phụ huynh', v: 'Chị Trần Thị Mai · 0903 456 789', ...w5 },
+      { k: 'Zalo nhóm lớp', v: 'IELTS Gia Bảo – Cô Lan', ...w4 },
+      { k: 'Ghi chú', v: 'Ưu tiên Writing, phụ huynh nhận nhận xét sau mỗi buổi.', ...w4 }
+    ];
+
+    let banner = { show: false };
+    if (swap) banner = { show: true, bg: '#F5F6FF', bd: '#DCDFFB', c: '#4F46E5', icon: 'bi-hourglass-split', title: `Đổi gia sư sang ${swap.to} · Chờ Admin duyệt`, text: `Gửi lúc ${swap.at}. Trong lúc chờ, các buổi vẫn do cô Phạm Ngọc Lan dạy.`, canUndo: true, actLabel: 'Hủy đề xuất', act: () => { set({ swap: false }); this.toast('Đã hủy đề xuất đổi gia sư'); } };
+    else if (status === 'paused') banner = { show: true, bg: '#FFF8EC', bd: '#F6DDB0', c: '#B45309', icon: 'bi-stopwatch', title: 'Khóa đang tạm dừng', text: 'Gia sư không tạo được buổi mới. Các buổi đã xếp lịch vẫn giữ nguyên cho đến khi bạn hủy.', canUndo: true, actLabel: 'Tiếp tục học', act: () => { set({ status: 'active' }); this.toast('Khóa học đã tiếp tục'); } };
+    else if (status === 'done' || status === 'cancelled') banner = { show: true, bg: '#F7F8FC', bd: '#E6E9F2', c: '#4A5068', icon: status === 'done' ? 'bi-check-circle' : 'bi-slash-circle', title: status === 'done' ? 'Khóa đã hoàn thành' : 'Khóa đã hủy', text: 'Không tạo thêm buổi học. Thù lao các buổi đã dạy vẫn được đối soát bình thường.', canUndo: false };
+
+    const DS = {
+      paused: { title: 'Tạm dừng khóa học?', text: 'Gia sư sẽ không tạo được buổi mới cho đến khi khóa tiếp tục.', icon: 'bi-stopwatch', bg: '#FFF4E5', c: '#B45309', ok: 'Tạm dừng', btn: 'pri', msg: 'Đã tạm dừng khóa KH-0005' },
+      active: { title: 'Tiếp tục khóa học?', text: 'Gia sư có thể tạo buổi mới trở lại.', icon: 'bi-check-circle', bg: '#E6FAF7', c: '#0F766E', ok: 'Tiếp tục học', btn: 'pri', msg: 'Khóa học đã tiếp tục' },
+      done: { title: 'Đánh dấu khóa đã hoàn thành?', text: `Còn ${left + sched} buổi chưa học sẽ không được tạo tiếp. Dùng khi học viên đã đạt mục tiêu sớm.`, icon: 'bi-check-circle', bg: '#EAF2FF', c: '#1D4ED8', ok: 'Hoàn thành khóa', btn: 'pri', msg: 'Khóa KH-0005 đã hoàn thành' },
+      cancelled: { title: 'Hủy khóa học?', text: 'Các buổi đã xếp lịch sẽ bị hủy và không tính thù lao. Không thể hoàn tác.', icon: 'bi-slash-circle', bg: '#FDECEC', c: '#C2292E', ok: 'Hủy khóa học', btn: 'dangerfill', msg: 'Đã hủy khóa KH-0005' }
+    };
+    const stOpts = (status === 'active' ? ['paused', 'done', 'cancelled'] : status === 'paused' ? ['active', 'done', 'cancelled'] : []).map(v => ({
+      label: { paused: 'Tạm dừng', active: 'Tiếp tục học', done: 'Đánh dấu hoàn thành', cancelled: 'Hủy khóa học' }[v],
+      icon: DS[v].icon, c: v === 'cancelled' ? '#C2292E' : '#1E2235', pick: () => set({ menu: false, dlg: 'status', next: v, f: { ...S.f, reason: '' }, tried: false }) }));
+
+    const f = S.f, minCount = done + sched;
+    const e = { tutor: S.tried && !f.tutor, reason: S.tried && f.reason.trim().length < 5 };
+
+    const T = (s, icon, text, time) => ({ icon, text, time, cur: s === 'now' ? 'step' : 'false', ...{
+      done: { bg: '#E6FAF7', bd: '#E6FAF7', bs: 'solid', c: '#0F766E', tc: '#1E2235', fw: 400, ls: 'solid', anim: 'none' },
+      now: { bg: '#EEF0FF', bd: '#6366F1', bs: 'solid', c: '#4F46E5', tc: '#1E2235', fw: 600, ls: 'dashed', anim: 'gso-ring 1.6s ease-out infinite' },
+      todo: { bg: '#fff', bd: '#C9CEDC', bs: 'dashed', c: '#646B85', tc: '#4A5068', fw: 400, ls: 'dashed', anim: 'none' } }[s] });
+    let log = [
+      T('done', 'bi-inbox', 'Tạo từ yêu cầu YC-0018, gia sư Phạm Ngọc Lan nhận lớp', '10/10 · 09:12'),
+      T('done', 'bi-check-circle', 'Học thử xong, phụ huynh đồng ý đăng ký 16 buổi', '12/10 · 21:05'),
+      T('done', 'bi-journal-bookmark', 'Mở khóa chính thức KH-0005', '13/10 · 08:30'),
+      T('done', 'bi-calendar-x', 'Buổi 31/10 hủy · Học viên xin nghỉ', '30/10 · 19:40'),
+      T('done', 'bi-calendar3', 'Tạo buổi học bù 09/11', '08/11 · 20:05')
+    ].concat(S.extraLog.map(x => T('done', x[0], x[1], x[2])));
+    if (swap) log.push(T('now', 'bi-arrow-repeat', `Đề xuất đổi gia sư sang ${swap.to} · Chờ Admin duyệt`, swap.at));
+    if (status === 'paused' && !S.status) log.push(T('done', 'bi-stopwatch', 'Tạm dừng khóa · Học viên nghỉ thi học kỳ', '07/11 · 10:00'));
+    if (status === 'active' && !swap) log.push(T('now', 'bi-calendar3', 'Buổi 6 chờ gia sư xác nhận hoàn tất', 'Hạn 21:30 hôm nay'));
+    const now = () => { const t = new Date(); return `${String(t.getDate()).padStart(2, '0')}/${String(t.getMonth() + 1).padStart(2, '0')} · ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`; };
+    const addLog = (icon, text) => S.extraLog.concat([[icon, text, now()]]);
+
+    const ds = DS[S.next] || DS.paused;
+    return {
+      st: STM[status], infoL, infoR, banner, k, total, tabs, rows, trend, trendAria: `Mức tiếp thu 5 buổi gần nhất: ${trend.map(t => t.h === 64 ? 'tốt' : t.h === 44 ? 'cơ bản' : 'cần hỗ trợ').join(', ')}`, log,
+      menuOpen: S.menu, toggleMenu: () => set({ menu: !S.menu }), stOpts,
+      swapBusy: !!swap || status === 'cancelled' || status === 'done',
+      openSwap: () => set({ dlg: 'swap', f: { ...f, tutor: '', reason: '' }, tried: false, menu: false }),
+      openCount: () => set({ dlg: 'count', f: { ...f, count: total, reason: '' }, tried: false, menu: false }),
+      dlgSwap: S.dlg === 'swap', dlgCount: S.dlg === 'count', dlgStatus: S.dlg === 'status', closeDlg: () => set({ dlg: null }),
+      f, e, ds, minCount,
+      onTutor: ev => set({ f: { ...f, tutor: ev.target.value } }), onReason: ev => set({ f: { ...f, reason: ev.target.value } }),
+      decCount: () => set({ f: { ...f, count: Math.max(minCount, f.count - 1) } }), incCount: () => set({ f: { ...f, count: f.count + 1 } }), decOff: f.count <= minCount,
+      diffText: f.count === total ? 'chưa thay đổi' : f.count > total ? `thêm ${f.count - total} buổi` : `bớt ${total - f.count} buổi`,
+      submitSwap: () => { if (!f.tutor || f.reason.trim().length < 5) { set({ tried: true }); return; } const to = f.tutor.split(' · ')[0]; set({ dlg: null, tried: false, swap: { to, at: now() } }); this.toast(`Đã gửi đề xuất đổi sang ${to}. Chờ Quản trị viên duyệt.`); },
+      submitCount: () => { if (f.reason.trim().length < 5) { set({ tried: true }); return; } set({ dlg: null, tried: false, total: f.count, extraLog: addLog('bi-pencil', `Sửa số buổi ${total} → ${f.count} · ${f.reason.trim()}`) }); this.toast(`Đã cập nhật tổng số buổi: ${f.count}`); },
+      submitStatus: () => { if (f.reason.trim().length < 5) { set({ tried: true }); return; } set({ dlg: null, tried: false, status: S.next, extraLog: addLog(ds.icon, `${ds.ok} · ${f.reason.trim()}`) }); this.toast(ds.msg); },
+      hasToast: !!S.toast, toastText: S.toast || '', hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

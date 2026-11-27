@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Trang chủ · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><style>body{margin:0;background:#F7F8FC;font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;color:#1E2235;font-size:14px;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#6366F1;text-decoration:none}a:hover{color:#4F46E5;text-decoration:underline}button,input,select,textarea{font-family:inherit}:focus-visible{outline:2px solid #6366F1;outline-offset:2px}@keyframes gso-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}@keyframes gso-slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}</style></helmet>
+<div style="display:flex;min-height:100vh;min-width:1280px;background:#F7F8FC;font-variant-numeric:tabular-nums">
+<a href="#noi-dung" style="position:absolute;left:-9999px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50" style-focus="left:8px">Bỏ qua menu</a>
+
+<aside aria-label="Menu chính" style="width:{{ sideW }};flex:none;background:#fff;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .2s ease">
+<div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 16px">
+<div style="width:32px;height:32px;flex:none;border-radius:8px;background:#6366F1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px">G</div>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-weight:600;font-size:14px;line-height:18px">Gia Sư Online</div><div style="font-size:12px;line-height:16px;color:#0F766E;font-weight:500">Trung tâm điều hành</div></div></sc-if>
+<button onClick="{{ toggleSide }}" aria-label="Thu gọn hoặc mở rộng menu" style="width:28px;height:28px;flex:none;border:none;background:transparent;border-radius:6px;color:#9AA1B8;cursor:pointer;display:grid;place-items:center" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-layout-sidebar"></i></button>
+</div>
+<nav style="padding:8px 12px;display:flex;flex-direction:column;gap:2px;flex:1;overflow:auto">
+<a href="#" aria-current="page" style="position:relative;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:500;text-decoration:none;margin-top:4px"><span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#6366F1"></span><i class="bi bi-house-door" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span>Trang chủ</span></sc-if></a>
+<sc-for list="{{ navGroups }}" as="ng" hint-placeholder-count="3">
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:16px 10px 6px">{{ ng.title }}</div></sc-if>
+<sc-for list="{{ ng.items }}" as="n" hint-placeholder-count="2">
+<a href="{{ n.href }}" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi {{ n.icon }}" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;white-space:nowrap">{{ n.label }}</span></sc-if><sc-if value="{{ n.badge }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">{{ n.badge }}</span></sc-if></a>
+</sc-for>
+</sc-for>
+</nav>
+<div style="border-top:1px solid #E6E9F2;padding:12px 16px;display:flex;align-items:center;gap:10px">
+<div style="width:32px;height:32px;flex:none;border-radius:50%;background:#D5F5EF;color:#0F766E;display:grid;place-items:center;font-weight:600;font-size:12px">HM</div>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Hoàng Văn Minh</div><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:#E6FAF7;color:#0F766E;font-size:11px;font-weight:500">Quản trị viên</span></div><button aria-label="Tài khoản: Đổi mật khẩu, Đăng xuất" style="width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-three-dots-vertical"></i></button></sc-if>
+</div>
+</aside>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;height:56px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid #E6E9F2;display:flex;align-items:center;gap:16px;padding:0 32px">
+<h1 style="margin:0;font-size:16px;font-weight:600">Ngoại lệ cần xử lý</h1>
+<button onClick="{{ openPalette }}" style="margin-left:auto;width:320px;height:34px;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#F7F8FC;color:#9AA1B8;font-size:13px;cursor:pointer;text-align:left" style-hover="border-color:#D5D9E6;background:#fff"><i class="bi bi-search"></i><span style="flex:1;white-space:nowrap">Tìm mã YC/KH, gia sư, tài khoản…</span><kbd style="white-space:nowrap;font:500 11px 'Be Vietnam Pro',sans-serif;padding:2px 6px;border:1px solid #E6E9F2;border-radius:4px;background:#fff;color:#646B85">Ctrl K</kbd></button>
+<button aria-label="Thông báo, 2 chưa đọc" style="position:relative;width:36px;height:36px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer;font-size:17px" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-bell"></i><span style="position:absolute;top:5px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#FF7A59;color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;border:2px solid #fff">2</span></button>
+<span style="color:#646B85;font-size:13px;white-space:nowrap">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:24px 32px 48px;display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:24px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:24px;min-width:0;opacity:{{ op }};transform:translateY({{ ty }}px);transition:opacity .3s ease,transform .3s ease">
+
+<section aria-label="Lời chào" style="position:relative;overflow:hidden;border-radius:12px;min-height:160px;padding:28px 32px;border:1px solid #D6F0EC;background:#F4FBFA">
+<div aria-hidden="true" style="position:absolute;top:0;right:0;bottom:0;width:52%;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1400 400%22 preserveAspectRatio=%22xMidYMid slice%22%3E%3Cdefs%3E%3ClinearGradient id=%22s%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23D9F3EE%22/%3E%3Cstop offset=%221%22 stop-color=%22%23F2FBF9%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221400%22 height=%22400%22 fill=%22url%28%23s%29%22/%3E%3Ccircle cx=%221040%22 cy=%22150%22 r=%2270%22 fill=%22%239FE3D6%22 opacity=%22.85%22/%3E%3Cpath d=%22M0 260 C200 180 360 210 520 170 S860 120 1000 190 1260 160 1400 200 V400 H0Z%22 fill=%22%23BFE6DD%22/%3E%3Cpath d=%22M0 300 C180 250 380 290 560 250 S900 220 1080 270 1300 240 1400 260 V400 H0Z%22 fill=%22%239DD5C8%22/%3E%3Cpath d=%22M0 340 C220 310 420 350 640 320 S1000 300 1200 330 1340 320 1400 330 V400 H0Z%22 fill=%22%2386C2B4%22/%3E%3C/svg%3E&quot;);background-size:cover;background-position:center 45%;-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.55) 30%,#000 60%);mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.55) 30%,#000 60%)"></div>
+<div aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(90deg,#F4FBFA 0%,#F4FBFA 46%,rgba(244,251,250,.6) 62%,rgba(244,251,250,0) 80%)"></div>
+
+<div style="position:relative;max-width:540px;display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:26px;line-height:34px;font-weight:600;letter-spacing:-.01em">{{ greet }}</h2>
+<p style="margin:0;color:#3F4A5C;font-size:14px;line-height:22px;text-wrap:pretty">{{ cheer }}</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+<sc-for list="{{ bannerChips }}" as="c" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(6px);font-size:13px;font-weight:500;white-space:nowrap;color:{{ c.color }}"><i class="bi {{ c.icon }}"></i>{{ c.text }}</span></sc-for>
+</div></div>
+</section>
+
+<sc-if value="{{ showWarnAlert }}">
+<div role="alert" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:#FDECEC;border:1px solid #F8C9CA">
+<span style="width:32px;height:32px;flex:none;border-radius:50%;background:#fff;color:#C2292E;display:grid;place-items:center"><i class="bi bi-exclamation-triangle"></i></span>
+<div style="flex:1;min-width:0"><div style="font-weight:600">Không thể chốt thù lao tháng 10 cho Phan Thị Mai</div><div style="font-size:13px;color:#7A2A2D">Bạn là người đã kiểm tra tháng này. Người chốt phải khác người kiểm tra.</div></div>
+<button style="height:30px;padding:0 12px;border-radius:8px;border:1px solid #F8C9CA;background:#fff;color:#C2292E;font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:#FFF7F7">Xem đối soát</button>
+</div>
+</sc-if>
+
+<section aria-labelledby="ngoai-le">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><h2 id="ngoai-le" style="margin:0;font-size:16px;font-weight:600">Ngoại lệ cần xử lý</h2><span style="font-size:13px;color:#9AA1B8">{{ taskCount }}</span><span style="margin-left:auto;font-size:12px;color:#646B85;display:inline-flex;align-items:center;gap:5px"><i class="bi bi-shield-check"></i>Mọi thao tác cần ghi lý do và được lưu nhật ký</span></div>
+
+<sc-if value="{{ loading }}">
+<div aria-hidden="true" style="margin-top:12px;background:#fff;border:1px solid #E6E9F2;border-radius:12px;overflow:hidden">
+<sc-for list="{{ skel }}" as="s"><div style="display:grid;grid-template-columns:84px minmax(0,1fr) 140px 124px;gap:12px;align-items:center;height:60px;padding:0 16px;border-bottom:1px solid #EEF0F5"><span style="height:10px;width:56px;border-radius:4px;background:#F1F3F9"></span><div style="display:flex;flex-direction:column;gap:6px"><span style="height:10px;width:{{ s }};border-radius:4px;background:linear-gradient(90deg,#EEF0F5 0,#F7F8FC 40%,#EEF0F5 80%);background-size:800px 100%;animation:gso-shimmer 1.2s linear infinite"></span><span style="height:8px;width:40%;border-radius:4px;background:#F1F3F9"></span></div><span style="height:20px;width:96px;border-radius:10px;background:#F1F3F9"></span><span style="height:28px;border-radius:8px;background:#F1F3F9"></span></div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ hasGroups }}" hint-placeholder-val="{{ true }}">
+<div role="table" aria-label="Ngoại lệ cần xử lý" style="margin-top:12px;background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+<div role="row" style="display:grid;grid-template-columns:84px minmax(0,1fr) 140px 124px;gap:12px;align-items:center;height:38px;padding:0 16px;border-bottom:1px solid #E6E9F2;background:#F7F8FC;font-size:12px;font-weight:600;letter-spacing:.02em;color:#4A5068"><span role="columnheader">Mã</span><span role="columnheader">Đối tượng · bằng chứng</span><span role="columnheader">Trạng thái · hạn</span><span role="columnheader" style="text-align:right;padding-right:32px">Hành động</span></div>
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+<div role="rowgroup">
+<div role="row" style="position:relative;display:flex;align-items:center;gap:10px;height:40px;padding:0 16px;background:{{ g.band }};border-bottom:1px solid {{ g.line }};font-size:13px;font-weight:600;color:{{ g.color }}"><span style="position:absolute;left:0;top:0;bottom:0;width:3px;background:{{ g.dot }}"></span><i class="bi {{ g.icon }}" style="font-size:15px"></i>{{ g.title }}<span style="height:20px;min-width:20px;padding:0 7px;border-radius:10px;background:{{ g.dot }};color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600">{{ g.count }}</span><span style="font-weight:400;font-size:12px;color:#646B85">{{ g.hint }}</span></div>
+<sc-for list="{{ g.items }}" as="t" hint-placeholder-count="2">
+<div role="row" style="position:relative;display:grid;grid-template-columns:84px minmax(0,1fr) 140px 124px;gap:12px;align-items:center;min-height:60px;padding:10px 16px;border-bottom:1px solid #EEF0F5;transition:background .15s" style-hover="background:#FAFBFE">
+<span role="cell" style="font-size:13px;font-weight:500;color:#646B85;white-space:nowrap">{{ t.code }}</span>
+<div role="cell" style="min-width:0"><div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:13px;color:#646B85;line-height:18px;margin-top:2px">{{ t.desc }}</div></div>
+<span role="cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ t.chipBg }};color:{{ t.chipC }};font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ t.chipDot }}"></span>{{ t.chip }}</span><span style="font-size:12px;color:{{ t.timeC }};white-space:nowrap;display:inline-flex;align-items:center;gap:4px"><i class="bi {{ t.timeIcon }}"></i>{{ t.time }}</span></span>
+<span role="cell" style="display:flex;align-items:center;justify-content:flex-end;gap:4px">
+<button onClick="{{ t.onAction }}" style="height:30px;padding:0 8px;border:1px solid #E1E4F5;border-radius:8px;background:#fff;color:#4F46E5;font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:#EEF0FF;border-color:#C7CBF9">{{ t.action }}</button>
+<button onClick="{{ t.onMenu }}" aria-label="Thêm thao tác" aria-expanded="{{ t.menuOpen }}" style="width:28px;height:28px;flex:none;border:none;border-radius:8px;background:transparent;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-three-dots"></i></button></span>
+<sc-if value="{{ t.menuOpen }}">
+<div role="menu" style="position:absolute;right:10px;top:48px;z-index:15;width:220px;padding:4px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.12)">
+<button role="menuitem" onClick="{{ closeMenu }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#1E2235;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-box-arrow-up-right"></i>Mở chi tiết</button>
+<button role="menuitem" onClick="{{ closeMenu }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#1E2235;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-clock-history"></i>Xem nhật ký liên quan</button>
+<sc-if value="{{ t.canReject }}"><button role="menuitem" onClick="{{ t.onReject }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#C2292E;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#FDECEC"><i class="bi bi-x-circle"></i>{{ t.rejectLabel }}</button></sc-if>
+</div></sc-if>
+</div>
+</sc-for></div>
+</sc-for>
+</div></sc-if>
+
+<sc-if value="{{ noTasks }}">
+<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:36px 16px;border:1px dashed #CDEFE9;border-radius:12px;margin-top:12px;background:#fff">
+<span style="width:48px;height:48px;border-radius:50%;border:1.5px solid #CDEFE9;display:grid;place-items:center;color:#14B8A6;font-size:22px"><i class="bi bi-shield-check"></i></span>
+<div style="font-weight:600;margin-top:6px">Không có ngoại lệ nào cần xử lý</div>
+<div style="font-size:13px;color:#646B85;max-width:380px">Hệ thống vận hành bình thường. Bạn có thể xem lại các thao tác gần đây trong Nhật ký.</div>
+<a href="Quan tri - Nhat ky thao tac.dc.html" style="font-size:13px;font-weight:500;margin-top:4px">Mở Nhật ký thao tác</a>
+</div></sc-if>
+</section>
+
+<section aria-label="Tổng quan tháng 11" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 0;padding:12px 16px;background:#fff;border:1px solid #E6E9F2;border-radius:12px;font-size:13px;color:#646B85">
+<span style="font-weight:600;color:#4A5068;margin-right:16px;white-space:nowrap">Tổng quan T11</span>
+<sc-for list="{{ totals }}" as="x" hint-placeholder-count="4"><span style="display:inline-flex;align-items:center;gap:6px;padding:0 16px;border-left:1px solid #E6E9F2;white-space:nowrap"><i class="bi {{ x.icon }}" style="color:#9AA1B8"></i>{{ x.label }}<b style="font-weight:600;color:#1E2235">{{ x.value }}</b></span></sc-for>
+</section>
+</div>
+
+<aside aria-label="Lịch và thao tác nhanh" style="display:flex;flex-direction:column;gap:24px;position:sticky;top:80px;opacity:{{ op }};transition:opacity .4s ease .08s">
+<div style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px">
+<div style="display:flex;align-items:center;margin-bottom:10px"><span style="font-weight:600">Tháng 11/2026</span><button aria-label="Tháng trước" style="margin-left:auto;width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9"><i class="bi bi-chevron-left"></i></button><button aria-label="Tháng sau" style="width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9"><i class="bi bi-chevron-right"></i></button></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:#9AA1B8;font-weight:500;margin-bottom:4px"><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px">
+<sc-for list="{{ cal }}" as="d" hint-placeholder-count="42">
+<div style="height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+<span style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:{{ d.fw }};background:{{ d.bg }};color:{{ d.c }}">{{ d.n }}</span>
+<span style="display:flex;gap:2px;height:4px"><sc-for list="{{ d.dots }}" as="dot"><span style="width:4px;height:4px;border-radius:50%;background:{{ dot }}"></span></sc-for></span>
+</div>
+</sc-for></div>
+<div style="display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid #EEF0F5;font-size:11px;color:#646B85"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#14B8A6"></span>Hạn chốt thù lao</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#E5484D"></span>Hạn mở lại buổi</span></div>
+</div>
+
+<div>
+<h2 style="margin:0 0 10px;font-size:15px;font-weight:600">Thao tác nhanh</h2>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button style="height:40px;padding:0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:#1E2235;cursor:pointer;white-space:nowrap;transition:all .15s" style-hover="border-color:#C7CBF9;background:#FAFAFF;transform:translateY(-1px)"><span style="width:24px;height:24px;border-radius:6px;background:#EEF0FF;color:#4F46E5;display:grid;place-items:center"><i class="bi bi-person-plus"></i></span>Tạo tài khoản</button>
+<button style="height:40px;padding:0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:#1E2235;cursor:pointer;white-space:nowrap;transition:all .15s" style-hover="border-color:#C7CBF9;background:#FAFAFF;transform:translateY(-1px)"><span style="width:24px;height:24px;border-radius:6px;background:#E6FAF7;color:#0F766E;display:grid;place-items:center"><i class="bi bi-clock-history"></i></span>Nhật ký thao tác</button>
+</div></div>
+
+<div>
+<div style="display:flex;align-items:baseline;margin-bottom:6px"><h2 style="margin:0;font-size:15px;font-weight:600">Sắp tới</h2></div>
+<sc-for list="{{ upcoming }}" as="u" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #EEF0F5">
+<div style="width:40px;flex:none;text-align:center;border-radius:8px;padding:4px 0;background:#F7F8FC;overflow:hidden"><div style="font-size:10px;font-weight:600;color:#9AA1B8;letter-spacing:.04em">{{ u.dow }}</div><div style="font-size:15px;font-weight:600;line-height:18px">{{ u.day }}</div></div>
+<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;flex:none;border-radius:50%;background:{{ u.dot }}"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.title }}</span></div><div style="font-size:12px;color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.sub }}</div></div>
+</div>
+</sc-for>
+</div>
+
+<div>
+<div style="display:flex;align-items:baseline;margin-bottom:6px"><h2 style="margin:0;font-size:15px;font-weight:600">Nhật ký gần đây</h2><a href="Quan tri - Nhat ky thao tac.dc.html" style="margin-left:auto;font-size:13px">Tất cả</a></div>
+<sc-for list="{{ logs }}" as="l" hint-placeholder-count="3">
+<div style="display:flex;gap:10px;padding:8px 0">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;background:{{ l.bg }};color:{{ l.c }}"><i class="bi {{ l.icon }}"></i></span>
+<div style="min-width:0;flex:1;font-size:12px;line-height:17px"><div><b style="font-weight:600">{{ l.who }}</b> <span style="color:#4A5068">{{ l.what }}</span></div><div style="color:#9AA1B8">{{ l.when }}</div></div>
+</div>
+</sc-for>
+</div>
+</aside>
+</main>
+</div>
+
+<sc-if value="{{ drawerOpen }}">
+<div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:55;background:rgba(30,34,53,.22);backdrop-filter:blur(3px)"></div>
+<div role="dialog" aria-modal="true" aria-labelledby="dr-t" style="position:fixed;top:0;right:0;bottom:0;z-index:56;width:480px;background:#fff;border-left:1px solid #E6E9F2;box-shadow:-16px 0 48px rgba(16,24,40,.14);display:flex;flex-direction:column;animation:gso-slide .22s ease">
+<div style="padding:20px 24px 16px;border-bottom:1px solid #EEF0F5;display:flex;gap:12px;align-items:flex-start">
+<div style="flex:1"><div style="font-size:12px;color:#9AA1B8;font-weight:500">YC-0027 · chờ 31 giờ chưa có gia sư</div><h2 id="dr-t" style="margin:2px 0 0;font-size:18px;font-weight:600">Gán thẳng gia sư</h2><div style="font-size:13px;color:#646B85;margin-top:4px">Phạm Đức Huy · Vật lý 11 · tối Thứ 3, Thứ 5</div></div>
+<button onClick="{{ closeDrawer }}" aria-label="Đóng" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9"><i class="bi bi-x-lg"></i></button></div>
+<div style="flex:1;overflow:auto;padding:20px 24px;display:flex;flex-direction:column;gap:20px">
+<fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+<legend style="font-size:13px;font-weight:500;margin-bottom:8px">Chọn gia sư <span style="color:#E5484D">*</span></legend>
+<sc-for list="{{ tutors }}" as="o" hint-placeholder-count="3">
+<label style="display:grid;grid-template-columns:18px 32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid {{ o.border }};background:{{ o.bg }};border-radius:10px;cursor:pointer;transition:all .15s"><input type="radio" name="gs" checked="{{ o.on }}" onChange="{{ o.pick }}" style="margin:0;accent-color:#6366F1"><span style="width:32px;height:32px;border-radius:50%;background:{{ o.avBg }};color:{{ o.avC }};display:grid;place-items:center;font-size:11px;font-weight:600">{{ o.initials }}</span><span style="min-width:0"><span style="display:block;font-weight:500">{{ o.name }}</span><span style="display:block;font-size:12px;color:#646B85">{{ o.note }}</span></span><span style="font-size:12px;font-weight:600;color:#0F766E;background:#E6FAF7;border-radius:10px;padding:2px 8px;white-space:nowrap">Khớp {{ o.score }}%</span></label>
+</sc-for>
+<sc-if value="{{ tutorErr }}"><span role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn một gia sư để gán.</span></sc-if>
+</fieldset>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="ld" style="font-size:13px;font-weight:500">Lý do gán thẳng <span style="color:#E5484D">*</span></label><textarea id="ld" rows="3" value="{{ assignReason }}" onChange="{{ onAssignReason }}" aria-invalid="{{ assignErr }}" placeholder="VD: Đã gọi gia sư xác nhận nhận lớp qua điện thoại" style="border:1px solid {{ assignBorder }};border-radius:8px;padding:8px 10px;font-size:14px;resize:vertical;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></textarea>
+<sc-if value="{{ assignErr }}"><span role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Lý do là bắt buộc với mọi thao tác của Quản trị viên.</span></sc-if></div>
+<div style="display:flex;gap:8px;font-size:12px;color:#646B85;padding:10px 12px;background:#F7F8FC;border-radius:8px;line-height:18px"><i class="bi bi-info-circle" style="color:#6366F1"></i><span>Gán thẳng sẽ vô hiệu các lời mời đang chờ của yêu cầu này, chuyển trạng thái sang "Đã có gia sư" và ghi vào Nhật ký thao tác.</span></div>
+</div>
+<div style="padding:14px 24px;border-top:1px solid #EEF0F5;display:flex;justify-content:flex-end;gap:8px">
+<button onClick="{{ closeDrawer }}" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-weight:500;font-size:14px;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Hủy</button>
+<button onClick="{{ saveAssign }}" style="height:36px;padding:0 16px;border:none;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:14px;cursor:pointer" style-hover="background:#4F46E5">Gán gia sư</button>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ dialogOpen }}">
+<div style="position:fixed;inset:0;z-index:60;background:rgba(30,34,53,.28);backdrop-filter:blur(3px);display:grid;place-items:center">
+<div role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-d" style="width:480px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.2);padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:12px"><span style="width:36px;height:36px;flex:none;border-radius:50%;background:#FDECEC;color:#C2292E;display:grid;place-items:center"><i class="bi bi-x-octagon"></i></span><div><h2 id="dlg-t" style="margin:0;font-size:16px;font-weight:600">Không công nhận buổi BH-00142?</h2><p id="dlg-d" style="margin:4px 0 0;font-size:13px;color:#646B85;line-height:20px">Buổi Toán 9 ngày 06/11 của gia sư Phạm Ngọc Lan sẽ chuyển sang "Đã hủy". Thù lao 120.000đ đang tạm giữ sẽ không được tính, số buổi của khóa KH-0007 được hoàn lại 1 buổi.</p></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="ly-do" style="font-size:13px;font-weight:500">Lý do <span style="color:#E5484D">*</span></label>
+<textarea id="ly-do" rows="3" value="{{ reason }}" onChange="{{ onReason }}" aria-invalid="{{ reasonErr }}" aria-describedby="ly-do-loi" placeholder="VD: Học viên chỉ có mặt 38/90 phút, phụ huynh xác nhận con vào muộn do mất mạng" style="border:1px solid {{ reasonBorder }};border-radius:8px;padding:8px 10px;font-size:14px;resize:vertical;color:#1E2235"></textarea>
+<sc-if value="{{ reasonErr }}"><span id="ly-do-loi" role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Vui lòng ghi lý do không công nhận.</span></sc-if></div>
+<div style="display:flex;justify-content:flex-end;gap:8px">
+<button autoFocus="{{ true }}" onClick="{{ closeDialog }}" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-weight:500;font-size:14px;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Quay lại</button>
+<button onClick="{{ confirmReject }}" style="height:36px;padding:0 16px;border:none;border-radius:8px;background:#E5484D;color:#fff;font-weight:500;font-size:14px;cursor:pointer" style-hover="background:#D13A40">Không công nhận</button>
+</div></div></div>
+</sc-if>
+
+<sc-if value="{{ paletteOpen }}">
+<div onClick="{{ closePalette }}" style="position:fixed;inset:0;z-index:70;background:rgba(30,34,53,.22);backdrop-filter:blur(4px);display:flex;justify-content:center;padding-top:110px">
+<div role="dialog" aria-label="Bảng lệnh" onClick="{{ stop }}" style="width:580px;height:fit-content;background:rgba(255,255,255,.96);border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.2);overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px;padding:0 16px;height:52px;border-bottom:1px solid #E6E9F2"><i class="bi bi-search" style="color:#9AA1B8"></i><input autoFocus="{{ true }}" value="{{ q }}" onChange="{{ onQ }}" placeholder="Tìm hoặc chạy lệnh…" aria-label="Tìm hoặc chạy lệnh" style="flex:1;border:none;outline:none;font-size:15px;background:transparent;color:#1E2235"><kbd style="font:500 11px 'Be Vietnam Pro',sans-serif;padding:2px 6px;border:1px solid #E6E9F2;border-radius:4px;color:#9AA1B8">Esc</kbd></div>
+<div style="padding:6px">
+<sc-for list="{{ cmds }}" as="k">
+<button onClick="{{ k.run }}" style="width:100%;height:40px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 10px;font-size:14px;color:#1E2235;cursor:pointer;text-align:left" style-hover="background:#EEF0FF"><i class="bi {{ k.icon }}" style="color:#646B85;font-size:16px"></i><span style="flex:1">{{ k.label }}</span><span style="font-size:12px;color:#9AA1B8">{{ k.group }}</span></button>
+</sc-for>
+<sc-if value="{{ noCmds }}"><div style="padding:16px 10px;font-size:13px;color:#646B85">Không tìm thấy kết quả phù hợp.</div></sc-if>
+</div></div></div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}">
+<div role="status" style="position:fixed;top:72px;right:24px;z-index:80;display:flex;align-items:center;gap:12px;min-width:320px;padding:12px 14px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.14);animation:gso-slide .2s ease">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-check-lg"></i></span>
+<span style="flex:1;font-size:13px;font-weight:500">{{ toastText }}</span>
+<sc-if value="{{ toastUndo }}"><button onClick="{{ undo }}" style="height:28px;padding:0 10px;border:none;border-radius:6px;background:#EEF0FF;color:#4F46E5;font-weight:500;font-size:13px;cursor:pointer">Hoàn tác</button></sc-if>
+<button onClick="{{ hideToast }}" aria-label="Đóng thông báo" style="width:24px;height:24px;border:none;background:transparent;color:#9AA1B8;cursor:pointer"><i class="bi bi-x-lg"></i></button>
+</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Bình thường&quot;,&quot;Cảnh báo&quot;,&quot;Rỗng&quot;],&quot;default&quot;:&quot;Bình thường&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;},&quot;timeOfDay&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Sáng&quot;,&quot;Chiều&quot;,&quot;Tối&quot;,&quot;Theo giờ máy&quot;],&quot;default&quot;:&quot;Sáng&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;},&quot;collapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Khung&quot;}}">
+class Component extends DCLogic {
+  state = { mounted: false, loading: true, collapsed: null, menuFor: null, done: {}, drawer: false, tutor: '', tutorErr: false, assignReason: '', assignErr: false, dialog: false, reason: '', reasonErr: false, palette: false, q: '', toast: null, undoFn: null };
+
+  componentDidMount() {
+    setTimeout(() => this.setState({ mounted: true }), 60);
+    setTimeout(() => this.setState({ loading: false }), 700);
+    this.onKey = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.setState(s => ({ palette: !s.palette, q: '' })); }
+      if (e.key === 'Escape') this.setState({ palette: false, dialog: false, drawer: false, menuFor: null });
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { clearTimeout(this.tt); window.removeEventListener('keydown', this.onKey); }
+
+  toast(text, undoFn) {
+    clearTimeout(this.tt);
+    this.setState({ toast: text, undoFn: undoFn || null });
+    this.tt = setTimeout(() => this.setState({ toast: null, undoFn: null }), 6000);
+  }
+  markDone(id) { this.setState(s => ({ done: { ...s.done, [id]: true } })); }
+  unDone(id) { this.setState(s => { const d = { ...s.done }; delete d[id]; return { done: d, toast: null }; }); }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const mode = P.state === 'Rỗng' ? 'empty' : P.state === 'Cảnh báo' ? 'warn' : 'normal';
+    const empty = mode === 'empty', warn = mode === 'warn';
+    let part = P.timeOfDay ?? 'Sáng';
+    if (part === 'Theo giờ máy') { const h = new Date().getHours(); part = h < 11 ? 'Sáng' : h < 18 ? 'Chiều' : 'Tối'; }
+    const collapsed = S.collapsed ?? (P.collapsed ?? false);
+    const T = {
+      red: { bg: '#FDECEC', c: '#C2292E', d: '#E5484D' }, orange: { bg: '#FFF4E5', c: '#B45309', d: '#F59E0B' },
+      blue: { bg: '#EAF2FF', c: '#1D4ED8', d: '#3B82F6' }, teal: { bg: '#E6FAF7', c: '#0F766E', d: '#14B8A6' },
+      neutral: { bg: '#F1F3F9', c: '#646B85', d: '#8A94A6' }
+    };
+    const noop = () => this.setState({ menuFor: null });
+    const mk = (id, grp, code, title, desc, tone, chip, time, hot, action, onAction, extra = {}) => ({
+      id, grp, code, title, desc, chipBg: T[tone].bg, chipC: T[tone].c, chipDot: T[tone].d, chip,
+      time, timeC: hot ? '#C2292E' : '#646B85', timeIcon: hot ? 'bi-stopwatch' : 'bi-calendar3',
+      action, onAction: onAction || noop, menuOpen: S.menuFor === id,
+      onMenu: () => this.setState(s => ({ menuFor: s.menuFor === id ? null : id })),
+      canReject: false, rejectLabel: '', onReject: noop, ...extra
+    });
+    const openAssign = () => this.setState({ menuFor: null, drawer: true, tutor: '', tutorErr: false, assignReason: '', assignErr: false });
+    const all = [
+      mk('yc27', 'yc', 'YC-0027', 'Phạm Đức Huy · Vật lý 11', '3 lời mời đã hết hạn, chưa ai nhận', 'red', 'Chờ 31 giờ', 'tạo 08/11 · 08:15', true, 'Gán gia sư', openAssign),
+      mk('yc19', 'yc', 'YC-0019', 'Bùi Ngọc Hân · Hóa học 12', 'Đang mời 2 gia sư, chưa ai nhận', 'red', 'Chờ 26 giờ', 'tạo 08/11 · 13:40', true, 'Gán gia sư', openAssign),
+      mk('bh142', 'bh', 'BH-00381', 'Vật lý 10 · gia sư Đỗ Thanh Tùng', 'Lỗi máy chủ khi xác nhận (HTTP 500), buổi đã tự hủy', 'red', 'Lỗi hệ thống', 'buổi 02/11 · 19:00', false, 'Xem xét', noop,
+        { canReject: false }),
+      mk('bh131', 'bh', 'BH-00131', 'IELTS · gia sư Nguyễn Hoàng Nam', 'Tự hủy do quá 12 giờ chưa xác nhận', 'neutral', 'Tự hủy', 'còn 5 ngày mở lại', false, 'Xem xét'),
+      mk('kh05', 'duyet', 'KH-0009', 'Đỗ Hải Yến · Ngữ văn 9', 'Đổi gia sư lần 2: Trần Văn Hùng → Phan Thị Mai', 'blue', 'Chờ duyệt', 'gửi 1 ngày trước', false, 'Duyệt', noop,
+        { canReject: true, rejectLabel: 'Từ chối đổi gia sư', onReject: noop }),
+      mk('mon', 'duyet', 'Môn dạy', 'Lê Quốc Khánh · IELTS 7.0', 'Đăng ký môn mới · kèm 2 chứng chỉ', 'blue', 'Chờ duyệt', 'gửi 07/11', false, 'Duyệt', noop,
+        { canReject: true, rejectLabel: 'Từ chối môn dạy', onReject: noop }),
+      mk('t10', 'tien', 'T10/2026', 'Thù lao tháng 10', '8 gia sư · 7 đã kiểm tra, 1 đang mở', 'teal', 'Đã kiểm tra 7/8', 'hạn chốt 15/11', false, 'Chốt tháng')
+    ].filter(t => !S.done[t.id]);
+    const G = [
+      { key: 'yc', title: 'Yêu cầu chờ quá 24 giờ', hint: 'Gán thẳng gia sư', icon: 'bi-hourglass-bottom', color: '#C2292E', dot: '#E5484D', band: '#FDECEC', line: '#F8D3D4' },
+      { key: 'bh', title: 'Mở lại buổi · lỗi hệ thống', hint: '', icon: 'bi-camera-video', color: '#B45309', dot: '#F59E0B', band: '#FFF4E5', line: '#FBE2BD' },
+      { key: 'duyet', title: 'Chờ duyệt', hint: '', icon: 'bi-check2-square', color: '#4338CA', dot: '#6366F1', band: '#EEF0FF', line: '#DCDFFC' },
+      { key: 'tien', title: 'Thù lao chờ chốt', hint: '', icon: 'bi-lock', color: '#0F766E', dot: '#14B8A6', band: '#E6FAF7', line: '#C9EFE8' }
+    ];
+    const visible = empty || S.loading ? [] : all;
+    const groups = G.map(g => ({ ...g, items: visible.filter(t => t.grp === g.key) })).map(g => ({ ...g, count: g.items.length })).filter(g => g.count);
+    const total = empty ? 0 : all.length;
+
+    const cal = [];
+    [26, 27, 28, 29, 30, 31].forEach(n => cal.push({ n, fw: 400, bg: 'transparent', c: '#C9CEDC', dots: [] }));
+    const dmap = { 14: ['#E5484D'], 15: ['#14B8A6'], 11: ['#E5484D'] };
+    for (let n = 1; n <= 30; n++) {
+      const today = n === 9, past = n < 9;
+      cal.push({ n, fw: today ? 600 : 400, bg: today ? '#6366F1' : 'transparent', c: today ? '#fff' : past ? '#9AA1B8' : '#1E2235', dots: empty ? [] : (dmap[n] || []) });
+    }
+    for (let n = 1; cal.length < 42; n++) cal.push({ n, fw: 400, bg: 'transparent', c: '#C9CEDC', dots: [] });
+
+    const upcoming = empty ? [{ dow: 'CN', day: '15', title: 'Hạn chốt thù lao T10', sub: 'Chưa có tháng nào chờ chốt', dot: '#14B8A6' }] : [
+      { dow: 'T4', day: '11', title: 'Hết hạn mở lại BH-00118', sub: 'Ngữ văn 8 · tự hủy 04/11', dot: '#E5484D' },
+      { dow: 'T7', day: '14', title: 'Hết hạn mở lại BH-00131', sub: 'IELTS · tự hủy 07/11', dot: '#E5484D' },
+      { dow: 'CN', day: '15', title: 'Hạn chốt thù lao T10', sub: '8 gia sư · 17.040.000đ', dot: '#14B8A6' }
+    ];
+    const lg = (who, what, when, sys) => ({ who, what, when, icon: sys ? 'bi-cpu' : 'bi-person', bg: sys ? '#F1F3F9' : '#EEF0FF', c: sys ? '#646B85' : '#4F46E5' });
+    const logs = [
+      lg('Hệ thống', 'tự hủy BH-00131 (quá 12 giờ chưa xác nhận)', '07:30 hôm nay', true),
+      lg('Trần Thu Trang', 'đánh dấu "Đã kiểm tra" thù lao T10 · Phan Thị Mai', '08:05 hôm nay', false),
+      lg('Trần Thu Trang', 'hậu kiểm BH-00398: có vấn đề, thù lao tạm giữ', 'hôm qua 21:12', false)
+    ];
+
+    const tutors = [
+      ['lqk', 'LK', 'Lê Quốc Khánh', 'Vật lý THPT · rảnh tối T3, T5 · đang dạy 2 lớp', 92, '#E0E7FF', '#4338CA'],
+      ['ptm', 'PM', 'Phan Thị Mai', 'Vật lý 10–12 · rảnh tối T5 · đang dạy 3 lớp', 78, '#FFE4DA', '#C2410C'],
+      ['nhn', 'HN', 'Nguyễn Hoàng Nam', 'Vật lý 11 · rảnh cuối tuần · đang dạy 1 lớp', 64, '#D5F5EF', '#0F766E']
+    ].map(([v, initials, name, note, score, avBg, avC]) => {
+      const on = S.tutor === v;
+      return { initials, name, note, score, avBg, avC, on, pick: () => this.setState({ tutor: v, tutorErr: false }), border: on ? '#6366F1' : '#E6E9F2', bg: on ? '#FAFAFF' : '#fff' };
+    });
+
+    const allCmds = [
+      { icon: 'bi-person-plus', label: 'Tạo tài khoản', group: 'Thao tác' },
+      { icon: 'bi-exclamation-diamond', label: 'Cần xem xét', group: 'Đi tới' },
+      { icon: 'bi-file-earmark-text', label: 'Mở YC-0027 · Phạm Đức Huy · Vật lý 11', group: 'Yêu cầu' },
+      { icon: 'bi-journal-bookmark', label: 'Mở KH-0009 · Đỗ Hải Yến · Ngữ văn 9', group: 'Khóa học' },
+      { icon: 'bi-lock', label: 'Chốt thù lao tháng 10/2026', group: 'Thao tác' },
+      { icon: 'bi-clock-history', label: 'Nhật ký thao tác', group: 'Đi tới' }
+    ];
+    const ql = S.q.trim().toLowerCase();
+    const cmds = allCmds.filter(c => !ql || c.label.toLowerCase().includes(ql)).map(c => ({ ...c, run: () => this.setState({ palette: false }) }));
+
+    const m = S.mounted;
+    return {
+      sideW: collapsed ? '72px' : '240px', expanded: !collapsed,
+      toggleSide: () => this.setState({ collapsed: !collapsed }),
+      navGroups: [
+        { title: 'VẬN HÀNH', items: [
+          { icon: 'bi-exclamation-diamond', label: 'Cần xem xét', badge: empty ? 0 : 2, href: 'Quan tri - Can xem xet.dc.html' },
+          { icon: 'bi-inbox', label: 'Yêu cầu học tập', badge: empty ? 0 : 2, href: 'Tuyen sinh - Yeu cau hoc tap.dc.html' },
+          { icon: 'bi-journal-bookmark', label: 'Khóa học', badge: empty ? 0 : 1, href: 'Tuyen sinh - Chi tiet khoa hoc.dc.html' },
+          { icon: 'bi-mortarboard', label: 'Gia sư', badge: empty ? 0 : 1, href: 'Quan tri - Ho so gia su.dc.html' }
+        ] },
+        { title: 'TÀI CHÍNH', items: [{ icon: 'bi-calculator', label: 'Đối soát thù lao', badge: empty ? 0 : 1, href: 'Quan tri - Doi soat thu lao.dc.html' }] },
+        { title: 'QUẢN TRỊ', items: [{ icon: 'bi-people', label: 'Tài khoản', badge: 0, href: 'Quan tri - Tai khoan.dc.html' }, { icon: 'bi-clock-history', label: 'Nhật ký thao tác', badge: 0, href: 'Quan tri - Nhat ky thao tac.dc.html' }] }
+      ],
+      op: m ? 1 : 0, ty: m ? 0 : 6,
+      greet: `Chào buổi ${part.toLowerCase()}, Minh 👋`,
+      cheer: empty ? 'Không có ngoại lệ nào cần bạn quyết định hôm nay. Mọi việc đang chạy đúng quy tắc.'
+        : warn ? 'Một thao tác chốt thù lao đang bị chặn theo quy tắc kiểm soát hai người. Xem chi tiết bên dưới.'
+        : `Có ${total} ngoại lệ cần bạn quyết định. Hai yêu cầu đã chờ quá 24 giờ, nên xử lý trước.`,
+      bannerChips: empty ? [{ icon: 'bi-shield-check', text: 'Không có ngoại lệ', color: '#0F766E' }] : [
+        { icon: 'bi-hourglass-bottom', text: '2 yêu cầu chờ quá 24 giờ', color: '#C2292E' },
+        { icon: 'bi-check2-square', text: '2 mục chờ duyệt', color: '#4338CA' },
+        { icon: 'bi-lock', text: 'Hạn chốt thù lao 15/11', color: '#0F766E' }
+      ],
+      showWarnAlert: warn,
+      groups, hasGroups: groups.length > 0, taskCount: total || '', loading: S.loading && !empty, skel: ['55%', '70%', '48%', '62%'],
+      noTasks: !S.loading && groups.length === 0,
+      totals: [
+        { icon: 'bi-mortarboard', label: 'Gia sư', value: empty ? '0' : '24' },
+        { icon: 'bi-journal-bookmark', label: 'Khóa đang học', value: empty ? '0' : '18' },
+        { icon: 'bi-calendar-check', label: 'Buổi trong tháng', value: empty ? '0' : '142' },
+        { icon: 'bi-wallet2', label: 'Thù lao tạm tính', value: empty ? '0đ' : '17.040.000đ' }
+      ],
+      closeMenu: () => this.setState({ menuFor: null }),
+      cal, upcoming, logs,
+      drawerOpen: S.drawer, closeDrawer: () => this.setState({ drawer: false }), tutors, tutorErr: S.tutorErr,
+      assignReason: S.assignReason, assignErr: S.assignErr, assignBorder: S.assignErr ? '#E5484D' : '#E6E9F2',
+      onAssignReason: e => this.setState({ assignReason: e.target.value, assignErr: false }),
+      saveAssign: () => {
+        const te = !S.tutor, re = !S.assignReason.trim();
+        if (te || re) { this.setState({ tutorErr: te, assignErr: re }); return; }
+        const n = { lqk: 'Lê Quốc Khánh', ptm: 'Phan Thị Mai', nhn: 'Nguyễn Hoàng Nam' }[S.tutor];
+        this.setState({ drawer: false }); this.markDone('yc27');
+        this.toast(`Đã gán ${n} cho YC-0027 · đã ghi nhật ký`, () => this.unDone('yc27'));
+      },
+      dialogOpen: S.dialog, reason: S.reason, reasonErr: S.reasonErr, reasonBorder: S.reasonErr ? '#E5484D' : '#E6E9F2',
+      onReason: e => this.setState({ reason: e.target.value, reasonErr: false }),
+      closeDialog: () => this.setState({ dialog: false }),
+      confirmReject: () => {
+        if (!S.reason.trim()) { this.setState({ reasonErr: true }); return; }
+        this.setState({ dialog: false }); this.markDone('bh142');
+        this.toast('Đã không công nhận BH-00142 · đã ghi nhật ký', () => this.unDone('bh142'));
+      },
+      paletteOpen: S.palette, q: S.q, onQ: e => this.setState({ q: e.target.value }), cmds, noCmds: cmds.length === 0,
+      openPalette: () => this.setState({ palette: true, q: '' }), closePalette: () => this.setState({ palette: false }),
+      stop: e => e.stopPropagation(),
+      hasToast: !!S.toast, toastText: S.toast || '', toastUndo: !!S.undoFn,
+      undo: () => { clearTimeout(this.tt); S.undoFn && S.undoFn(); },
+      hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

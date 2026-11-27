@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Học viên · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><style>body{margin:0;background:#F7F8FC;font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;color:#1E2235;font-size:14px;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#6366F1;text-decoration:none}a:hover{color:#4F46E5;text-decoration:underline}button,input,select{font-family:inherit}:focus-visible{outline:2px solid #6366F1;outline-offset:2px}@keyframes gso-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}@keyframes gso-slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}</style></helmet>
+<div style="display:flex;min-height:100vh;min-width:1280px;background:#F7F8FC;font-variant-numeric:tabular-nums">
+<a href="#noi-dung" style="position:absolute;left:-9999px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50" style-focus="left:8px">Bỏ qua menu</a>
+
+<aside aria-label="Menu chính" style="width:240px;flex:none;background:#fff;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+<div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 16px">
+<div style="width:32px;height:32px;flex:none;border-radius:8px;background:#6366F1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px">G</div>
+<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:14px;line-height:18px">Gia Sư Online</div><div style="font-size:12px;line-height:16px;color:#4F46E5;font-weight:500">Bảng điều phối</div></div>
+<button aria-label="Thu gọn menu" style="width:28px;height:28px;flex:none;border:none;background:transparent;border-radius:6px;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-layout-sidebar"></i></button>
+</div>
+<nav style="padding:8px 12px;display:flex;flex-direction:column;gap:2px;flex:1">
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:8px 10px 6px">VẬN HÀNH</div>
+<a href="Trang chu Tuyen sinh.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-house-door" style="font-size:17px"></i><span>Trang chủ</span></a>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-inbox" style="font-size:17px"></i><span style="flex:1">Yêu cầu học tập</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">3</span></a>
+<a href="#" aria-current="page" style="position:relative;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:500;text-decoration:none"><span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#6366F1"></span><i class="bi bi-people" style="font-size:17px"></i><span>Học viên</span></a>
+<a href="Tuyen sinh - Gia su.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-mortarboard" style="font-size:17px"></i><span>Gia sư</span></a>
+<a href="Tuyen sinh - Khoa hoc.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-journal-bookmark" style="font-size:17px"></i><span style="flex:1">Khóa học</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">2</span></a>
+<a href="Tuyen sinh - Hau kiem buoi hoc.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-clipboard-check" style="font-size:17px"></i><span style="flex:1">Hậu kiểm buổi học</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">4</span></a>
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:16px 10px 6px">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-calculator" style="font-size:17px"></i><span>Đối soát thù lao</span></a>
+</nav>
+<div style="border-top:1px solid #E6E9F2;padding:12px 16px;display:flex;align-items:center;gap:10px">
+<div style="width:32px;height:32px;flex:none;border-radius:50%;background:#E0E7FF;color:#4338CA;display:grid;place-items:center;font-weight:600;font-size:12px">TT</div>
+<div style="min-width:0;flex:1"><div style="font-weight:500;font-size:13px">Trần Thu Trang</div><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:#EEF0FF;color:#4F46E5;font-size:11px;font-weight:500">Tuyển sinh</span></div>
+</div>
+</aside>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;height:56px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid #E6E9F2;display:flex;align-items:center;gap:16px;padding:0 32px">
+<h1 style="margin:0;font-size:16px;font-weight:600">Học viên</h1>
+<button style="margin-left:auto;width:320px;height:34px;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#F7F8FC;color:#9AA1B8;font-size:13px;cursor:pointer;text-align:left" style-hover="border-color:#D5D9E6;background:#fff"><i class="bi bi-search"></i><span style="flex:1;white-space:nowrap">Tìm mã YC/KH, học viên, gia sư…</span><kbd style="white-space:nowrap;font:500 11px 'Be Vietnam Pro',sans-serif;padding:2px 6px;border:1px solid #E6E9F2;border-radius:4px;background:#fff;color:#646B85">Ctrl K</kbd></button>
+<button aria-label="Thông báo" style="position:relative;width:36px;height:36px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer;font-size:17px" style-hover="background:#F1F3F9"><i class="bi bi-bell"></i><span style="position:absolute;top:5px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#FF7A59;color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;border:2px solid #fff">4</span></button>
+<span style="color:#646B85;font-size:13px;white-space:nowrap">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" style="flex:1;width:100%;max-width:1360px;margin:0 auto;padding:24px 32px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1"><h2 style="margin:0;font-size:22px;line-height:30px;font-weight:600">Học viên</h2><div style="font-size:13px;color:#646B85;margin-top:2px">Hồ sơ học viên, phụ huynh và các khóa đang học. Bấm vào một dòng để xem chi tiết.</div></div>
+<a href="Tuyen sinh - Tao yeu cau.dc.html" style="height:36px;padding:0 16px;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;white-space:nowrap" style-hover="background:#4F46E5;color:#fff;text-decoration:none"><i class="bi bi-plus-lg"></i>Tạo yêu cầu cho học viên mới</a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)"><span style="width:36px;height:36px;flex:none;border-radius:10px;background:{{ k.bg }};color:{{ k.c }};display:grid;place-items:center;font-size:17px"><i class="bi {{ k.icon }}"></i></span><div style="min-width:0"><div style="font-size:20px;font-weight:600;line-height:24px">{{ k.n }}</div><div style="font-size:12px;color:#646B85">{{ k.label }}</div></div></div>
+</sc-for>
+</div>
+
+<div role="tablist" aria-label="Lọc theo tình trạng" style="display:flex;gap:20px;border-bottom:1px solid #E6E9F2">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+<button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="position:relative;height:40px;padding:0;border:none;background:transparent;font-size:14px;font-weight:{{ t.fw }};color:{{ t.c }};cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap" style-hover="color:#1E2235">{{ t.label }}<span style="min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:{{ t.cbg }};color:{{ t.cc }};font-size:11px;font-weight:600;display:grid;place-items:center">{{ t.count }}</span><span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:1px;background:{{ t.line }}"></span></button>
+</sc-for>
+</div>
+
+<div style="display:flex;align-items:center;gap:8px">
+<label style="position:relative;width:300px"><i class="bi bi-search" style="position:absolute;left:10px;top:9px;color:#9AA1B8;font-size:14px"></i><input value="{{ q }}" onChange="{{ onQ }}" placeholder="Tìm tên học viên, phụ huynh, SĐT" aria-label="Tìm học viên" style="width:100%;height:34px;padding:0 10px 0 32px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></label>
+<select value="{{ subject }}" onChange="{{ onSubject }}" aria-label="Lọc theo môn" style="height:34px;padding:0 28px 0 10px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;color:#1E2235"><option value="">Tất cả môn</option><option>Toán</option><option>Vật lý</option><option>Hóa học</option><option>Tiếng Anh</option><option>IELTS</option><option>Ngữ văn</option></select>
+<div role="radiogroup" aria-label="Người phụ trách" style="display:inline-grid;grid-template-columns:1fr 1fr;gap:2px;padding:2px;background:#F1F3F9;border-radius:8px">
+<sc-for list="{{ owners }}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="height:30px;padding:0 14px;white-space:nowrap;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:{{ o.bg }};color:{{ o.c }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for>
+</div>
+<sc-if value="{{ hasFilter }}"><button onClick="{{ clearFilter }}" style="height:34px;padding:0 10px;border:none;background:transparent;color:#646B85;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px" style-hover="color:#1E2235"><i class="bi bi-x-circle"></i>Xóa bộ lọc</button></sc-if>
+<span style="margin-left:auto;font-size:13px;color:#646B85">{{ resultText }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start">
+
+<div role="table" aria-label="Danh sách học viên" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+<div role="row" style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) 128px 124px;gap:16px;align-items:center;height:38px;padding:0 16px;border-bottom:1px solid #E6E9F2;background:#F7F8FC;font-size:12px;font-weight:600;letter-spacing:.02em;color:#4A5068"><span role="columnheader">Học viên · phụ huynh</span><span role="columnheader">Đang học · gia sư</span><span role="columnheader">Tình trạng</span><span role="columnheader">Tiến độ khóa</span></div>
+<sc-if value="{{ loading }}"><sc-for list="{{ skel }}" as="s"><div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) 128px 124px;gap:16px;align-items:center;height:60px;padding:0 16px;border-bottom:1px solid #EEF0F5"><span style="height:10px;width:{{ s }};border-radius:4px;background:linear-gradient(90deg,#EEF0F5 0,#F7F8FC 40%,#EEF0F5 80%);background-size:800px 100%;animation:gso-shimmer 1.2s linear infinite"></span><span style="height:10px;width:70%;border-radius:4px;background:#F1F3F9"></span><span style="height:20px;width:90px;border-radius:10px;background:#F1F3F9"></span><span style="height:6px;width:100%;border-radius:3px;background:#F1F3F9"></span></div></sc-for></sc-if>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+<button type="button" role="row" aria-selected="{{ r.on }}" onClick="{{ r.pick }}" style="position:relative;width:100%;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) 128px 124px;gap:16px;align-items:center;min-height:60px;padding:8px 16px;border:none;border-bottom:1px solid #EEF0F5;background:{{ r.rowBg }};text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .15s" style-hover="background:#FAFBFE">
+<span style="position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:{{ r.mark }}"></span>
+<span role="cell" style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:32px;height:32px;flex:none;border-radius:50%;background:{{ r.avBg }};color:{{ r.avC }};display:grid;place-items:center;font-size:11px;font-weight:600">{{ r.initials }}</span><span style="min-width:0"><span style="display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }} <span style="font-weight:400;color:#9AA1B8">· {{ r.grade }}</span></span><span style="display:block;font-size:12px;color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.parent }}</span></span></span>
+<span role="cell" style="min-width:0"><span style="display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.subjects }}</span><span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="bi bi-mortarboard" style="flex:none"></i>{{ r.tutor }}</span></span>
+<span role="cell"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ r.bg }};color:{{ r.c }};font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.d }}"></span>{{ r.status }}</span></span>
+<span role="cell" style="display:flex;flex-direction:column;gap:5px"><span style="display:flex;justify-content:space-between;font-size:12px;color:#646B85"><span>{{ r.progText }}</span><span style="color:{{ r.warnC }}">{{ r.progNote }}</span></span><span style="height:6px;border-radius:3px;background:#EEF0F5;overflow:hidden"><span style="display:block;height:100%;width:{{ r.pct }};border-radius:3px;background:{{ r.barC }}"></span></span></span>
+</button>
+</sc-for>
+<sc-if value="{{ noRows }}">
+<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:48px 16px">
+<span style="width:48px;height:48px;border-radius:50%;border:1.5px solid #D5D9E6;display:grid;place-items:center;color:#9AA1B8;font-size:20px"><i class="bi {{ emptyIcon }}"></i></span>
+<div style="font-weight:600;margin-top:6px">{{ emptyTitle }}</div>
+<div style="font-size:13px;color:#646B85;max-width:380px">{{ emptyDesc }}</div>
+<sc-if value="{{ hasFilter }}"><button onClick="{{ clearFilter }}" style="margin-top:4px;height:30px;padding:0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;font-weight:500;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Xóa bộ lọc</button></sc-if>
+</div></sc-if>
+<sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:8px;height:48px;padding:0 16px;font-size:13px;color:#646B85">
+<span>Hiển thị {{ range }}</span>
+<div style="margin-left:auto;display:flex;align-items:center;gap:4px">
+<button aria-label="Trang trước" disabled="{{ true }}" style="width:30px;height:30px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#C9CEDC;cursor:not-allowed"><i class="bi bi-chevron-left"></i></button>
+<button aria-current="page" style="min-width:30px;height:30px;border:1px solid #C7CBF9;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:600;font-size:13px">1</button>
+<button aria-label="Trang sau" disabled="{{ true }}" style="width:30px;height:30px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#C9CEDC;cursor:not-allowed"><i class="bi bi-chevron-right"></i></button>
+</div></div></sc-if>
+</div>
+
+<aside aria-label="Chi tiết học viên" style="position:sticky;top:80px;display:flex;flex-direction:column;gap:12px">
+<sc-if value="{{ hasSel }}" hint-placeholder-val="{{ true }}">
+<section style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+<div style="padding:16px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid #EEF0F5">
+<span style="width:44px;height:44px;flex:none;border-radius:50%;background:{{ sel.avBg }};color:{{ sel.avC }};display:grid;place-items:center;font-size:14px;font-weight:600">{{ sel.initials }}</span>
+<div style="flex:1;min-width:0"><h3 style="margin:0;font-size:16px;font-weight:600;line-height:22px">{{ sel.name }}</h3><div style="font-size:12px;color:#646B85;margin-top:2px">{{ sel.grade }} · {{ sel.school }}</div>
+<span style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ sel.bg }};color:{{ sel.c }};font-size:12px;font-weight:500"><span style="width:6px;height:6px;border-radius:50%;background:{{ sel.d }}"></span>{{ sel.status }}</span></div>
+<button aria-label="Sửa thông tin học viên" style="width:30px;height:30px;flex:none;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#646B85;cursor:pointer" style-hover="background:#F7F8FC;color:#1E2235"><i class="bi bi-pencil"></i></button>
+</div>
+
+<div style="padding:14px 16px;border-bottom:1px solid #EEF0F5">
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;margin-bottom:8px">PHỤ HUYNH</div>
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:32px;height:32px;flex:none;border-radius:50%;background:#F1F3F9;color:#646B85;display:grid;place-items:center"><i class="bi bi-person"></i></span>
+<div style="flex:1;min-width:0"><div style="font-weight:500;font-size:13px">{{ sel.parentName }}</div><div style="font-size:12px;color:#646B85">{{ sel.phone }} · Zalo</div></div>
+<button onClick="{{ copyPhone }}" aria-label="Sao chép số điện thoại" style="height:30px;padding:0 10px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px" style-hover="background:#F7F8FC"><i class="bi {{ copyIcon }}"></i>{{ copyLabel }}</button>
+</div>
+<div style="margin-top:8px;font-size:12px;color:#9AA1B8;display:flex;gap:6px;align-items:center"><i class="bi bi-eye-slash"></i>Gia sư không thấy số điện thoại này.</div>
+</div>
+
+<div style="padding:14px 16px;border-bottom:1px solid #EEF0F5">
+<div style="display:flex;align-items:center;margin-bottom:8px"><span style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;flex:1">KHÓA HỌC · YÊU CẦU</span><span style="font-size:12px;color:#646B85">{{ sel.itemCount }}</span></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ sel.items }}" as="it" hint-placeholder-count="2">
+<a href="{{ it.href }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #E6E9F2;border-radius:10px;color:#1E2235;text-decoration:none" style-hover="border-color:#C7CBF9;background:#FAFAFF;text-decoration:none;color:#1E2235">
+<span style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ it.ibg }};color:{{ it.ic }};display:grid;place-items:center"><i class="bi {{ it.icon }}"></i></span>
+<span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:500"><span style="color:#4F46E5;font-weight:600">{{ it.code }}</span> · {{ it.title }}</span><span style="display:block;font-size:12px;color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.sub }}</span></span>
+<i class="bi bi-chevron-right" style="color:#9AA1B8;flex:none"></i>
+</a>
+</sc-for>
+</div>
+</div>
+
+<div style="padding:14px 16px;border-bottom:1px solid #EEF0F5">
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;margin-bottom:8px">BUỔI HỌC GẦN ĐÂY</div>
+<sc-if value="{{ sel.hasSessions }}">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ sel.sessions }}" as="ss" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed #EEF0F5;font-size:12px">
+<span style="font-weight:600;color:#4F46E5">{{ ss.code }}</span>
+<span style="color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ss.when }}</span>
+<span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;background:{{ ss.bg }};color:{{ ss.c }};font-weight:500;white-space:nowrap"><i class="bi {{ ss.icon }}"></i>{{ ss.label }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ sel.noSessions }}"><div style="font-size:12px;color:#646B85;display:flex;gap:6px;align-items:center"><i class="bi bi-calendar-x"></i>Chưa có buổi học nào.</div></sc-if>
+</div>
+
+<div style="padding:14px 16px">
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;margin-bottom:6px">GHI CHÚ TUYỂN SINH</div>
+<div style="font-size:13px;line-height:20px;color:#1E2235">{{ sel.note }}</div>
+<div style="margin-top:6px;font-size:12px;color:#9AA1B8">Phụ trách: {{ sel.owner }}</div>
+</div>
+
+<div style="padding:12px 16px;background:#F7F8FC;border-top:1px solid #EEF0F5;display:flex;gap:8px">
+<a href="Tuyen sinh - Tao yeu cau.dc.html" style="flex:1;height:36px;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none" style-hover="background:#4F46E5;color:#fff;text-decoration:none"><i class="bi bi-plus-lg"></i>Tạo yêu cầu mới</a>
+<button onClick="{{ copyPhone }}" style="flex:1;height:36px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-weight:500;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px" style-hover="background:#F1F3F9"><i class="bi bi-telephone"></i>Liên hệ phụ huynh</button>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{ noSel }}">
+<div style="background:#fff;border:1px dashed #D5D9E6;border-radius:12px;padding:40px 20px;text-align:center;color:#646B85;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px"><i class="bi bi-people" style="font-size:24px;color:#9AA1B8"></i>{{ noSelText }}</div>
+</sc-if>
+</aside>
+</div>
+</main>
+</div>
+
+<sc-if value="{{ hasToast }}">
+<div role="status" style="position:fixed;top:72px;right:24px;z-index:80;display:flex;align-items:center;gap:12px;min-width:280px;padding:12px 14px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.14);animation:gso-slide .2s ease">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-check-lg"></i></span>
+<span style="flex:1;font-size:13px;font-weight:500">{{ toastText }}</span>
+</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Bình thường&quot;,&quot;Đang tải&quot;,&quot;Rỗng&quot;],&quot;default&quot;:&quot;Bình thường&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;}}">
+class Component extends DCLogic {
+  state = { tab: 'all', q: '', subject: '', owner: 'all', sel: 'S01', toast: null };
+  componentWillUnmount() { clearTimeout(this.tt); }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const empty = P.state === 'Rỗng', loading = P.state === 'Đang tải';
+    const ST = {
+      hoc: { status: 'Đang học', bg: '#E8F7EE', c: '#15803D', d: '#16A34A' },
+      tim: { status: 'Đang tìm gia sư', bg: '#FFF4E5', c: '#B45309', d: '#F59E0B' },
+      thu: { status: 'Học thử', bg: '#EEF0FF', c: '#4F46E5', d: '#6366F1' },
+      dung: { status: 'Tạm dừng', bg: '#FDECEC', c: '#C2292E', d: '#E5484D' },
+      xong: { status: 'Đã kết thúc', bg: '#F1F3F9', c: '#646B85', d: '#8A94A6' }
+    };
+    const AV = [['#FFE4DA', '#C2410C'], ['#E0E7FF', '#4338CA'], ['#D5F5EF', '#0F766E'], ['#FDE7F3', '#BE185D'], ['#FEF3C7', '#92400E']];
+    const KH = (code, title, sub) => ({ code, title, sub, href: 'Tuyen sinh - Chi tiet khoa hoc.dc.html', icon: 'bi-journal-bookmark', ibg: '#E8F7EE', ic: '#15803D' });
+    const YC = (code, title, sub) => ({ code, title, sub, href: 'Tuyen sinh - Chi tiet yeu cau.dc.html', icon: 'bi-inbox', ibg: '#FFF4E5', ic: '#B45309' });
+    const SS = (code, when, k) => ({ code, when, ...({ ok: { label: 'Hoàn tất', icon: 'bi-check-lg', bg: '#E8F7EE', c: '#15803D' }, wait: { label: 'Chờ xác nhận', icon: 'bi-hourglass-split', bg: '#FFF4E5', c: '#B45309' }, up: { label: 'Sắp tới', icon: 'bi-calendar3', bg: '#EEF0FF', c: '#4F46E5' }, miss: { label: 'Vắng', icon: 'bi-x-lg', bg: '#FDECEC', c: '#C2292E' } })[k] });
+    const DATA = [
+      { id: 'S01', name: 'Trần Gia Bảo', grade: 'Lớp 11', school: 'THPT Phan Châu Trinh', subj: ['IELTS'], subjects: 'IELTS · mục tiêu 6.5', tutor: 'Phạm Ngọc Lan', st: 'hoc', done: 5, total: 16, parentName: 'Chị Trần Thị Mai', phone: '0903 456 789', owner: 'Trần Thu Trang', mine: true,
+        note: 'Thi IELTS tháng 3/2027. Phụ huynh muốn nhận nhận xét sau mỗi buổi qua Zalo, đã đăng ký thêm 4 buổi Speaking.',
+        items: [KH('KH-0005', 'IELTS', 'Cô Phạm Ngọc Lan · T4 20:00 · T7 08:00'), YC('YC-0018', 'IELTS', 'Đã mở khóa 14/10/2026')],
+        sessions: [SS('BH-00436', 'T5 12/11 · 19:00', 'up'), SS('BH-00431', 'T3 10/11 · 19:00', 'wait'), SS('BH-00418', 'T5 05/11 · 19:00', 'ok')] },
+      { id: 'S02', name: 'Võ Khánh Linh', grade: 'Lớp 8', school: 'THCS Nguyễn Huệ', subj: ['Toán'], subjects: 'Toán · Lớp 8', tutor: 'Chưa có gia sư', st: 'tim', done: 0, total: 0, parentName: 'Chị Võ Thị Lan', phone: '0905 123 456', owner: 'Trần Thu Trang', mine: true,
+        note: 'Học viên hơi nhút nhát, ưu tiên gia sư kiên nhẫn. Đang chờ 2 lời mời phản hồi.',
+        items: [YC('YC-0029', 'Toán 8', 'Đang mời gia sư · còn 2 giờ 15 phút')], sessions: [] },
+      { id: 'S03', name: 'Nguyễn Minh Anh', grade: 'Lớp 9', school: 'THCS Lê Lợi', subj: ['Toán'], subjects: 'Toán · ôn thi vào 10', tutor: 'Phan Thị Mai', st: 'thu', done: 1, total: 1, parentName: 'Chị Nguyễn Thu Hằng', phone: '0912 345 678', owner: 'Trần Thu Trang', mine: true,
+        note: 'Đã học thử tối 05/11, cần ghi kết quả học thử để mở khóa.',
+        items: [YC('YC-0024', 'Toán 9', 'Học thử xong · chờ ghi kết quả')], sessions: [SS('BH-00402', 'T5 05/11 · 19:00', 'ok')] },
+      { id: 'S04', name: 'Trịnh Mai Phương', grade: 'Lớp 10', school: 'THPT Hoàng Hoa Thám', subj: ['Hóa học'], subjects: 'Hóa học · Lớp 10', tutor: 'Lê Quốc Khánh', st: 'hoc', done: 6, total: 20, parentName: 'Anh Trịnh Văn Nam', phone: '0935 210 884', owner: 'Trần Thu Trang', mine: true,
+        note: 'Mất gốc phần mol và cân bằng phương trình.',
+        items: [KH('KH-0012', 'Hóa học 10', 'Thầy Lê Quốc Khánh · T2, T6 18:00'), YC('YC-0023', 'Hóa học 10', 'Đã mở khóa 05/11/2026')],
+        sessions: [SS('BH-00429', 'T6 06/11 · 18:00', 'ok'), SS('BH-00421', 'T2 02/11 · 18:00', 'miss'), SS('BH-00415', 'T6 30/10 · 18:00', 'ok')] },
+      { id: 'S05', name: 'Lương Tuấn Kiệt', grade: 'Lớp 12', school: 'THPT Trần Phú', subj: ['Toán'], subjects: 'Toán · luyện thi THPT', tutor: 'Nguyễn Hoàng Nam', st: 'hoc', done: 22, total: 24, parentName: 'Chị Lương Thị Hoa', phone: '0978 552 019', owner: 'Lý Hồng Nhung', mine: false,
+        note: 'Khóa còn 2 buổi, phụ huynh có ý gia hạn thêm 12 buổi.',
+        items: [KH('KH-0011', 'Toán 12', 'Thầy Nguyễn Hoàng Nam · 22/24 buổi'), YC('YC-0021', 'Toán 12', 'Đã mở khóa 03/11/2026')],
+        sessions: [SS('BH-00433', 'CN 08/11 · 09:00', 'ok'), SS('BH-00425', 'T4 04/11 · 19:00', 'ok')] },
+      { id: 'S06', name: 'Ngô Bảo Châu', grade: 'Lớp 7', school: 'THCS Kim Đồng', subj: ['Ngữ văn'], subjects: 'Ngữ văn · Lớp 7', tutor: 'Đặng Thu Phương', st: 'thu', done: 0, total: 1, parentName: 'Chị Ngô Thị Thủy', phone: '0906 771 342', owner: 'Trần Thu Trang', mine: true,
+        note: 'Học thử T3 10/11 20:00.',
+        items: [YC('YC-0030', 'Ngữ văn 7', 'Học thử T3 10/11 · 20:00')], sessions: [SS('BH-00435', 'T3 10/11 · 20:00', 'up')] },
+      { id: 'S07', name: 'Đỗ Hải Yến', grade: 'Lớp 9', school: 'THCS Trưng Vương', subj: ['Ngữ văn'], subjects: 'Ngữ văn · Lớp 9', tutor: 'Trần Văn Hùng · chờ đổi', st: 'dung', done: 9, total: 16, parentName: 'Anh Đỗ Minh Tuấn', phone: '0914 663 207', owner: 'Lý Hồng Nhung', mine: false,
+        note: 'Tạm dừng chờ Quản trị viên duyệt đổi gia sư lần 2.',
+        items: [KH('KH-0009', 'Ngữ văn 9', 'Tạm dừng · 9/16 buổi · chờ duyệt đổi gia sư')], sessions: [SS('BH-00398', 'T7 31/10 · 15:00', 'ok')] },
+      { id: 'S08', name: 'Mai Thanh Tâm', grade: 'Lớp 9', school: 'THCS Lý Tự Trọng', subj: ['Ngữ văn'], subjects: 'Ngữ văn · Lớp 9', tutor: 'Không còn gia sư', st: 'xong', done: 0, total: 0, parentName: 'Chị Mai Thị Thu', phone: '0932 118 455', owner: 'Trần Thu Trang', mine: true,
+        note: 'Yêu cầu đã đóng: phụ huynh không còn nhu cầu.',
+        items: [YC('YC-0017', 'Ngữ văn 9', 'Đã đóng 30/10/2026')], sessions: [] }
+    ];
+    const data = empty ? [] : DATA;
+    const ql = S.q.trim().toLowerCase();
+    const filtered = data.filter(r => (S.tab === 'all' || r.st === S.tab) && (!S.subject || r.subj.includes(S.subject)) && (S.owner === 'all' || r.mine) && (!ql || (r.name + ' ' + r.parentName + ' ' + r.phone.replace(/\s/g, '')).toLowerCase().includes(ql.replace(/\s/g, '') ) || (r.name + ' ' + r.parentName).toLowerCase().includes(ql)));
+    const deco = (r) => { const i = DATA.indexOf(r); const [avBg, avC] = AV[i % AV.length];
+      const initials = r.name.split(' ').slice(-2).map(w => w[0]).join('');
+      return { avBg, avC, initials }; };
+    const rows = loading ? [] : filtered.map(r => {
+      const on = S.sel === r.id;
+      const hasKH = r.total > 1;
+      const left = r.total - r.done;
+      const pct = hasKH ? Math.round(r.done / r.total * 100) + '%' : r.st === 'thu' ? (r.done ? '100%' : '0%') : '0%';
+      return { ...r, ...ST[r.st], ...deco(r), on, rowBg: on ? '#F5F6FF' : '#fff', mark: on ? '#6366F1' : 'transparent', parent: `PH: ${r.parentName}`,
+        progText: hasKH ? `${r.done}/${r.total} buổi` : r.st === 'thu' ? 'Buổi học thử' : r.st === 'tim' ? 'Chưa mở khóa' : '—',
+        progNote: hasKH && left <= 2 ? `còn ${left}` : '', warnC: '#C2410C',
+        pct, barC: r.st === 'dung' ? '#E5484D' : hasKH && left <= 2 ? '#F59E0B' : '#6366F1',
+        pick: () => this.setState({ sel: r.id }) };
+    });
+    const cnt = k => data.filter(r => k === 'all' || r.st === k).length;
+    const TABS = [['all', 'Tất cả'], ['hoc', 'Đang học'], ['tim', 'Đang tìm gia sư'], ['thu', 'Học thử'], ['dung', 'Tạm dừng'], ['xong', 'Đã kết thúc']];
+    const tabs = TABS.map(([k, label]) => { const on = S.tab === k; const urgent = (k === 'tim' || k === 'dung') && cnt(k) > 0;
+      return { label, on, count: cnt(k), pick: () => this.setState({ tab: k }), fw: on ? 600 : 500, c: on ? '#1E2235' : '#646B85', line: on ? '#6366F1' : 'transparent',
+        cbg: urgent ? '#FFEFEA' : on ? '#EEF0FF' : '#F1F3F9', cc: urgent ? '#C2410C' : on ? '#4F46E5' : '#646B85' }; });
+    const owners = [['all', 'Tất cả'], ['mine', 'Tôi phụ trách']].map(([k, label]) => { const on = S.owner === k;
+      return { label, on, pick: () => this.setState({ owner: k }), bg: on ? '#fff' : 'transparent', c: on ? '#1E2235' : '#646B85', sh: on ? '0 1px 2px rgba(16,24,40,.08)' : 'none' }; });
+    const hasFilter = !!(ql || S.subject || S.owner !== 'all');
+    const selR = !loading && filtered.find(r => r.id === S.sel);
+    const sel = selR ? { ...selR, ...ST[selR.st], ...deco(selR), itemCount: selR.items.length, hasSessions: selR.sessions.length > 0, noSessions: selR.sessions.length === 0 } : { items: [], sessions: [] };
+    const kp = (icon, n, label, bg, c) => ({ icon, n, label, bg, c });
+    const z = empty;
+    return {
+      kpis: [kp('bi-people', z ? 0 : 42, 'học viên', '#EEF0FF', '#4F46E5'), kp('bi-calendar-check', z ? 0 : 18, 'đang học', '#E8F7EE', '#15803D'), kp('bi-hourglass-split', z ? 0 : 5, 'đang tìm gia sư · học thử', '#FFF4E5', '#B45309'), kp('bi-battery-half', z ? 0 : 3, 'khóa sắp hết buổi', '#FFEFEA', '#C2410C')],
+      tabs, owners, rows, loading, skel: ['55%', '62%', '48%', '58%', '52%'],
+      q: S.q, onQ: e => this.setState({ q: e.target.value }), subject: S.subject, onSubject: e => this.setState({ subject: e.target.value }),
+      hasFilter, clearFilter: () => this.setState({ q: '', subject: '', owner: 'all' }),
+      resultText: loading ? 'Đang tải…' : `${filtered.length} học viên`,
+      noRows: !loading && rows.length === 0, hasRows: rows.length > 0, range: `1–${rows.length} trên ${rows.length}`,
+      emptyIcon: hasFilter ? 'bi-search' : 'bi-people',
+      emptyTitle: empty ? 'Chưa có học viên nào' : hasFilter ? 'Không tìm thấy học viên phù hợp' : 'Không có học viên ở tình trạng này',
+      emptyDesc: empty ? 'Học viên được tạo cùng yêu cầu học tập. Bấm "Tạo yêu cầu cho học viên mới" để bắt đầu.' : hasFilter ? 'Thử tên khác, SĐT phụ huynh hoặc xóa bộ lọc.' : 'Chọn tab khác để xem các học viên còn lại.',
+      hasSel: !!selR, noSel: !selR, sel,
+      noSelText: loading ? 'Đang tải danh sách học viên…' : empty ? 'Chưa có học viên để xem.' : 'Chọn một học viên trong danh sách để xem hồ sơ, khóa học và buổi gần đây.',
+      copyIcon: S.toast ? 'bi-check-lg' : 'bi-copy', copyLabel: S.toast ? 'Đã chép' : 'Sao chép',
+      copyPhone: () => { if (!selR) return; clearTimeout(this.tt); this.setState({ toast: `Đã sao chép SĐT ${selR.phone}` }); this.tt = setTimeout(() => this.setState({ toast: null }), 2500); },
+      hasToast: !!S.toast, toastText: S.toast || ''
+    };
+  }
+}
+</script>
+</body>
+</html>

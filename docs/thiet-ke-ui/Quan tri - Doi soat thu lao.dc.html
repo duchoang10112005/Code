@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Đối soát thù lao · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#0F766E">Trung tâm điều hành</small></div></div>
+<nav class="nav">
+<div class="nav-h">TỔNG QUAN</div>
+<a href="Trang chu Quan tri vien.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Quan tri - Can xem xet.dc.html"><i class="bi bi-exclamation-triangle"></i><span>Cần xem xét</span><b class="badge">5</b></a>
+<div class="nav-h">VẬN HÀNH</div>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html"><i class="bi bi-inbox"></i><span>Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Chi tiet khoa hoc.dc.html"><i class="bi bi-journal-bookmark"></i><span>Khóa học</span></a>
+<a href="Quan tri - Ho so gia su.dc.html"><i class="bi bi-mortarboard"></i><span>Gia sư</span></a>
+<div class="nav-h">TÀI CHÍNH</div>
+<a href="#" aria-current="page"><i class="bi bi-calculator"></i><span>Đối soát thù lao</span></a>
+<div class="nav-h">HỆ THỐNG</div>
+<a href="Quan tri - Tai khoan.dc.html"><i class="bi bi-people"></i><span>Tài khoản</span></a>
+<a href="Quan tri - Nhat ky thao tac.dc.html"><i class="bi bi-clock-history"></i><span>Nhật ký thao tác</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#D5F5EF;color:#0F766E;font-size:12px">HM</div><div style="flex:1;min-width:0"><b>Hoàng Văn Minh</b><span class="role" style="background:#E6FAF7;color:#0F766E">Quản trị viên</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><a href="#">Tài chính</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Đối soát thù lao</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo" style="margin-left:auto"><i class="bi bi-bell"></i></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<div class="head">
+<div style="flex:1;min-width:320px"><h2 class="h2">Đối soát thù lao {{ m.label }}</h2><p class="lead">Thù lao tính theo buổi đã xác nhận hoàn tất. Tuyển sinh kiểm tra từng gia sư, Quản trị viên chốt tháng để chi trả.</p></div>
+<div class="tabs" role="tablist" aria-label="Chọn tháng">
+<sc-for list="{{ months }}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="chip" style="height:18px;padding:0 7px;font-size:11px;background:{{ t.bg }};color:{{ t.c }}">{{ t.st }}</span></button></sc-for>
+</div>
+</div>
+
+<nav class="card flow" aria-label="Quy trình đối soát tháng">
+<sc-for list="{{ flow }}" as="s" hint-placeholder-count="4">
+<div aria-current="{{ s.cur }}" style="background:{{ s.bg }}"><span class="c" style="background:{{ s.cBg }};border-color:{{ s.cBd }};color:{{ s.cC }}"><sc-if value="{{ s.isDone }}"><i class="bi bi-check-lg" aria-hidden="true"></i></sc-if><sc-if value="{{ s.notDone }}">{{ s.n }}</sc-if></span><span style="min-width:0"><b style="color:{{ s.tc }}">{{ s.label }}</b><small style="color:{{ s.sc }}">{{ s.sub }}</small></span><span class="bar" style="background:{{ s.bar }}"></span></div>
+</sc-for>
+</nav>
+
+<section class="card kpis" aria-label="Tổng quan tháng">
+<div class="kpi"><div class="v">{{ m.total }}</div><div class="l">Tổng thù lao {{ m.word }}</div></div>
+<div class="kpi"><div class="v">{{ m.sessions }}</div><div class="l">Buổi hợp lệ</div></div>
+<div class="kpi"><div class="v" style="color:{{ m.heldC }}">{{ m.held }}</div><div class="l">Buổi tạm giữ · đang xem xét</div></div>
+<div class="kpi"><div class="v">{{ m.checked }}</div><div class="l">Gia sư đã kiểm tra</div><div class="bar" style="margin-top:8px;height:6px"><span style="width:{{ m.checkW }};background:#14B8A6"></span></div></div>
+</section>
+
+<sc-if value="{{ heldWarn }}"><div class="banner" role="status" style="background:#FFF8EC;border-color:#F6DDB0"><span class="ic" style="color:#B45309"><i class="bi bi-exclamation-triangle"></i></span><div style="flex:1"><div class="b6">Còn {{ heldN }} buổi tạm giữ chưa xử lý</div><div style="font-size:13px;color:#4A5068">Buổi tạm giữ không được tính khi chốt. Xử lý ở mục Cần xem xét trước nếu muốn tính vào tháng này.</div></div><a href="Quan tri - Can xem xet.dc.html" class="btn sm">Mở Cần xem xét</a></div></sc-if>
+
+<section class="card" aria-labelledby="ds-t">
+<div class="card-h"><h3 id="ds-t">Theo gia sư</h3><span class="muted sm">{{ tutorsN }} gia sư</span>
+<div class="row" style="margin-left:auto">
+<button type="button" class="btn sm" onClick="{{ exportCsv }}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Xuất CSV</button>
+<sc-if value="{{ canAct }}" hint-placeholder-val="{{ true }}"><button type="button" class="btn sm pri" onClick="{{ openLock }}" disabled="{{ lockOff }}" title="{{ lockTitle }}"><i class="bi bi-lock" aria-hidden="true"></i>Chốt tháng</button></sc-if>
+</div></div>
+<div role="table" aria-label="Thù lao theo gia sư" style="--cols:minmax(0,2.2fr) 92px 84px 104px 120px 116px 236px">
+<div role="row" class="gt-h"><span role="columnheader">Gia sư</span><span role="columnheader" class="r">Buổi hoàn tất</span><span role="columnheader" class="r">Tạm giữ</span><span role="columnheader" class="r">Điều chỉnh</span><span role="columnheader" class="r">Thành tiền</span><span role="columnheader">Trạng thái</span><span role="columnheader" class="sr">Thao tác</span></div>
+<sc-for list="{{ tutors }}" as="t" hint-placeholder-count="5">
+<div role="rowgroup">
+<div role="row" class="gt-r">
+<span role="cell"><button type="button" onClick="{{ t.toggle }}" aria-expanded="{{ t.open }}" aria-label="Xem buổi của {{ t.name }}" class="who" style="border:none;background:none;padding:0;cursor:pointer;text-align:left;color:#1E2235"><i class="bi bi-chevron-down" aria-hidden="true" style="color:#646B85;transform:rotate({{ t.rot }}deg);transition:transform .2s"></i><span class="av" style="width:32px;height:32px;background:{{ t.avBg }};color:{{ t.avC }};font-size:12px">{{ t.ini }}</span><span style="min-width:0"><b>{{ t.name }}</b><small class="ell">{{ t.subj }}</small></span></button></span>
+<span role="cell" class="r b5">{{ t.done }}</span>
+<span role="cell" class="r" style="color:{{ t.heldC }}">{{ t.held }}</span>
+<span role="cell" class="r" style="color:{{ t.adjC }}">{{ t.adj }}</span>
+<span role="cell" class="r b6">{{ t.amount }}</span>
+<span role="cell"><span class="chip" style="background:{{ t.bg }};color:{{ t.c }}"><span class="d" style="background:{{ t.dot }}"></span>{{ t.st }}</span></span>
+<span role="cell" class="row" style="justify-content:flex-end"><sc-if value="{{ t.canEdit }}" hint-placeholder-val="{{ true }}"><button type="button" class="btn sm" onClick="{{ t.adjust }}">Điều chỉnh</button><button type="button" class="btn sm {{ t.chkCls }}" style="min-width:150px;justify-content:flex-start" onClick="{{ t.check }}" aria-pressed="{{ t.pressed }}"><i class="bi {{ t.chkIcon }}" aria-hidden="true"></i>{{ t.chkText }}</button></sc-if><sc-if value="{{ t.locked }}"><span class="sm muted row"><i class="bi bi-lock" aria-hidden="true"></i>Đã khóa</span></sc-if></span>
+</div>
+<sc-if value="{{ t.isOpen }}">
+<div style="background:#FAFBFE;padding:4px 16px 14px 58px;border-bottom:1px solid #EEF0F5;--cols:minmax(0,1.3fr) minmax(0,1fr) 90px 130px 110px">
+<div style="background:#fff;border:1px solid #EEF0F5;border-radius:8px;overflow:hidden">
+<div class="gt-h"><span>Buổi</span><span>Lớp</span><span>Thời lượng</span><span>Trạng thái</span><span class="r">Thù lao</span></div>
+<sc-for list="{{ t.items }}" as="x"><div class="gt-r sm" style="min-height:44px"><span>{{ x.date }}</span><span>{{ x.cls }}</span><span>{{ x.dur }}</span><span><span class="chip" style="background:{{ x.bg }};color:{{ x.c }}"><span class="d" style="background:{{ x.dot }}"></span>{{ x.st }}</span></span><span class="r b5" style="text-decoration:{{ x.deco }}">{{ x.amt }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div role="row" class="gt-f"><span role="cell">Tổng cộng</span><span role="cell" class="r">{{ sum.done }}</span><span role="cell" class="r" style="font-weight:400">{{ sum.held }}</span><span role="cell" class="r" style="font-weight:400">{{ sum.adj }}</span><span role="cell" class="r">{{ sum.amount }}</span><span></span><span></span></div>
+</div>
+</section>
+</main>
+</div>
+
+<sc-if value="{{ dlgAdj }}">
+<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="da">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-pencil"></i></span><div><h2 id="da">Điều chỉnh thù lao · {{ adjName }}</h2><p>Khoản điều chỉnh cộng hoặc trừ vào tổng tháng, ghi vào nhật ký thao tác.</p></div></div>
+<div style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px">
+<div class="field"><label for="loai">Loại</label><select id="loai" class="inp" value="{{ f.kind }}" onChange="{{ onKind }}"><option value="+">Cộng thêm</option><option value="-">Trừ bớt</option></select></div>
+<div class="field"><label for="tien">Số tiền (đồng) <span class="req">*</span></label><input id="tien" class="inp" inputMode="numeric" value="{{ f.amount }}" onChange="{{ onAmount }}" aria-invalid="{{ e.amount }}" placeholder="VD: 50000"></div>
+</div>
+<sc-if value="{{ e.amount }}"><span class="err" role="alert" style="margin-top:-8px"><i class="bi bi-exclamation-circle"></i>Nhập số tiền lớn hơn 0.</span></sc-if>
+<div class="field"><label for="ld">Lý do <span class="req">*</span></label><input id="ld" class="inp" value="{{ f.reason }}" onChange="{{ onReason }}" aria-invalid="{{ e.reason }}" placeholder="VD: Bù 1 buổi lỗi Zoom do hệ thống ngày 03/11"><sc-if value="{{ e.reason }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập lý do điều chỉnh.</span></sc-if></div>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeDlg }}">Quay lại</button><button type="button" class="btn pri" onClick="{{ saveAdj }}">Lưu điều chỉnh</button></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ dlgLock }}">
+<div class="overlay"><div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dl" aria-describedby="dld">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-lock"></i></span><div><h2 id="dl">Chốt thù lao {{ m.label }}?</h2><p id="dld">Sau khi chốt, số liệu bị khóa và không sửa hay điều chỉnh được nữa. Gia sư thấy trạng thái Đã chốt trên trang Thu nhập.</p></div></div>
+<dl style="margin:0;display:grid;grid-template-columns:160px 1fr;row-gap:8px;padding:12px 14px;border-radius:10px;background:#F7F8FC;font-size:13px"><dt class="muted">Tổng chi trả</dt><dd style="margin:0" class="b6">{{ sum.amount }}</dd><dt class="muted">Số gia sư</dt><dd style="margin:0" class="b6">{{ tutorsN }}</dd><dt class="muted">Buổi tạm giữ bị loại</dt><dd style="margin:0" class="b6">{{ heldN }}</dd><dt class="muted">Ngày chi trả</dt><dd style="margin:0" class="b6">05/12/2026</dd></dl>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeDlg }}">Quay lại</button><button type="button" class="btn pri" onClick="{{ doLock }}"><i class="bi bi-lock" aria-hidden="true"></i>Chốt tháng</button></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><sc-if value="{{ toastUndo }}"><button type="button" class="btn sm" onClick="{{ undo }}">Hoàn tác</button></sc-if><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Tháng 11 · đang mở","Tháng 11 · sẵn sàng chốt","Tháng 10 · đã chốt"],"default":"Tháng 11 · đang mở","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, month: null, checked: null, adj: {}, locked: false, open: null, dlg: null, who: null, f: { kind: '+', amount: '', reason: '' }, tried: false, toast: null, undoFn: null };
+  componentWillUnmount() { clearTimeout(this.tt); }
+  toast(t, undoFn) { clearTimeout(this.tt); this.setState({ toast: t, undoFn: undoFn || null }); this.tt = setTimeout(() => this.setState({ toast: null, undoFn: null }), 5000); }
+
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Tháng 11 · đang mở';
+    const S = S0.key === key ? S0 : { ...S0, month: null, checked: null, adj: {}, locked: false };
+    const set = p => this.setState(S0.key === key ? p : { month: null, checked: null, adj: {}, locked: false, ...p, key });
+    const vnd = n => (n < 0 ? '−' : '') + Math.abs(n).toLocaleString('vi-VN').replace(/,/g, '.') + 'đ';
+    const TONE = { teal: { bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, blue: { bg: '#EAF2FF', c: '#1D4ED8', dot: '#3B82F6' }, orange: { bg: '#FFF4E5', c: '#B45309', dot: '#F59E0B' }, neutral: { bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' }, indigo: { bg: '#EEF0FF', c: '#4F46E5', dot: '#6366F1' } };
+    const month = S.month || (key.startsWith('Tháng 10') ? 10 : 11);
+    const lockedMonth = month < 11 || S.locked;
+
+    const BASE = [
+      { id: 'nl', name: 'Phạm Ngọc Lan', subj: 'IELTS · Toán 9 · Ngữ văn 8', ini: 'NL', avBg: '#FFE4DA', avC: '#C2410C', done: 14, rate: 140000, held: 0, adj: 0 },
+      { id: 'ha', name: 'Nguyễn Hoài An', subj: 'IELTS · Tiếng Anh 6', ini: 'HA', avBg: '#E0E7FF', avC: '#4338CA', done: 18, rate: 140000, held: 1, adj: 50000 },
+      { id: 'tt', name: 'Đỗ Thanh Tùng', subj: 'Vật lý 10 · IELTS', ini: 'TT', avBg: '#D5F5EF', avC: '#0F766E', done: 9, rate: 150000, held: 0, adj: 0 },
+      { id: 'qn', name: 'Lê Quỳnh Như', subj: 'Hóa học 9 · Sinh học 11', ini: 'QN', avBg: '#FDF2D0', avC: '#9A6700', done: 12, rate: 120000, held: 2, adj: -120000 },
+      { id: 'mk', name: 'Vũ Minh Khang', subj: 'Tin học 8', ini: 'MK', avBg: '#F1F3F9', avC: '#4A5068', done: 6, rate: 90000, held: 0, adj: 0 }
+    ];
+    const OCT = { nl: 16, ha: 20, tt: 11, qn: 13, mk: 8 };
+    const defaultChecked = key.includes('sẵn sàng') || month === 10 ? ['nl', 'ha', 'tt', 'qn', 'mk'] : ['nl', 'tt'];
+    const checked = S.checked || defaultChecked;
+    const rows = BASE.map(t => {
+      const done = month === 10 ? OCT[t.id] : t.done, held = month === 10 ? 0 : t.held;
+      const adj = month === 10 ? 0 : (S.adj[t.id] !== undefined ? S.adj[t.id] : t.adj);
+      return { ...t, done, held, adj, amount: done * t.rate + adj, isChecked: checked.includes(t.id) };
+    });
+    const sumAmt = rows.reduce((a, r) => a + r.amount, 0), sumDone = rows.reduce((a, r) => a + r.done, 0), heldN = rows.reduce((a, r) => a + r.held, 0), sumAdj = rows.reduce((a, r) => a + r.adj, 0);
+    const nChecked = rows.filter(r => r.isChecked).length;
+
+    const tutors = rows.map(r => {
+      const tone = lockedMonth ? TONE.indigo : r.isChecked ? TONE.teal : TONE.neutral;
+      const isOpen = S.open === r.id;
+      const items = [
+        ['T2 02/11 · 19:30', r.subj.split(' · ')[0], '90 phút', 'ok'], ['T4 04/11 · 20:00', r.subj.split(' · ')[0], '90 phút', 'ok'],
+        ...(r.held ? [['T6 06/11 · 18:00', r.subj.split(' · ').slice(-1)[0], '60 phút', 'held']] : []),
+        ['T7 07/11 · 08:00', r.subj.split(' · ')[0], '90 phút', 'ok']
+      ].map(([date, cls, dur, s]) => ({ date, cls, dur, ...(s === 'held' ? { ...TONE.orange, st: 'Tạm giữ', deco: 'line-through' } : lockedMonth ? { ...TONE.indigo, st: 'Đã đối soát', deco: 'none' } : { ...TONE.teal, st: 'Tạm tính', deco: 'none' }), amt: vnd(r.rate) }));
+      return {
+        name: r.name, subj: r.subj, ini: r.ini, avBg: r.avBg, avC: r.avC, done: r.done,
+        held: r.held ? `${r.held} buổi` : '—', heldC: r.held ? '#B45309' : '#646B85',
+        adj: r.adj ? (r.adj > 0 ? '+' : '') + vnd(r.adj) : '—', adjC: r.adj > 0 ? '#0F766E' : r.adj < 0 ? '#C2292E' : '#646B85',
+        amount: vnd(r.amount), ...tone, st: lockedMonth ? 'Đã chốt' : r.isChecked ? 'Đã kiểm tra' : 'Đang mở',
+        canEdit: !lockedMonth, locked: lockedMonth,
+        chkText: r.isChecked ? 'Đã kiểm tra' : 'Đánh dấu kiểm tra', chkIcon: r.isChecked ? 'bi-check-circle-fill' : 'bi-circle', chkCls: r.isChecked ? 'ok' : '', pressed: r.isChecked ? 'true' : 'false',
+        check: () => { const next = r.isChecked ? checked.filter(x => x !== r.id) : checked.concat([r.id]); set({ checked: next }); if (!r.isChecked) this.toast(`Đã kiểm tra thù lao ${r.name}`, () => this.setState({ checked })); },
+        adjust: () => set({ dlg: 'adj', who: r.id, f: { kind: '+', amount: '', reason: '' }, tried: false }),
+        open: isOpen ? 'true' : 'false', isOpen, rot: isOpen ? 0 : -90, toggle: () => set({ open: isOpen ? null : r.id }), items
+      };
+    });
+
+    const months = [[9, 'T9/2026'], [10, 'T10/2026'], [11, 'T11/2026']].map(([v, label]) => {
+      const st = v < 11 || (v === 11 && S.locked) ? 'Đã chốt' : 'Đang mở';
+      return { label, st, on: month === v ? 'true' : 'false', pick: () => set({ month: v, open: null }), ...(st === 'Đã chốt' ? { bg: '#EEF0FF', c: '#4F46E5' } : { bg: '#E6FAF7', c: '#0F766E' }) };
+    });
+
+    const FS = { done: { cBg: '#14B8A6', cBd: '#14B8A6', cC: '#fff', tc: '#1E2235', sc: '#0F766E', bg: '#fff', bar: 'transparent' }, cur: { cBg: '#6366F1', cBd: '#6366F1', cC: '#fff', tc: '#1E2235', sc: '#4F46E5', bg: '#F8F8FF', bar: '#6366F1' }, todo: { cBg: '#fff', cBd: '#D5D9E6', cC: '#646B85', tc: '#4A5068', sc: '#646B85', bg: '#fff', bar: 'transparent' } };
+    const allChk = nChecked === rows.length;
+    const flowDef = lockedMonth
+      ? [['done', 'Ghi nhận buổi dạy', 'Đã đóng sổ'], ['done', 'Tuyển sinh kiểm tra', `${rows.length}/${rows.length} gia sư`], ['done', 'Quản trị viên chốt', month === 10 ? 'Chốt 02/11/2026' : 'Vừa chốt'], [month === 10 ? 'done' : 'cur', 'Chi trả cho gia sư', month === 10 ? 'Đã chi 05/11/2026' : 'Ngày 05/12/2026']]
+      : [['done', 'Ghi nhận buổi dạy', 'Tự động theo buổi hoàn tất'], [allChk ? 'done' : 'cur', 'Tuyển sinh kiểm tra', `${nChecked}/${rows.length} gia sư`], [allChk ? 'cur' : 'todo', 'Quản trị viên chốt', allChk ? 'Sẵn sàng chốt' : 'Chờ kiểm tra xong'], ['todo', 'Chi trả cho gia sư', 'Ngày 05/12/2026']];
+    const flow = flowDef.map(([s, label, sub], i) => ({ ...FS[s], n: i + 1, label, sub, isDone: s === 'done', notDone: s !== 'done', cur: s === 'cur' ? 'step' : 'false' }));
+
+    const f = S.f, amtNum = parseInt(String(f.amount).replace(/\D/g, ''), 10) || 0;
+    const e = { amount: S.tried && amtNum <= 0, reason: S.tried && f.reason.trim().length < 5 };
+    const who = rows.find(r => r.id === S.who);
+    return {
+      m: { label: `tháng ${month}/2026`, word: lockedMonth ? 'đã chốt' : 'tạm tính', total: vnd(sumAmt), sessions: sumDone, held: heldN, heldC: heldN ? '#B45309' : '#1E2235', checked: `${nChecked}/${rows.length}`, checkW: nChecked / rows.length * 100 + '%' },
+      months, flow, tutors, tutorsN: rows.length, heldN, heldWarn: !lockedMonth && heldN > 0,
+      sum: { done: sumDone, held: heldN ? `${heldN} buổi` : '—', adj: sumAdj ? (sumAdj > 0 ? '+' : '') + vnd(sumAdj) : '—', amount: vnd(sumAmt) },
+      canAct: !lockedMonth, lockOff: !allChk, lockTitle: allChk ? 'Chốt thù lao tháng' : 'Cần kiểm tra hết gia sư trước khi chốt',
+      openLock: () => set({ dlg: 'lock' }), dlgLock: S.dlg === 'lock', dlgAdj: S.dlg === 'adj', closeDlg: () => set({ dlg: null }),
+      doLock: () => { set({ dlg: null, locked: true }); this.toast(`Đã chốt thù lao tháng ${month}/2026 · ${vnd(sumAmt)}`); },
+      exportCsv: () => this.toast(`Đã xuất doi-soat-thang-${month}-2026.csv`),
+      adjName: who ? who.name : '', f, e,
+      onKind: ev => set({ f: { ...f, kind: ev.target.value } }), onAmount: ev => set({ f: { ...f, amount: ev.target.value.replace(/[^\d]/g, '') } }), onReason: ev => set({ f: { ...f, reason: ev.target.value } }),
+      saveAdj: () => { if (amtNum <= 0 || f.reason.trim().length < 5) { set({ tried: true }); return; } const v = (f.kind === '-' ? -1 : 1) * amtNum; const cur = who.adj; set({ dlg: null, tried: false, adj: { ...S.adj, [who.id]: cur + v } }); this.toast(`Đã điều chỉnh ${v > 0 ? '+' : ''}${vnd(v)} cho ${who.name}`); },
+      hasToast: !!S.toast, toastText: S.toast || '', toastUndo: !!S.undoFn, undo: () => { const u = S.undoFn; clearTimeout(this.tt); this.setState({ toast: null, undoFn: null }); if (u) u(); },
+      hideToast: () => this.setState({ toast: null, undoFn: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

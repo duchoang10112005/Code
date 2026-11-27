@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Đăng nhập · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<main style="min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(420px,1fr);background:#fff">
+
+<section aria-label="Giới thiệu" style="position:relative;overflow:hidden;padding:40px 56px;display:flex;flex-direction:column;background:radial-gradient(90% 70% at 0% 0%,#FFE6DC 0%,rgba(255,230,220,0) 60%),radial-gradient(80% 80% at 100% 100%,#E3E5FF 0%,rgba(227,229,255,0) 65%),#FFF8F5">
+<div class="row" style="gap:10px"><div class="logo">G</div><b style="font-size:16px">Gia Sư Online</b></div>
+<div style="margin:auto 0;max-width:520px;padding:40px 0">
+<span class="chip" style="background:#fff;color:#C2410C;border:1px solid #FFD9CC"><span class="d" style="background:#FF7A59"></span>Trung tâm gia sư trực tuyến</span>
+<h1 style="margin:16px 0 0;font-size:36px;line-height:46px;font-weight:700;letter-spacing:-.02em">Dạy và học trực tuyến,<br>gọn gàng mỗi ngày.</h1>
+<p style="margin:12px 0 0;font-size:16px;line-height:26px;color:#4A5068">Một nơi để nhận lớp, dạy trên Zoom, đánh giá buổi học và theo dõi thù lao, cho cả gia sư và đội ngũ điều phối.</p>
+<ul style="list-style:none;margin:28px 0 0;padding:0;display:flex;flex-direction:column;gap:14px">
+<li class="row" style="gap:12px;align-items:flex-start"><span class="tile" style="background:#fff;color:#C2410C;box-shadow:0 1px 2px rgba(16,24,40,.06)"><i class="bi bi-envelope-open" aria-hidden="true"></i></span><span><b class="b6" style="display:block">Gia sư</b><span class="muted" style="font-size:14px">Nhận lời mời khớp giờ rảnh, dạy trên Zoom, đánh giá trong 12 giờ.</span></span></li>
+<li class="row" style="gap:12px;align-items:flex-start"><span class="tile" style="background:#fff;color:#4F46E5;box-shadow:0 1px 2px rgba(16,24,40,.06)"><i class="bi bi-inbox" aria-hidden="true"></i></span><span><b class="b6" style="display:block">Tuyển sinh</b><span class="muted" style="font-size:14px">Tạo yêu cầu, mời gia sư, xếp học thử và mở khóa học.</span></span></li>
+<li class="row" style="gap:12px;align-items:flex-start"><span class="tile" style="background:#fff;color:#0F766E;box-shadow:0 1px 2px rgba(16,24,40,.06)"><i class="bi bi-shield-lock" aria-hidden="true"></i></span><span><b class="b6" style="display:block">Quản trị viên</b><span class="muted" style="font-size:14px">Duyệt hồ sơ, xem xét buổi học và chốt thù lao hằng tháng.</span></span></li>
+</ul>
+</div>
+<div class="sm muted">© 2026 Gia Sư Online · Đồ án Quản trị dự án TMĐT</div>
+</section>
+
+<section aria-labelledby="dn-t" style="display:flex;align-items:center;justify-content:center;padding:40px">
+<div style="width:100%;max-width:400px">
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<form onSubmit="{{ submit }}" style="display:flex;flex-direction:column;gap:18px">
+<div><h2 id="dn-t" style="margin:0;font-size:26px;line-height:34px;font-weight:600;letter-spacing:-.01em">Đăng nhập</h2><p class="muted" style="margin:6px 0 0;font-size:14px;line-height:22px">Dùng tài khoản trung tâm cấp cho bạn.</p></div>
+
+<sc-if value="{{ alert.show }}"><div role="alert" class="banner" style="background:{{ alert.bg }};border-color:{{ alert.bd }};align-items:flex-start"><span class="ic" style="color:{{ alert.c }}"><i class="bi {{ alert.icon }}" aria-hidden="true"></i></span><div><div class="b6" style="color:{{ alert.tc }}">{{ alert.title }}</div><div style="font-size:13px;line-height:20px;color:#4A5068;margin-top:2px">{{ alert.text }}</div></div></div></sc-if>
+
+<div class="field"><label for="tk">Email hoặc số điện thoại</label><input id="tk" class="inp" style="height:42px" autoComplete="username" value="{{ f.user }}" onChange="{{ onUser }}" aria-invalid="{{ e.user }}" aria-describedby="tk-loi" placeholder="ten@giasuonline.vn"><sc-if value="{{ e.user }}"><span id="tk-loi" class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập email hoặc số điện thoại.</span></sc-if></div>
+<div class="field"><div class="row"><label for="mk" class="lbl">Mật khẩu</label><button type="button" onClick="{{ toggleForgot }}" style="margin-left:auto;border:none;background:none;padding:0;color:#4F46E5;font-size:13px;font-weight:500;cursor:pointer" aria-expanded="{{ forgotOpen }}">Quên mật khẩu?</button></div>
+<div style="position:relative"><input id="mk" class="inp" style="height:42px;padding-right:44px" type="{{ pwType }}" autoComplete="current-password" value="{{ f.pw }}" onChange="{{ onPw }}" aria-invalid="{{ e.pw }}" aria-describedby="mk-loi"><button type="button" class="icon-btn sm" style="position:absolute;right:7px;top:7px" onClick="{{ togglePw }}" aria-label="{{ pwAria }}" aria-pressed="{{ pwShown }}"><i class="bi {{ pwIcon }}"></i></button></div>
+<sc-if value="{{ e.pw }}"><span id="mk-loi" class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập mật khẩu.</span></sc-if>
+<sc-if value="{{ forgot }}"><div class="banner" style="background:#F5F6FF;border-color:#DCDFFB;align-items:flex-start;padding:10px 12px"><span class="ic" style="width:24px;height:24px;color:#4F46E5;font-size:12px"><i class="bi bi-info-circle" aria-hidden="true"></i></span><span style="font-size:13px;line-height:20px;color:#4A5068">Liên hệ Quản trị viên <b class="b5" style="color:#1E2235">Hoàng Văn Minh · 0905 100 200</b> để nhận mật khẩu tạm qua email.</span></div></sc-if>
+</div>
+<label class="row" style="gap:8px;cursor:pointer;font-size:14px"><input type="checkbox" checked="{{ f.remember }}" onChange="{{ onRemember }}" style="width:16px;height:16px;margin:0;accent-color:#6366F1">Ghi nhớ đăng nhập trên máy này</label>
+<button type="submit" class="btn pri" style="height:44px;font-size:15px" disabled="{{ loading }}"><sc-if value="{{ loading }}"><i class="bi bi-arrow-repeat spin" aria-hidden="true"></i></sc-if>{{ submitText }}</button>
+
+<div style="padding-top:16px;border-top:1px dashed #E6E9F2"><div class="sm muted" style="margin-bottom:8px">Bản mô phỏng · điền nhanh tài khoản mẫu</div><div class="row" style="flex-wrap:wrap"><sc-for list="{{ demos }}" as="d"><button type="button" class="btn sm" onClick="{{ d.fill }}"><span class="d" style="width:6px;height:6px;border-radius:50%;background:{{ d.dot }}"></span>{{ d.label }}</button></sc-for></div></div>
+</form>
+</sc-if>
+
+<sc-if value="{{ isSuccess }}">
+<div style="display:flex;flex-direction:column;gap:16px;align-items:flex-start" class="fade-in">
+<span class="dlg-ic" style="width:48px;height:48px;background:#E6FAF7;color:#0F766E;font-size:20px"><i class="bi bi-check-lg"></i></span>
+<div><h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Chào {{ who.name }} 👋</h2><p class="muted" style="margin:6px 0 0;font-size:14px;line-height:22px">Đăng nhập thành công với vai trò <b class="b5" style="color:#1E2235">{{ who.role }}</b>.</p></div>
+<a href="{{ who.home }}" class="btn pri" style="height:44px;font-size:15px;width:100%">Vào {{ who.homeLabel }}<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+<button type="button" class="btn" style="width:100%" onClick="{{ back }}">Đăng nhập tài khoản khác</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isChange }}">
+<form onSubmit="{{ submitChange }}" style="display:flex;flex-direction:column;gap:18px">
+<div><span class="chip" style="background:#EAF2FF;color:#1D4ED8"><span class="d" style="background:#3B82F6"></span>Lần đăng nhập đầu tiên</span><h2 style="margin:12px 0 0;font-size:24px;line-height:32px;font-weight:600">Đặt mật khẩu mới</h2><p class="muted" style="margin:6px 0 0;font-size:14px;line-height:22px">Mật khẩu tạm chỉ dùng một lần. Hãy đặt mật khẩu riêng của bạn.</p></div>
+<div class="field"><label for="mk1">Mật khẩu mới</label><input id="mk1" class="inp" style="height:42px" type="password" autoComplete="new-password" value="{{ c.p1 }}" onChange="{{ onP1 }}" aria-describedby="mk-dk"></div>
+<ul id="mk-dk" style="list-style:none;margin:-8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px"><sc-for list="{{ rules }}" as="r"><li class="row sm" style="gap:6px;color:{{ r.c }}"><i class="bi {{ r.icon }}" aria-hidden="true"></i>{{ r.label }}</li></sc-for></ul>
+<div class="field"><label for="mk2">Nhập lại mật khẩu mới</label><input id="mk2" class="inp" style="height:42px" type="password" autoComplete="new-password" value="{{ c.p2 }}" onChange="{{ onP2 }}" aria-invalid="{{ mismatch }}" aria-describedby="mk2-loi"><sc-if value="{{ mismatch }}"><span id="mk2-loi" class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Hai mật khẩu chưa khớp.</span></sc-if></div>
+<button type="submit" class="btn pri" style="height:44px;font-size:15px" disabled="{{ changeOff }}">Lưu và tiếp tục</button>
+</form>
+</sc-if>
+</div>
+</section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Bình thường","Sai mật khẩu","Tài khoản bị khóa","Đổi mật khẩu lần đầu"],"default":"Bình thường","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, f: { user: '', pw: '', remember: true }, tried: false, show: false, forgot: false, loading: false, err: null, view: null, who: null, c: { p1: '', p2: '' } };
+  componentWillUnmount() { clearTimeout(this.lt); }
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Bình thường';
+    const init = key === 'Sai mật khẩu' ? { err: 'wrong', f: { user: 'ngoclan.pham@gmail.com', pw: '', remember: true } } : key === 'Tài khoản bị khóa' ? { err: 'locked', f: { user: 'minhkhang.vu@gmail.com', pw: '', remember: true } } : {};
+    const S = S0.key === key ? S0 : { ...S0, err: null, view: key === 'Đổi mật khẩu lần đầu' ? 'change' : null, tried: false, ...init };
+    const set = p => this.setState(S0.key === key ? p : { err: null, view: key === 'Đổi mật khẩu lần đầu' ? 'change' : null, tried: false, ...init, ...p, key });
+    const ACC = {
+      'ngoclan.pham@gmail.com': { name: 'Lan', role: 'Gia sư', home: 'Trang chu Gia su v2.dc.html', homeLabel: 'Góc giảng dạy' },
+      'trang.tt@giasuonline.vn': { name: 'Trang', role: 'Tuyển sinh', home: 'Trang chu Tuyen sinh.dc.html', homeLabel: 'Bảng điều phối' },
+      'minh.hv@giasuonline.vn': { name: 'Minh', role: 'Quản trị viên', home: 'Trang chu Quan tri vien.dc.html', homeLabel: 'Trung tâm điều hành' }
+    };
+    const f = S.f, e = { user: S.tried && !f.user.trim(), pw: S.tried && !f.pw };
+    let alert = { show: false };
+    if (S.err === 'wrong') alert = { show: true, bg: '#FDECEC', bd: '#F8C9CA', c: '#C2292E', tc: '#7A1F23', icon: 'bi-exclamation-circle', title: 'Email hoặc mật khẩu chưa đúng', text: 'Kiểm tra lại và thử lần nữa. Sau 5 lần sai, tài khoản tạm khóa 15 phút.' };
+    if (S.err === 'locked') alert = { show: true, bg: '#F7F8FC', bd: '#E6E9F2', c: '#4A5068', tc: '#1E2235', icon: 'bi-lock', title: 'Tài khoản đã bị khóa', text: 'Liên hệ Quản trị viên Hoàng Văn Minh (0905 100 200) để được mở khóa.' };
+    const c = S.c, rules = [['Ít nhất 8 ký tự', c.p1.length >= 8], ['Có chữ hoa', /[A-Z]/.test(c.p1)], ['Có chữ số', /\d/.test(c.p1)], ['Khác mật khẩu tạm', c.p1.length > 0 && c.p1 !== 'K7M2Q9XA']].map(([label, ok]) => ({ label, icon: ok ? 'bi-check-circle-fill' : 'bi-circle', c: ok ? '#0F766E' : '#646B85' }));
+    const allOk = rules.every(r => r.icon === 'bi-check-circle-fill'), mismatch = c.p2.length > 0 && c.p1 !== c.p2;
+    return {
+      isLogin: !S.view, isSuccess: S.view === 'ok', isChange: S.view === 'change', f, e, alert,
+      onUser: ev => set({ f: { ...f, user: ev.target.value }, err: null }), onPw: ev => set({ f: { ...f, pw: ev.target.value }, err: null }), onRemember: ev => set({ f: { ...f, remember: ev.target.checked } }),
+      pwType: S.show ? 'text' : 'password', pwIcon: S.show ? 'bi-eye-slash' : 'bi-eye', pwAria: S.show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu', pwShown: S.show ? 'true' : 'false', togglePw: () => set({ show: !S.show }),
+      forgot: S.forgot, forgotOpen: S.forgot ? 'true' : 'false', toggleForgot: () => set({ forgot: !S.forgot }),
+      loading: S.loading, submitText: S.loading ? 'Đang đăng nhập…' : 'Đăng nhập',
+      submit: ev => {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        if (!f.user.trim() || !f.pw) { set({ tried: true }); return; }
+        set({ loading: true, tried: false, err: null });
+        const u = f.user.trim().toLowerCase();
+        this.lt = setTimeout(() => {
+          if (u === 'minhkhang.vu@gmail.com') { this.setState({ loading: false, err: 'locked' }); return; }
+          if (!ACC[u] || f.pw.length < 6) { this.setState({ loading: false, err: 'wrong', f: { ...f, pw: '' } }); return; }
+          this.setState({ loading: false, view: 'ok', who: ACC[u] });
+        }, 900);
+      },
+      demos: [['Gia sư', 'ngoclan.pham@gmail.com', '#FF7A59'], ['Tuyển sinh', 'trang.tt@giasuonline.vn', '#6366F1'], ['Quản trị viên', 'minh.hv@giasuonline.vn', '#14B8A6']].map(([label, user, dot]) => ({ label, dot, fill: () => set({ f: { ...f, user, pw: 'matkhau123' }, err: null, tried: false }) })),
+      who: S.who || ACC['ngoclan.pham@gmail.com'], back: () => set({ view: null, f: { user: '', pw: '', remember: true } }),
+      c, rules, mismatch, changeOff: !allOk || c.p1 !== c.p2,
+      onP1: ev => set({ c: { ...c, p1: ev.target.value } }), onP2: ev => set({ c: { ...c, p2: ev.target.value } }),
+      submitChange: ev => { if (ev && ev.preventDefault) ev.preventDefault(); if (!allOk || c.p1 !== c.p2) return; set({ view: 'ok', who: ACC['ngoclan.pham@gmail.com'] }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

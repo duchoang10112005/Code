@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Trang chủ · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><style>body{margin:0;background:#F7F8FC;font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;color:#1E2235;font-size:14px;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#6366F1;text-decoration:none}a:hover{color:#4F46E5;text-decoration:underline}button,input,select,textarea{font-family:inherit}:focus-visible{outline:2px solid #6366F1;outline-offset:2px}@keyframes gso-spin{to{transform:rotate(360deg)}}@keyframes gso-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}@keyframes gso-slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}</style></helmet>
+<div style="display:flex;min-height:100vh;min-width:1280px;background:#F7F8FC;font-variant-numeric:tabular-nums">
+<a href="#noi-dung" style="position:absolute;left:-9999px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50" style-focus="left:8px">Bỏ qua menu</a>
+
+<aside aria-label="Menu chính" style="width:{{ sideW }};flex:none;background:#fff;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .2s ease">
+<div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 16px">
+<div style="width:32px;height:32px;flex:none;border-radius:8px;background:#6366F1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px">G</div>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-weight:600;font-size:14px;line-height:18px">Gia Sư Online</div><div style="font-size:12px;line-height:16px;color:#4F46E5;font-weight:500">Bảng điều phối</div></div></sc-if>
+<button onClick="{{ toggleSide }}" aria-label="Thu gọn hoặc mở rộng menu" style="width:28px;height:28px;flex:none;border:none;background:transparent;border-radius:6px;color:#9AA1B8;cursor:pointer;display:grid;place-items:center" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-layout-sidebar"></i></button>
+</div>
+<nav style="padding:8px 12px;display:flex;flex-direction:column;gap:2px;flex:1">
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:8px 10px 6px">VẬN HÀNH</div></sc-if>
+<a href="#" aria-current="page" style="position:relative;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:500;text-decoration:none"><span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#6366F1"></span><i class="bi bi-house-door" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span>Trang chủ</span></sc-if></a>
+<sc-for list="{{ navOps }}" as="n" hint-placeholder-count="5">
+<a href="{{ n.href }}" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi {{ n.icon }}" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;white-space:nowrap">{{ n.label }}</span></sc-if><sc-if value="{{ n.badge }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">{{ n.badge }}</span></sc-if></a>
+</sc-for>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:16px 10px 6px">TÀI CHÍNH</div></sc-if>
+<a href="#" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-calculator" style="font-size:17px"></i><sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><span style="flex:1;white-space:nowrap">Đối soát thù lao</span></sc-if><sc-if value="{{ payBadge }}"><span style="width:8px;height:8px;border-radius:50%;background:#FF7A59"></span></sc-if></a>
+</nav>
+<div style="border-top:1px solid #E6E9F2;padding:12px 16px;display:flex;align-items:center;gap:10px">
+<div style="width:32px;height:32px;flex:none;border-radius:50%;background:#E0E7FF;color:#4338CA;display:grid;place-items:center;font-weight:600;font-size:12px">TT</div>
+<sc-if value="{{ expanded }}" hint-placeholder-val="{{ true }}"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Trần Thu Trang</div><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:#EEF0FF;color:#4F46E5;font-size:11px;font-weight:500">Tuyển sinh</span></div><button aria-label="Tài khoản: Đổi mật khẩu, Đăng xuất" style="width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-three-dots-vertical"></i></button></sc-if>
+</div>
+</aside>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;height:56px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid #E6E9F2;display:flex;align-items:center;gap:16px;padding:0 32px">
+<h1 style="margin:0;font-size:16px;font-weight:600">Việc cần làm hôm nay</h1>
+<button onClick="{{ openPalette }}" style="margin-left:auto;width:320px;height:34px;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#F7F8FC;color:#9AA1B8;font-size:13px;cursor:pointer;text-align:left" style-hover="border-color:#D5D9E6;background:#fff"><i class="bi bi-search"></i><span style="flex:1;white-space:nowrap">Tìm mã YC/KH, học viên, gia sư…</span><kbd style="white-space:nowrap;font:500 11px 'Be Vietnam Pro',sans-serif;padding:2px 6px;border:1px solid #E6E9F2;border-radius:4px;background:#fff;color:#646B85">Ctrl K</kbd></button>
+<button aria-label="Thông báo, 4 chưa đọc" style="position:relative;width:36px;height:36px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer;font-size:17px" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-bell"></i><span style="position:absolute;top:5px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#FF7A59;color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;border:2px solid #fff">4</span></button>
+<span style="color:#646B85;font-size:13px;white-space:nowrap">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:24px 32px 48px;display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:24px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:24px;min-width:0;opacity:{{ op }};transform:translateY({{ ty }}px);transition:opacity .3s ease,transform .3s ease">
+
+<section aria-label="Lời chào" style="position:relative;overflow:hidden;border-radius:12px;min-height:160px;padding:28px 32px;border:1px solid #E1E4FA;background:radial-gradient(110% 140% at 0% 0%,#E4E6FF 0%,rgba(228,230,255,0) 55%),radial-gradient(80% 130% at 100% 100%,#D3F5EF 0%,rgba(211,245,239,0) 65%),radial-gradient(50% 90% at 75% 0%,#DCDDFE 0%,rgba(220,221,254,0) 70%),#F8F8FF">
+<div aria-hidden="true" style="position:absolute;right:-50px;top:-70px;width:250px;height:250px;border-radius:50%;background:linear-gradient(150deg,#A5B4FC,#C7D2FE 55%,rgba(199,210,254,0));opacity:.6"></div>
+<div aria-hidden="true" style="position:absolute;right:170px;bottom:-80px;width:160px;height:160px;border-radius:50%;border:1.5px solid rgba(255,255,255,.95)"></div>
+<div aria-hidden="true" style="position:absolute;right:120px;top:36px;width:40px;height:40px;border-radius:10px;transform:rotate(-14deg);background:linear-gradient(140deg,#5EEAD4,#99F6E4);opacity:.85"></div>
+
+<div style="position:relative;max-width:580px;display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:26px;line-height:34px;font-weight:600;letter-spacing:-.01em">{{ greet }}</h2>
+<p style="margin:0;color:#4A5068;font-size:14px;line-height:22px;text-wrap:pretty">{{ cheer }}</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+<sc-for list="{{ bannerChips }}" as="c" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(6px);font-size:13px;font-weight:500;white-space:nowrap;color:{{ c.color }}"><i class="bi {{ c.icon }}"></i>{{ c.text }}</span></sc-for>
+</div></div>
+</section>
+
+<section aria-label="Chỉ số" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+<div style="display:flex;align-items:center;gap:12px;padding:16px 20px">
+<div style="min-width:0"><div style="font-size:20px;font-weight:600;line-height:26px">{{ k.open }}</div><div style="font-size:12px;color:#646B85;line-height:16px">yêu cầu đang mở</div></div>
+<svg width="56" height="24" viewBox="0 0 56 24" style="flex:none;margin-left:auto" aria-hidden="true"><polyline points="{{ spark }}" fill="none" stroke="#6366F1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></polyline></svg></div>
+<div style="padding:16px 20px;border-left:1px solid #E6E9F2;display:flex;flex-direction:column;justify-content:center">
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:20px;font-weight:600;line-height:26px">{{ k.inv }}</span><span style="font-size:12px;color:#646B85;line-height:16px">lời mời đang chờ</span></div>
+<div aria-hidden="true" style="display:flex;height:4px;border-radius:2px;background:#EEF0F5;overflow:hidden;margin-top:8px"><span style="width:{{ invHotW }};background:#FF7A59;transition:width .8s"></span><span style="width:{{ invRestW }};background:#C7CBF9;transition:width .8s"></span></div>
+<div style="font-size:11px;color:#C2410C;margin-top:4px;line-height:14px">{{ invHotText }}</div></div>
+<div style="padding:16px 20px;border-left:1px solid #E6E9F2;display:flex;align-items:center;gap:12px">
+<div><div style="font-size:20px;font-weight:600;line-height:26px">{{ k.ending }}</div><div style="font-size:12px;color:#646B85;line-height:16px">khóa sắp hết buổi</div></div>
+<div aria-hidden="true" style="margin-left:auto;flex:none;display:flex;flex-direction:column;gap:4px;width:48px"><sc-for list="{{ endingBars }}" as="b" hint-placeholder-count="3"><span style="display:block;height:4px;border-radius:2px;background:#EEF0F5;overflow:hidden"><span style="display:block;height:100%;width:{{ b }};background:#14B8A6;transition:width .8s"></span></span></sc-for></div></div>
+<div style="padding:16px 20px;border-left:1px solid #E6E9F2;display:flex;align-items:center;gap:12px">
+<svg width="44" height="44" viewBox="0 0 44 44" style="flex:none;transform:rotate(-90deg)"><circle cx="22" cy="22" r="18" fill="none" stroke="#E6FAF7" stroke-width="5"></circle><circle cx="22" cy="22" r="18" fill="none" stroke="#14B8A6" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="{{ ringOffset }}" style="transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)"></circle></svg>
+<div><div style="font-size:20px;font-weight:600;line-height:26px">{{ k.rate }}%</div><div style="font-size:12px;color:#646B85;line-height:16px">có gia sư · T11</div></div></div>
+</section>
+
+<sc-if value="{{ showWarnAlert }}">
+<div role="alert" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:#FDECEC;border:1px solid #F8C9CA">
+<span style="width:32px;height:32px;flex:none;border-radius:50%;background:#fff;color:#C2292E;display:grid;place-items:center"><i class="bi bi-exclamation-triangle"></i></span>
+<div style="flex:1;min-width:0"><div style="font-weight:600">YC-0029 · Võ Khánh Linh: 3 lời mời hết hạn sau 45 phút, chưa ai nhận</div><div style="font-size:13px;color:#7A2A2D">Mời thêm gia sư ngay để phụ huynh không phải chờ sang ngày mai.</div></div>
+<span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:#fff;color:#C2292E;font-size:12px;font-weight:500;white-space:nowrap"><i class="bi bi-stopwatch"></i>còn 45 phút</span>
+<button style="height:30px;padding:0 12px;border-radius:8px;border:1px solid #F8C9CA;background:#fff;color:#C2292E;font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:#FFF7F7">Mời thêm</button>
+</div>
+</sc-if>
+
+<section aria-labelledby="viec-can-lam">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><h2 id="viec-can-lam" style="margin:0;font-size:16px;font-weight:600">Việc cần làm</h2><span style="font-size:13px;color:#9AA1B8">{{ taskCount }}</span>
+<div role="tablist" aria-label="Lọc việc" style="margin-left:auto;display:flex;gap:2px;padding:2px;background:#F1F3F9;border-radius:8px">
+<sc-for list="{{ filters }}" as="f" hint-placeholder-count="3"><button role="tab" aria-selected="{{ f.on }}" onClick="{{ f.pick }}" style="height:26px;padding:0 10px;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;background:{{ f.bg }};color:{{ f.c }};box-shadow:{{ f.sh }}">{{ f.label }}</button></sc-for>
+</div></div>
+
+<sc-if value="{{ loading }}">
+<div aria-hidden="true" style="display:flex;flex-direction:column;margin-top:12px;background:#fff;border:1px solid #E6E9F2;border-radius:12px;overflow:hidden">
+<sc-for list="{{ skel }}" as="s"><div style="display:grid;grid-template-columns:72px minmax(0,1fr) 136px 132px;gap:12px;align-items:center;height:60px;padding:0 16px"><span style="height:10px;width:56px;border-radius:4px;background:#F1F3F9"></span><div style="display:flex;flex-direction:column;gap:6px"><span style="height:10px;width:{{ s }};border-radius:4px;background:linear-gradient(90deg,#EEF0F5 0,#F7F8FC 40%,#EEF0F5 80%);background-size:800px 100%;animation:gso-shimmer 1.2s linear infinite"></span><span style="height:8px;width:40%;border-radius:4px;background:#F1F3F9"></span></div><span style="height:20px;width:96px;border-radius:10px;background:#F1F3F9"></span><span style="height:28px;border-radius:8px;background:#F1F3F9"></span></div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ hasGroups }}" hint-placeholder-val="{{ true }}">
+<div role="table" aria-label="Việc cần làm" style="margin-top:12px;background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+<div role="row" style="display:grid;grid-template-columns:72px minmax(0,1fr) 136px 132px;gap:12px;align-items:center;height:38px;padding:0 16px;border-bottom:1px solid #E6E9F2;background:#F7F8FC;font-size:12px;font-weight:600;letter-spacing:.02em;color:#4A5068">
+<span role="columnheader">Mã</span><span role="columnheader">Học viên · việc cần làm</span><span role="columnheader">Trạng thái · hạn</span><span role="columnheader" style="text-align:right;padding-right:32px">Hành động</span></div>
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+<div role="rowgroup">
+<div role="row" style="position:relative;display:flex;align-items:center;gap:10px;height:40px;padding:0 16px;background:{{ g.band }};border-bottom:1px solid {{ g.line }};font-size:13px;font-weight:600;color:{{ g.color }}"><span style="position:absolute;left:0;top:0;bottom:0;width:3px;background:{{ g.dot }}"></span><i class="bi {{ g.icon }}" style="font-size:15px"></i>{{ g.title }}<span style="height:20px;min-width:20px;padding:0 7px;border-radius:10px;background:{{ g.dot }};color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600">{{ g.count }}</span><span style="font-weight:400;font-size:12px;color:#646B85">{{ g.hint }}</span></div>
+<sc-for list="{{ g.items }}" as="t" hint-placeholder-count="2">
+<div role="row" style="position:relative;display:grid;grid-template-columns:72px minmax(0,1fr) 136px 132px;gap:12px;align-items:center;min-height:60px;padding:10px 16px;border-bottom:1px solid #EEF0F5;transition:background .15s" style-hover="background:#FAFBFE">
+<span role="cell" style="font-size:13px;font-weight:500;color:#646B85;white-space:nowrap">{{ t.code }}</span>
+<div role="cell" style="min-width:0"><div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:13px;color:#646B85;line-height:18px;margin-top:2px">{{ t.desc }}</div></div>
+<span role="cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ t.chipBg }};color:{{ t.chipC }};font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ t.chipDot }}"></span>{{ t.chip }}</span><span style="font-size:12px;color:{{ t.timeC }};white-space:nowrap;display:inline-flex;align-items:center;gap:4px"><i class="bi bi-clock"></i>{{ t.time }}</span></span>
+<span role="cell" style="display:flex;align-items:center;justify-content:flex-end;gap:4px">
+<button onClick="{{ t.onAction }}" style="height:30px;padding:0 8px;border:1px solid #E1E4F5;border-radius:8px;background:#fff;color:#4F46E5;font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap" style-hover="background:#EEF0FF;border-color:#C7CBF9">{{ t.action }}</button>
+<button onClick="{{ t.onMenu }}" aria-label="Thêm thao tác" aria-expanded="{{ t.menuOpen }}" style="width:28px;height:28px;flex:none;border:none;border-radius:8px;background:transparent;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-three-dots"></i></button></span>
+<sc-if value="{{ t.menuOpen }}">
+<div role="menu" style="position:absolute;right:10px;top:48px;z-index:15;width:210px;padding:4px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.12)">
+<button role="menuitem" onClick="{{ closeMenu }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#1E2235;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-box-arrow-up-right"></i>Mở chi tiết</button>
+<button role="menuitem" onClick="{{ closeMenu }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#1E2235;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-telephone"></i>Sao chép SĐT phụ huynh</button>
+<sc-if value="{{ t.canClose }}"><button role="menuitem" onClick="{{ t.onClose }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#C2292E;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#FDECEC"><i class="bi bi-x-circle"></i>Đóng yêu cầu</button></sc-if>
+</div></sc-if>
+</div>
+</sc-for></div>
+</sc-for>
+</div></sc-if>
+
+<sc-if value="{{ noTasks }}">
+<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:36px 16px;border:1px dashed #E0E3EE;border-radius:12px;margin-top:14px">
+<span style="width:48px;height:48px;border-radius:50%;border:1.5px solid #CDEFE9;display:grid;place-items:center;color:#14B8A6;font-size:22px"><i class="bi bi-check2-all"></i></span>
+<div style="font-weight:600;margin-top:6px">{{ emptyTitle }}</div>
+<div style="font-size:13px;color:#646B85;max-width:380px">{{ emptyDesc }}</div>
+<a href="#" style="font-size:13px;font-weight:500;margin-top:4px">Tạo yêu cầu mới</a>
+</div></sc-if>
+<div style="display:flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:#9AA1B8"><i class="bi bi-info-circle"></i>Lời mời hết hạn sau 24 giờ. Người nhận hợp lệ đầu tiên được lớp.</div>
+</section>
+</div>
+
+<aside aria-label="Lịch và thao tác nhanh" style="display:flex;flex-direction:column;gap:24px;position:sticky;top:80px;opacity:{{ op }};transition:opacity .4s ease .08s">
+<div style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px">
+<div style="display:flex;align-items:center;margin-bottom:10px"><span style="font-weight:600">Tháng 11/2026</span><button aria-label="Tháng trước" style="margin-left:auto;width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9"><i class="bi bi-chevron-left"></i></button><button aria-label="Tháng sau" style="width:28px;height:28px;border:none;background:transparent;border-radius:6px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9"><i class="bi bi-chevron-right"></i></button></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:#9AA1B8;font-weight:500;margin-bottom:4px"><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px">
+<sc-for list="{{ cal }}" as="d" hint-placeholder-count="42">
+<div style="height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+<span style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:{{ d.fw }};background:{{ d.bg }};color:{{ d.c }}">{{ d.n }}</span>
+<span style="display:flex;gap:2px;height:4px"><sc-for list="{{ d.dots }}" as="dot"><span style="width:4px;height:4px;border-radius:50%;background:{{ dot }}"></span></sc-for></span>
+</div>
+</sc-for></div>
+<div style="display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid #EEF0F5;font-size:11px;color:#646B85"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#6366F1"></span>Học thử</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#FF7A59"></span>Hạn lời mời</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#14B8A6"></span>Khóa kết thúc</span></div>
+</div>
+
+<div>
+<h2 style="margin:0 0 10px;font-size:15px;font-weight:600">Thao tác nhanh</h2>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button style="height:40px;padding:0 12px;border:none;border-radius:8px;background:#6366F1;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s,transform .15s" style-hover="background:#4F46E5" style-active="transform:scale(.98)"><i class="bi bi-plus-lg"></i>Tạo yêu cầu mới<kbd style="white-space:nowrap;margin-left:auto;font:500 11px 'Be Vietnam Pro',sans-serif;padding:1px 6px;border:1px solid rgba(255,255,255,.35);border-radius:4px;color:#E0E3FF">N</kbd></button>
+
+</div></div>
+
+<div>
+<div style="display:flex;align-items:baseline;margin-bottom:6px"><h2 style="margin:0;font-size:15px;font-weight:600">Sắp tới</h2><a href="#" style="margin-left:auto;font-size:13px">Lịch đầy đủ</a></div>
+<sc-for list="{{ upcoming }}" as="u" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #EEF0F5">
+<div style="width:40px;flex:none;text-align:center;border-radius:8px;padding:4px 0;background:{{ u.dateBg }};overflow:hidden"><div style="font-size:10px;font-weight:600;color:{{ u.dateC }};letter-spacing:.04em;white-space:nowrap">{{ u.dow }}</div><div style="font-size:15px;font-weight:600;line-height:18px;color:{{ u.dateC2 }}">{{ u.day }}</div></div>
+<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:{{ u.dot }}"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.title }}</span></div><div style="font-size:12px;color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.sub }}</div></div>
+</div>
+</sc-for>
+<sc-if value="{{ noUpcoming }}"><div style="font-size:13px;color:#646B85;padding:8px 0">Chưa có lịch học thử hay hạn nào sắp tới.</div></sc-if>
+</div>
+</aside>
+</main>
+</div>
+
+<sc-if value="{{ drawerOpen }}">
+<div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:55;background:rgba(30,34,53,.22);backdrop-filter:blur(3px)"></div>
+<div role="dialog" aria-modal="true" aria-labelledby="dr-t" style="position:fixed;top:0;right:0;bottom:0;z-index:56;width:460px;background:#fff;border-left:1px solid #E6E9F2;box-shadow:-16px 0 48px rgba(16,24,40,.14);display:flex;flex-direction:column;animation:gso-slide .22s ease">
+<div style="padding:20px 24px 16px;border-bottom:1px solid #EEF0F5;display:flex;gap:12px;align-items:flex-start">
+<div style="flex:1"><div style="font-size:12px;color:#9AA1B8;font-weight:500">YC-0024 · Học thử</div><h2 id="dr-t" style="margin:2px 0 0;font-size:18px;font-weight:600">Ghi kết quả học thử</h2><div style="font-size:13px;color:#646B85;margin-top:4px">Nguyễn Minh Anh · Toán 9 · gia sư Phạm Ngọc Lan</div></div>
+<button onClick="{{ closeDrawer }}" aria-label="Đóng" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer" style-hover="background:#F1F3F9"><i class="bi bi-x-lg"></i></button></div>
+<div style="flex:1;overflow:auto;padding:20px 24px;display:flex;flex-direction:column;gap:20px">
+<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13px"><span style="color:#646B85">Buổi học thử</span><span>Chủ Nhật 08/11/2026 · 19:30–21:00</span><span style="color:#646B85">Gia sư đánh giá</span><span>Tiếp thu tốt, cần luyện thêm dạng bài hệ phương trình</span><span style="color:#646B85">Phụ huynh</span><span style="display:flex;align-items:center;gap:8px">Chị Nguyễn Thu Hằng · 0912 345 678<button onClick="{{ copyPhone }}" aria-label="Sao chép số điện thoại" style="height:24px;padding:0 8px;border:1px solid #E6E9F2;border-radius:6px;background:#fff;font-size:12px;color:#646B85;cursor:pointer" style-hover="background:#F7F8FC"><i class="bi bi-copy"></i></button></span></div>
+<fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+<legend style="font-size:13px;font-weight:500;margin-bottom:8px">Kết quả sau khi gọi phụ huynh <span style="color:#E5484D">*</span></legend>
+<sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="3">
+<label style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid {{ o.border }};background:{{ o.bg }};border-radius:10px;cursor:pointer;transition:all .15s"><input type="radio" name="kq" checked="{{ o.on }}" onChange="{{ o.pick }}" style="margin:3px 0 0;accent-color:#6366F1"><span><span style="display:flex;align-items:center;gap:8px;font-weight:500"><i class="bi {{ o.icon }}" style="color:{{ o.ic }}"></i>{{ o.label }}</span><span style="display:block;font-size:12px;color:#646B85;margin-top:2px">{{ o.desc }}</span></span></label>
+</sc-for>
+<sc-if value="{{ outcomeErr }}"><span role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn kết quả trước khi lưu.</span></sc-if>
+</fieldset>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="gc" style="font-size:13px;font-weight:500">Ghi chú</label><textarea id="gc" rows="3" placeholder="Phụ huynh muốn học 2 buổi/tuần, ưu tiên tối Thứ 3 và Thứ 5" style="border:1px solid #E6E9F2;border-radius:8px;padding:8px 10px;font-size:14px;resize:vertical;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></textarea></div>
+<div style="display:flex;gap:8px;font-size:12px;color:#646B85;padding:10px 12px;background:#F7F8FC;border-radius:8px"><i class="bi bi-info-circle" style="color:#6366F1"></i><span>Khi phụ huynh đồng ý, yêu cầu chuyển sang bước "Mở khóa học". Chọn "Không đăng ký" sẽ đóng yêu cầu.</span></div>
+</div>
+<div style="padding:14px 24px;border-top:1px solid #EEF0F5;display:flex;justify-content:flex-end;gap:8px;background:#fff">
+<button onClick="{{ closeDrawer }}" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-weight:500;font-size:14px;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Hủy</button>
+<button onClick="{{ saveOutcome }}" style="height:36px;padding:0 16px;border:none;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" style-hover="background:#4F46E5">Lưu kết quả<kbd style="font:500 11px 'Be Vietnam Pro',sans-serif;padding:0 5px;border:1px solid rgba(255,255,255,.35);border-radius:4px;color:#E0E3FF">Ctrl ↵</kbd></button>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ dialogOpen }}">
+<div style="position:fixed;inset:0;z-index:60;background:rgba(30,34,53,.28);backdrop-filter:blur(3px);display:grid;place-items:center">
+<div role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-d" style="width:460px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.2);padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:12px"><span style="width:36px;height:36px;flex:none;border-radius:50%;background:#FDECEC;color:#C2292E;display:grid;place-items:center"><i class="bi bi-x-circle"></i></span><div><h2 id="dlg-t" style="margin:0;font-size:16px;font-weight:600">Đóng yêu cầu YC-0027?</h2><p id="dlg-d" style="margin:4px 0 0;font-size:13px;color:#646B85;line-height:20px">Yêu cầu của Phạm Đức Huy (Vật lý 11) sẽ chuyển sang "Đã đóng". Các lời mời còn hiệu lực bị hủy. Muốn tiếp tục phải tạo yêu cầu mới.</p></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="ly-do" style="font-size:13px;font-weight:500">Lý do đóng <span style="color:#E5484D">*</span></label>
+<select id="ly-do" value="{{ reason }}" onChange="{{ onReason }}" aria-invalid="{{ reasonErr }}" aria-describedby="ly-do-loi" style="height:36px;border:1px solid {{ reasonBorder }};border-radius:8px;padding:0 10px;font-size:14px;color:#1E2235;background:#fff"><option value="">Chọn lý do</option><option>Phụ huynh không còn nhu cầu</option><option>Không tìm được gia sư phù hợp</option><option>Không liên lạc được phụ huynh</option><option>Trùng với yêu cầu khác</option><option>Lý do khác</option></select>
+<sc-if value="{{ reasonErr }}"><span id="ly-do-loi" role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Vui lòng chọn lý do đóng yêu cầu.</span></sc-if></div>
+<div style="display:flex;justify-content:flex-end;gap:8px">
+<button autoFocus="{{ true }}" onClick="{{ closeDialog }}" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-weight:500;font-size:14px;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Quay lại</button>
+<button onClick="{{ confirmClose }}" style="height:36px;padding:0 16px;border:none;border-radius:8px;background:#E5484D;color:#fff;font-weight:500;font-size:14px;cursor:pointer" style-hover="background:#D13A40">Đóng yêu cầu</button>
+</div></div></div>
+</sc-if>
+
+<sc-if value="{{ paletteOpen }}">
+<div onClick="{{ closePalette }}" style="position:fixed;inset:0;z-index:70;background:rgba(30,34,53,.22);backdrop-filter:blur(4px);display:flex;justify-content:center;padding-top:110px">
+<div role="dialog" aria-label="Bảng lệnh" onClick="{{ stop }}" style="width:580px;height:fit-content;background:rgba(255,255,255,.96);border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.2);overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px;padding:0 16px;height:52px;border-bottom:1px solid #E6E9F2"><i class="bi bi-search" style="color:#9AA1B8"></i><input autoFocus="{{ true }}" value="{{ q }}" onChange="{{ onQ }}" placeholder="Tìm hoặc chạy lệnh: “Tạo yêu cầu”, “YC-0012”…" aria-label="Tìm hoặc chạy lệnh" style="flex:1;border:none;outline:none;font-size:15px;background:transparent;color:#1E2235"><kbd style="font:500 11px 'Be Vietnam Pro',sans-serif;padding:2px 6px;border:1px solid #E6E9F2;border-radius:4px;color:#9AA1B8">Esc</kbd></div>
+<div style="padding:6px">
+<sc-for list="{{ cmds }}" as="k">
+<button onClick="{{ k.run }}" style="width:100%;height:40px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 10px;font-size:14px;color:#1E2235;cursor:pointer;text-align:left" style-hover="background:#EEF0FF"><i class="bi {{ k.icon }}" style="color:#646B85;font-size:16px"></i><span style="flex:1">{{ k.label }}</span><span style="font-size:12px;color:#9AA1B8">{{ k.group }}</span></button>
+</sc-for>
+<sc-if value="{{ noCmds }}"><div style="padding:16px 10px;font-size:13px;color:#646B85">Không tìm thấy kết quả phù hợp.</div></sc-if>
+</div></div></div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}">
+<div role="status" style="position:fixed;top:72px;right:24px;z-index:80;display:flex;align-items:center;gap:12px;min-width:320px;padding:12px 14px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.14);animation:gso-slide .2s ease">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-check-lg"></i></span>
+<span style="flex:1;font-size:13px;font-weight:500">{{ toastText }}</span>
+<sc-if value="{{ toastUndo }}"><button onClick="{{ undo }}" style="height:28px;padding:0 10px;border:none;border-radius:6px;background:#EEF0FF;color:#4F46E5;font-weight:500;font-size:13px;cursor:pointer">Hoàn tác</button></sc-if>
+<button onClick="{{ hideToast }}" aria-label="Đóng thông báo" style="width:24px;height:24px;border:none;background:transparent;color:#9AA1B8;cursor:pointer"><i class="bi bi-x-lg"></i></button>
+</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Bình thường&quot;,&quot;Cảnh báo&quot;,&quot;Rỗng&quot;],&quot;default&quot;:&quot;Bình thường&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;},&quot;timeOfDay&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Sáng&quot;,&quot;Chiều&quot;,&quot;Tối&quot;,&quot;Theo giờ máy&quot;],&quot;default&quot;:&quot;Sáng&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;},&quot;collapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Khung&quot;}}">
+class Component extends DCLogic {
+  state = { mounted: false, loading: true, collapsed: null, menuFor: null, filter: 'all', done: {}, drawer: false, outcome: '', outcomeErr: false, dialog: false, reason: '', reasonErr: false, palette: false, q: '', toast: null, undoFn: null };
+
+  componentDidMount() {
+    setTimeout(() => this.setState({ mounted: true }), 60);
+    setTimeout(() => this.setState({ loading: false }), 700);
+    this.onKey = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.setState(s => ({ palette: !s.palette, q: '' })); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && this.state.drawer) this.save();
+      if (e.key === 'Escape') this.setState({ palette: false, dialog: false, drawer: false, menuFor: null });
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { clearTimeout(this.tt); window.removeEventListener('keydown', this.onKey); }
+
+  toast(text, undoFn) {
+    clearTimeout(this.tt);
+    this.setState({ toast: text, undoFn: undoFn || null });
+    this.tt = setTimeout(() => this.setState({ toast: null, undoFn: null }), 6000);
+  }
+  markDone(id) { this.setState(s => ({ done: { ...s.done, [id]: true } })); }
+  unDone(id) { this.setState(s => { const d = { ...s.done }; delete d[id]; return { done: d, toast: null }; }); }
+  save() {
+    const S = this.state;
+    if (!S.outcome) { this.setState({ outcomeErr: true }); return; }
+    const msg = S.outcome === 'yes' ? 'Đã ghi: phụ huynh đồng ý đăng ký. Bước tiếp theo: Mở khóa học' : S.outcome === 'no' ? 'Đã ghi: không đăng ký. Yêu cầu YC-0024 đã đóng' : 'Đã ghi: cần thêm thời gian. Nhắc gọi lại sau 2 ngày';
+    this.setState({ drawer: false });
+    this.markDone('hoc-thu');
+    this.toast(msg, () => this.unDone('hoc-thu'));
+  }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const mode = P.state === 'Rỗng' ? 'empty' : P.state === 'Cảnh báo' ? 'warn' : 'normal';
+    const empty = mode === 'empty', warn = mode === 'warn';
+    let part = P.timeOfDay ?? 'Sáng';
+    if (part === 'Theo giờ máy') { const h = new Date().getHours(); part = h < 11 ? 'Sáng' : h < 18 ? 'Chiều' : 'Tối'; }
+    const collapsed = S.collapsed ?? (P.collapsed ?? false);
+    const T = {
+      coral: { bg: '#FFEFEA', c: '#C2410C' }, red: { bg: '#FDECEC', c: '#C2292E' }, orange: { bg: '#FFF4E5', c: '#B45309' },
+      indigo: { bg: '#EEF0FF', c: '#4F46E5' }, teal: { bg: '#E6FAF7', c: '#0F766E' }, neutral: { bg: '#F1F3F9', c: '#646B85' },
+      blue: { bg: '#EAF2FF', c: '#1D4ED8' }, amber: { bg: '#FFF6DB', c: '#946200' }
+    };
+    const dotC = { coral: '#FF7A59', red: '#E5484D', orange: '#F59E0B', indigo: '#6366F1', teal: '#14B8A6', neutral: '#8A94A6', blue: '#3B82F6', amber: '#F5B301' };
+    const noop = () => this.setState({ menuFor: null });
+    const mk = (id, urg, tone, icon, code, title, desc, chipTone, chip, time, timeHot, action, onAction, extra = {}) => ({
+      id, urg, icon: 'bi-' + icon, iconBg: T[tone].bg, iconC: T[tone].c, code, title, desc,
+      chipBg: T[chipTone].bg, chipC: T[chipTone].c, chipDot: dotC[chipTone], chip, time, timeC: timeHot ? '#C2410C' : '#9AA1B8',
+      action, onAction: onAction || noop, menuOpen: S.menuFor === id,
+      onMenu: () => this.setState(s => ({ menuFor: s.menuFor === id ? null : id })),
+      canClose: false, onClose: noop, ...extra
+    });
+    const all = [
+      mk('yc31', 'urgent', 'indigo', 'inbox', 'YC-0031', 'Lê Thu Hà · IELTS 6.5', 'Chưa gửi lời mời · có 4 gia sư phù hợp', 'blue', 'Mới', 'tạo 2 giờ trước', false, 'Tìm gia sư'),
+      mk('yc27', 'urgent', 'red', 'person-x', 'YC-0027', 'Phạm Đức Huy · Vật lý 11', '3 lời mời đã hết hạn, chưa ai nhận', 'red', 'Chưa có gia sư', 'hôm qua', false, 'Mời lại', null,
+        { canClose: true, onClose: () => this.setState({ menuFor: null, dialog: true, reason: '', reasonErr: false }) }),
+      mk('yc29', 'urgent', 'coral', 'hourglass-split', 'YC-0029', 'Võ Khánh Linh · Toán 8', 'Đã mời 3 gia sư, chưa ai nhận', 'orange', 'Đang mời gia sư', warn ? 'còn 45 phút' : 'còn 2 giờ 15 phút', true, 'Mời thêm'),
+      mk('hoc-thu', 'urgent', 'indigo', 'telephone-outbound', 'YC-0024', 'Nguyễn Minh Anh · Toán 9', 'Học thử xong 08/11 · gọi phụ huynh lấy kết quả', 'indigo', 'Học thử', '13 giờ trước', false, 'Ghi kết quả',
+        () => this.setState({ menuFor: null, drawer: true, outcome: '', outcomeErr: false })),
+      mk('kh07', 'today', 'teal', 'battery-half', 'KH-0007', 'Trần Gia Bảo · IELTS', 'Còn 2/16 buổi · gọi phụ huynh gia hạn', 'teal', 'Đang học', 'còn 2 buổi', false, 'Xem khóa'),
+      mk('kh05', 'today', 'blue', 'arrow-left-right', 'KH-0009', 'Đỗ Hải Yến · Ngữ văn 9', 'Đổi gia sư lần 2 · chờ Quản trị viên duyệt', 'blue', 'Chờ duyệt', '1 ngày', false, 'Xem'),
+      mk('ds10', 'week', 'amber', 'calculator', 'T10/2026', 'Thù lao tháng 10 cần kiểm tra', '8 gia sư · 3 đã kiểm tra, 5 đang mở', 'orange', 'Đang mở', 'hạn 15/11', false, 'Đối soát')
+    ].filter(t => !S.done[t.id]);
+    const G = [
+      { key: 'urgent', title: 'Gấp, cần xử lý ngay', hint: 'Phụ huynh đang chờ', icon: 'bi-lightning-charge-fill', color: '#C2410C', dot: '#FF7A59', band: '#FFEFEA', line: '#FFD9CC' },
+      { key: 'today', title: 'Trong hôm nay', hint: '', icon: 'bi-sun', color: '#4338CA', dot: '#6366F1', band: '#EEF0FF', line: '#DCDFFC' },
+      { key: 'week', title: 'Trong tuần', hint: '', icon: 'bi-calendar-week', color: '#4A5068', dot: '#8A94A6', band: '#F1F3F9', line: '#E6E9F2' }
+    ];
+    const visible = empty || S.loading ? [] : all.filter(t => S.filter === 'all' || t.urg === S.filter);
+    const groups = G.map(g => ({ ...g, items: visible.filter(t => t.urg === g.key) })).map(g => ({ ...g, count: g.items.length })).filter(g => g.count);
+    const total = empty ? 0 : all.length;
+    const fl = [['all', 'Tất cả'], ['urgent', 'Gấp'], ['today', 'Hôm nay'], ['week', 'Trong tuần']].map(([v, label]) => {
+      const on = S.filter === v;
+      return { label, on, pick: () => this.setState({ filter: v }), bg: on ? '#fff' : 'transparent', c: on ? '#1E2235' : '#646B85', sh: on ? '0 1px 2px rgba(16,24,40,.08)' : 'none' };
+    });
+
+    const k = empty ? { open: 0, inv: 0, ending: 0, rate: 0 } : { open: 12, inv: 7, ending: 3, rate: 86 };
+    const sparkVals = empty ? [2, 2, 2, 2, 2, 2] : [7, 9, 8, 12, 10, 14];
+    const spark = sparkVals.map((v, i) => `${2 + i * 10.4},${22 - v}`).join(' ');
+    const m = S.mounted;
+    const C = 113.1;
+
+    const cal = [];
+    [26, 27, 28, 29, 30, 31].forEach(n => cal.push({ n, fw: 400, bg: 'transparent', c: '#C9CEDC', dots: [] }));
+    const dmap = { 9: ['#FF7A59', '#6366F1'], 10: ['#6366F1'], 11: ['#14B8A6'], 12: ['#6366F1', '#FF7A59'], 14: ['#6366F1'], 17: ['#14B8A6'], 19: ['#6366F1'], 24: ['#14B8A6'], 3: ['#6366F1'], 5: ['#14B8A6'], 6: ['#6366F1'] };
+    for (let n = 1; n <= 30; n++) {
+      const today = n === 9, past = n < 9;
+      const dots = empty ? [] : (dmap[n] || []).map(c => past ? '#C9CEDC' : c);
+      cal.push({ n, fw: today ? 600 : 400, bg: today ? '#6366F1' : 'transparent', c: today ? '#fff' : past ? '#9AA1B8' : '#1E2235', dots });
+    }
+    for (let n = 1; cal.length < 42; n++) cal.push({ n, fw: 400, bg: 'transparent', c: '#C9CEDC', dots: [] });
+
+    const up = (dow, day, title, sub, dot, today) => ({ dow, day, title, sub, dot, dateBg: today ? '#EEF0FF' : '#F7F8FC', dateC: today ? '#6366F1' : '#9AA1B8', dateC2: today ? '#4F46E5' : '#1E2235' });
+    const upcoming = empty ? [] : [
+      up('T2', '09', 'Hạn lời mời · YC-0029', '11:30 · Toán 8 · Võ Khánh Linh', '#FF7A59', true),
+      up('T2', '09', 'Học thử · YC-0026', '19:30 · Tiếng Anh 6 · gia sư Lê Quốc Khánh', '#6366F1', true),
+      up('T3', '10', 'Học thử · YC-0030', '20:00 · Ngữ văn 7 · gia sư Phan Thị Mai', '#6366F1', false),
+      up('T4', '11', 'Khóa kết thúc · KH-0004', 'Hóa học 10 · buổi 12/12', '#14B8A6', false),
+      up('T5', '12', 'Học thử · YC-0028', '18:30 · IELTS · gia sư Nguyễn Hoàng Nam', '#6366F1', false)
+    ];
+
+    const greet = `Chào buổi ${part.toLowerCase()}, Trang 👋`;
+    const cheer = empty ? 'Hôm nay chưa có việc nào cần xử lý. Bạn có thể tạo yêu cầu mới khi phụ huynh gọi tới.'
+      : warn ? 'Có một yêu cầu sắp hết hạn lời mời mà chưa ai nhận. Xử lý mục đó trước nhé.'
+      : 'Tháng này 86% yêu cầu đã có gia sư. Còn 4 việc gấp đang chờ bạn.';
+    const bannerChips = empty ? [{ icon: 'bi-check2-circle', text: 'Không có việc gấp', color: '#0F766E' }] : [
+      { icon: 'bi-lightning-charge', text: '4 việc gấp hôm nay', color: '#C2410C' },
+      { icon: 'bi-stopwatch', text: warn ? '1 lời mời hết hạn sau 45 phút' : '1 lời mời sắp hết hạn', color: warn ? '#C2292E' : '#4A5068' },
+      { icon: 'bi-clipboard-check', text: '1 kết quả học thử chưa ghi', color: '#4A5068' }
+    ];
+
+    const outs = [
+      ['yes', 'check-circle', '#16A34A', 'Đồng ý đăng ký', 'Phụ huynh muốn học chính thức. Tiếp theo: Mở khóa học.'],
+      ['no', 'x-circle', '#E5484D', 'Không đăng ký', 'Yêu cầu sẽ được đóng với lý do "Không đăng ký sau học thử".'],
+      ['wait', 'clock', '#F59E0B', 'Cần thêm thời gian', 'Phụ huynh cần cân nhắc. Hệ thống nhắc bạn gọi lại sau 2 ngày.']
+    ].map(([v, icon, ic, label, desc]) => {
+      const on = S.outcome === v;
+      return { icon: 'bi-' + icon, ic, label, desc, on, pick: () => this.setState({ outcome: v, outcomeErr: false }), border: on ? '#6366F1' : '#E6E9F2', bg: on ? '#FAFAFF' : '#fff' };
+    });
+
+    const allCmds = [
+      { icon: 'bi-plus-lg', label: 'Tạo yêu cầu mới', group: 'Thao tác' },
+      { icon: 'bi-file-earmark-text', label: 'Mở YC-0012 · Trần Gia Bảo · IELTS', group: 'Yêu cầu' },
+      { icon: 'bi-file-earmark-text', label: 'Mở YC-0029 · Võ Khánh Linh · Toán 8', group: 'Yêu cầu' },
+      { icon: 'bi-journal-bookmark', label: 'Mở KH-0007 · Trần Gia Bảo · IELTS', group: 'Khóa học' },
+      { icon: 'bi-person', label: 'Học viên: Nguyễn Minh Anh', group: 'Học viên' },
+      { icon: 'bi-mortarboard', label: 'Gia sư: Phạm Ngọc Lan', group: 'Gia sư' },
+      { icon: 'bi-calculator', label: 'Đối soát thù lao tháng 10/2026', group: 'Đi tới' }
+    ];
+    const ql = S.q.trim().toLowerCase();
+    const cmds = allCmds.filter(c => !ql || c.label.toLowerCase().includes(ql)).map(c => ({ ...c, run: () => this.setState({ palette: false }) }));
+
+    return {
+      sideW: collapsed ? '72px' : '240px', expanded: !collapsed,
+      toggleSide: () => this.setState({ collapsed: !collapsed }),
+      navOps: [
+        { icon: 'bi-inbox', label: 'Yêu cầu học tập', badge: empty ? 0 : 3, href: 'Tuyen sinh - Yeu cau hoc tap.dc.html' },
+        { icon: 'bi-people', label: 'Học viên', badge: 0, href: 'Tuyen sinh - Hoc vien.dc.html' },
+        { icon: 'bi-mortarboard', label: 'Gia sư', badge: 0, href: 'Tuyen sinh - Gia su.dc.html' },
+        { icon: 'bi-journal-bookmark', label: 'Khóa học', badge: empty ? 0 : 2, href: 'Tuyen sinh - Khoa hoc.dc.html' },
+        { icon: 'bi-clipboard-check', label: 'Hậu kiểm buổi học', badge: empty ? 0 : 4, href: 'Tuyen sinh - Hau kiem buoi hoc.dc.html' }
+      ],
+      payBadge: !empty,
+      op: m ? 1 : 0, ty: m ? 0 : 6,
+      greet, cheer, bannerChips, k, spark,
+      invHotW: m && !empty ? '28%' : '0%', invRestW: m && !empty ? '72%' : '0%',
+      invHotText: empty ? 'không có lời mời sắp hết hạn' : warn ? '2 sắp hết hạn · 1 dưới 1 giờ' : '2 sắp hết hạn < 6 giờ',
+      endingBars: empty ? ['0%', '0%', '0%'] : (m ? ['88%', '80%', '75%'] : ['0%', '0%', '0%']),
+      ringOffset: m ? C * (1 - k.rate / 100) : C,
+      showWarnAlert: warn,
+      filters: fl, groups, hasGroups: groups.length > 0, taskCount: total || '', loading: S.loading && !empty, skel: ['55%', '70%', '48%', '62%'],
+      noTasks: !S.loading && visible.length === 0,
+      emptyTitle: empty || total === 0 ? 'Đã xử lý hết việc hôm nay' : 'Không có việc trong nhóm này',
+      emptyDesc: empty || total === 0 ? 'Khi phụ huynh gọi tới, tạo yêu cầu mới để hệ thống đề xuất gia sư.' : 'Chọn "Tất cả" để xem các việc khác.',
+      closeMenu: () => this.setState({ menuFor: null }),
+      cal, upcoming, noUpcoming: upcoming.length === 0,
+      drawerOpen: S.drawer, closeDrawer: () => this.setState({ drawer: false }), outcomes: outs, outcomeErr: S.outcomeErr,
+      saveOutcome: () => this.save(),
+      copyPhone: () => { try { navigator.clipboard && navigator.clipboard.writeText('0912345678').catch(() => {}); } catch (e) {} this.toast('Đã sao chép SĐT phụ huynh'); },
+      dialogOpen: S.dialog, reason: S.reason, reasonErr: S.reasonErr, reasonBorder: S.reasonErr ? '#E5484D' : '#E6E9F2',
+      onReason: e => this.setState({ reason: e.target.value, reasonErr: false }),
+      closeDialog: () => this.setState({ dialog: false }),
+      confirmClose: () => {
+        if (!S.reason) { this.setState({ reasonErr: true }); return; }
+        this.setState({ dialog: false }); this.markDone('yc27');
+        this.toast('Đã đóng yêu cầu YC-0027', () => this.unDone('yc27'));
+      },
+      paletteOpen: S.palette, q: S.q, onQ: e => this.setState({ q: e.target.value }), cmds, noCmds: cmds.length === 0,
+      openPalette: () => this.setState({ palette: true, q: '' }), closePalette: () => this.setState({ palette: false }),
+      stop: e => e.stopPropagation(),
+      hasToast: !!S.toast, toastText: S.toast || '', toastUndo: !!S.undoFn,
+      undo: () => { clearTimeout(this.tt); S.undoFn && S.undoFn(); },
+      hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

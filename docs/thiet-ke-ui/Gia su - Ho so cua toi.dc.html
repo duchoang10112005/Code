@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Hồ sơ của tôi · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#C2410C">Góc giảng dạy</small></div></div>
+<nav class="nav">
+<div class="nav-h">GIẢNG DẠY</div>
+<a href="Trang chu Gia su v2.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Gia su - Loi moi nhan lop.dc.html"><i class="bi bi-envelope-open"></i><span>Lời mời nhận lớp</span><b class="badge">2</b></a>
+<a href="#"><i class="bi bi-collection"></i><span>Lớp của tôi</span></a>
+<a href="Gia su - Chi tiet buoi hoc v2.dc.html"><i class="bi bi-calendar3"></i><span>Buổi học</span><b class="badge">1</b></a>
+<a href="Gia su - Thu nhap.dc.html"><i class="bi bi-wallet2"></i><span>Thu nhập</span></a>
+<div class="nav-h">CÁ NHÂN</div>
+<a href="#" aria-current="page"><i class="bi bi-person-circle"></i><span>Hồ sơ của tôi</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#FFE4DA;color:#C2410C;font-size:12px">NL</div><div style="flex:1;min-width:0"><b>Phạm Ngọc Lan</b><span class="role" style="background:#FFEFEA;color:#C2410C">Gia sư</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><h1>Hồ sơ của tôi</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo, 3 chưa đọc" style="margin-left:auto"><i class="bi bi-bell"></i><span class="dot-badge">3</span></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<section class="card" aria-labelledby="hs-t" style="overflow:hidden">
+<div style="display:flex;align-items:center;gap:18px;padding:22px 24px;background:radial-gradient(90% 140% at 0% 0%,#FFE6DC 0%,rgba(255,230,220,0) 55%),#fff">
+<span class="av" style="width:64px;height:64px;font-size:20px;background:#FFE4DA;color:#C2410C;border:3px solid #fff;box-shadow:0 1px 3px rgba(16,24,40,.1)">NL</span>
+<div style="flex:1;min-width:0"><div class="row" style="gap:10px;flex-wrap:wrap"><h2 id="hs-t" style="margin:0;font-size:20px;line-height:28px;font-weight:600">Phạm Ngọc Lan</h2><span class="chip" style="height:24px;font-weight:600;background:#E6FAF7;color:#0F766E"><span class="d" style="background:#14B8A6"></span>Đang hoạt động</span></div>
+<div class="row sm muted" style="gap:16px;margin-top:6px;flex-wrap:wrap"><span class="row" style="gap:6px"><i class="bi bi-envelope-open" aria-hidden="true"></i>ngoclan.pham@gmail.com</span><span class="row" style="gap:6px"><i class="bi bi-chat-dots" aria-hidden="true"></i>0905 662 318</span><span class="row" style="gap:6px"><i class="bi bi-calendar3" aria-hidden="true"></i>Tham gia 12/03/2025</span></div></div>
+<div style="width:220px;flex:none"><div class="row sm"><span class="b5">Hồ sơ hoàn thiện</span><b class="b6" style="margin-left:auto">{{ pct }}%</b></div><div class="bar" style="margin-top:6px"><span style="width:{{ pctW }};background:#14B8A6;transition:width .4s"></span></div><div class="sm muted" style="margin-top:6px">{{ pctHint }}</div></div>
+</div>
+</section>
+
+<div class="grid-aside">
+<div class="stack">
+<section class="card" aria-labelledby="mon-t">
+<div class="card-h"><h3 id="mon-t">Môn dạy</h3><span class="sm muted">{{ okN }} môn đã duyệt · chỉ nhận lời mời các môn đã duyệt</span><button type="button" class="btn sm pri" style="margin-left:auto" onClick="{{ openNew }}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Đăng ký môn mới</button></div>
+<div role="table" aria-label="Môn dạy" style="--cols:minmax(0,1.2fr) minmax(0,1.5fr) 128px 132px">
+<div role="row" class="gt-h"><span role="columnheader">Môn · cấp độ</span><span role="columnheader">Minh chứng</span><span role="columnheader">Trạng thái</span><span role="columnheader" class="sr">Thao tác</span></div>
+<sc-for list="{{ subjects }}" as="s" hint-placeholder-count="5">
+<div role="row" class="gt-r" style="background:{{ s.hl }}">
+<span role="cell"><span class="b5" style="display:block">{{ s.name }}</span><span class="sm muted">{{ s.level }}</span></span>
+<span role="cell" style="min-width:0"><span class="sm row" style="gap:6px"><i class="bi bi-clipboard-check" aria-hidden="true" style="color:#646B85"></i><span class="ell">{{ s.proof }}</span></span><sc-if value="{{ s.note }}"><span class="sm" style="display:block;margin-top:3px;color:{{ s.noteC }}">{{ s.note }}</span></sc-if></span>
+<span role="cell"><span class="chip" style="background:{{ s.bg }};color:{{ s.c }}"><span class="d" style="background:{{ s.dot }}"></span>{{ s.st }}</span></span>
+<span role="cell" class="row" style="justify-content:flex-end"><sc-if value="{{ s.canResend }}"><button type="button" class="btn sm" onClick="{{ s.resend }}"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Gửi lại</button></sc-if><sc-if value="{{ s.canWithdraw }}"><button type="button" class="btn sm" onClick="{{ s.withdraw }}">Rút đăng ký</button></sc-if></span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="card" aria-labelledby="gr-t">
+<div class="card-h"><h3 id="gr-t">Giờ rảnh mỗi tuần</h3><span class="sm muted">Bấm ô để bật/tắt · lời mời chỉ gửi khi khớp giờ rảnh</span>
+<span class="row" style="margin-left:auto"><sc-if value="{{ dirty }}"><button type="button" class="btn sm" onClick="{{ resetFree }}">Hoàn tác</button></sc-if><button type="button" class="btn sm pri" onClick="{{ saveFree }}" disabled="{{ saveOff }}"><i class="bi {{ saveIcon }}" aria-hidden="true"></i>{{ saveText }}</button></span></div>
+<div class="card-b">
+<div role="grid" aria-label="Giờ rảnh" style="display:flex;flex-direction:column;gap:6px">
+<div role="row" style="display:grid;grid-template-columns:112px repeat(7,minmax(0,1fr));gap:6px"><span role="columnheader" class="sm muted">Khung giờ</span><sc-for list="{{ days }}" as="dd"><span role="columnheader" class="sm b6" style="text-align:center;color:#4A5068">{{ dd }}</span></sc-for></div>
+<sc-for list="{{ grid }}" as="row" hint-placeholder-count="4"><div role="row" style="display:grid;grid-template-columns:112px repeat(7,minmax(0,1fr));gap:6px"><span role="rowheader" style="line-height:16px"><span class="b5" style="display:block;font-size:13px">{{ row.label }}</span><span style="font-size:11px" class="muted">{{ row.time }}</span></span><sc-for list="{{ row.cells }}" as="c"><button type="button" role="gridcell" aria-label="{{ c.aria }}" aria-pressed="{{ c.on }}" disabled="{{ c.busy }}" onClick="{{ c.toggle }}" style="height:36px;border-radius:8px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.c }};cursor:{{ c.cur }};display:grid;place-items:center;font-size:11px;font-weight:600;transition:background .12s,border-color .12s"><sc-if value="{{ c.isFree }}"><i class="bi bi-check-lg" aria-hidden="true" style="font-size:14px"></i></sc-if><sc-if value="{{ c.busy }}">Lớp</sc-if></button></sc-for></div></sc-for>
+</div>
+<div class="legend" style="margin-top:12px;padding-top:10px;border-top:1px solid #EEF0F5"><span><i style="background:#E6FAF7;border:1px solid #5FD3C3;width:12px;height:12px;border-radius:3px"></i>{{ freeLabel }}</span><span><i style="background:#EEF0FF;border:1px solid #A5B4FC;width:12px;height:12px;border-radius:3px"></i>Đang có lớp, không đổi được</span><span><i style="background:#F7F8FC;border:1px solid #E6E9F2;width:12px;height:12px;border-radius:3px"></i>Không rảnh</span></div>
+</div>
+</section>
+</div>
+
+<aside class="stack-16 sticky" aria-label="Thông tin cá nhân">
+<section class="card" aria-labelledby="mt-t">
+<div class="card-h"><h3 id="mt-t">Mục tiêu tháng</h3></div>
+<div class="card-b"><div class="row"><div role="group" aria-label="Số buổi mục tiêu" class="row" style="gap:0;border:1px solid #E6E9F2;border-radius:8px"><button type="button" class="icon-btn" onClick="{{ decGoal }}" aria-label="Giảm 1 buổi"><i class="bi bi-dash-lg"></i></button><span aria-live="polite" style="min-width:76px;text-align:center;font-weight:600;line-height:36px;border-left:1px solid #EEF0F5;border-right:1px solid #EEF0F5">{{ goal }} buổi</span><button type="button" class="icon-btn" onClick="{{ incGoal }}" aria-label="Tăng 1 buổi"><i class="bi bi-plus-lg"></i></button></div><span class="sm muted" style="margin-left:12px;line-height:18px">Hiển thị trên vòng tiến độ ở trang chủ</span></div></div>
+</section>
+<section class="card" aria-labelledby="tt-t">
+<div class="card-h"><h3 id="tt-t">Thông tin cá nhân</h3><button type="button" class="btn sm" style="margin-left:auto" onClick="{{ toggleEdit }}"><i class="bi {{ editIcon }}" aria-hidden="true"></i>{{ editText }}</button></div>
+<sc-if value="{{ viewInfo }}" hint-placeholder-val="{{ true }}"><dl style="margin:0;padding:14px 16px;display:flex;flex-direction:column;gap:12px"><sc-for list="{{ info }}" as="x" hint-placeholder-count="5"><div><dt class="sm muted">{{ x.k }}</dt><dd style="margin:2px 0 0;font-size:14px;line-height:21px">{{ x.v }}</dd></div></sc-for></dl></sc-if>
+<sc-if value="{{ editInfo }}"><div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<div class="field"><label for="sdt">Số điện thoại / Zalo</label><input id="sdt" class="inp" value="{{ p.phone }}" onChange="{{ setP.phone }}"></div>
+<div class="field"><label for="hv">Học vấn</label><input id="hv" class="inp" value="{{ p.edu }}" onChange="{{ setP.edu }}"></div>
+<div class="field"><label for="gt">Giới thiệu với phụ huynh</label><textarea id="gt" class="inp" rows="3" value="{{ p.bio }}" onChange="{{ setP.bio }}"></textarea></div>
+<div class="field"><label for="nh">Tài khoản nhận thù lao</label><input id="nh" class="inp" value="{{ p.bank }}" onChange="{{ setP.bank }}"><span class="sm muted">Đổi tài khoản ngân hàng cần Quản trị viên xác nhận lại.</span></div>
+</div></sc-if>
+</section>
+</aside>
+</div>
+</main>
+</div>
+
+<sc-if value="{{ drawer }}">
+<div class="overlay" style="padding:24px">
+<section role="dialog" aria-modal="true" aria-labelledby="dk-t" style="width:960px;max-width:100%;height:min(740px,calc(100vh - 48px));background:#fff;border-radius:16px;box-shadow:0 32px 80px rgba(16,24,40,.25);display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;animation:gso-in .25s ease both">
+
+<div class="row" style="gap:14px;padding:20px 28px;border-bottom:1px solid #EEF0F5">
+<span class="tile" style="width:40px;height:40px;border-radius:10px;background:#EEF0FF;color:#4F46E5;font-size:17px"><i class="bi bi-journal-plus" aria-hidden="true"></i></span>
+<div style="flex:1;min-width:0"><h2 id="dk-t" style="margin:0;font-size:18px;line-height:26px;font-weight:600">{{ drawerTitle }}</h2><div class="sm muted">Admin duyệt trong 1–2 ngày làm việc. Sau khi duyệt, bạn nhận lời mời các lớp môn này khớp giờ rảnh.</div></div>
+<button type="button" class="icon-btn" onClick="{{ closeDrawer }}" aria-label="Đóng"><i class="bi bi-x-lg"></i></button>
+</div>
+
+<div style="display:grid;grid-template-columns:248px minmax(0,1fr);min-height:0">
+<nav aria-label="Các bước đăng ký" style="background:#FAFBFE;border-right:1px solid #EEF0F5;padding:20px 16px;display:flex;flex-direction:column;gap:4px;overflow:auto">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+<button type="button" onClick="{{ s.go }}" disabled="{{ s.locked }}" aria-current="{{ s.cur }}" style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:10px;border:none;border-radius:10px;background:{{ s.bg }};text-align:left;cursor:{{ s.cursor }};color:#1E2235">
+<span style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;background:{{ s.cBg }};border:1.5px solid {{ s.cBd }};color:{{ s.cC }}"><sc-if value="{{ s.done }}"><i class="bi bi-check-lg" aria-hidden="true"></i></sc-if><sc-if value="{{ s.notDone }}">{{ s.n }}</sc-if></span>
+<span style="min-width:0"><span style="display:block;font-size:13px;font-weight:600;line-height:18px;color:{{ s.tc }}">{{ s.label }}</span><span style="display:block;font-size:12px;line-height:16px;color:{{ s.sc }};margin-top:2px">{{ s.sub }}</span></span>
+</button>
+</sc-for>
+<div style="margin-top:auto;padding:14px;border-radius:12px;background:#fff;border:1px solid #EEF0F5">
+<div class="sm muted">Bạn đang đăng ký</div>
+<div class="b6" style="margin-top:4px">{{ sumSubj }}</div>
+<div class="sm" style="color:#4A5068;margin-top:2px;line-height:18px">{{ sumLevels }}</div>
+<div class="row sm" style="margin-top:10px;gap:6px;color:{{ sumTestC }}"><i class="bi {{ sumTestIcon }}" aria-hidden="true"></i>{{ sumTest }}</div>
+<div class="row sm" style="margin-top:4px;gap:6px;color:{{ sumProofC }}"><i class="bi {{ sumProofIcon }}" aria-hidden="true"></i>{{ sumProof }}</div>
+</div>
+</nav>
+
+<div style="overflow:auto;padding:24px 28px;display:flex;flex-direction:column;gap:20px">
+
+<sc-if value="{{ st1 }}" hint-placeholder-val="{{ true }}">
+<div><h3 style="margin:0;font-size:16px;font-weight:600">Chọn môn muốn dạy</h3><p class="sm muted" style="margin:4px 0 0">Chỉ hiện các môn trung tâm đang tuyển mà bạn chưa đăng ký.</p></div>
+<div role="radiogroup" aria-label="Môn học" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{ subjCards }}" as="o" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" disabled="{{ o.off }}" style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid {{ o.bd }};border-radius:12px;background:{{ o.bg }};box-shadow:{{ o.sh }};cursor:pointer;text-align:left;color:#1E2235;transition:border-color .15s,background .15s"><span class="tile" style="background:{{ o.tBg }};color:{{ o.tC }};font-size:12px;font-weight:700">{{ o.abbr }}</span><span style="min-width:0;flex:1"><span class="b6" style="display:block;font-size:14px">{{ o.name }}</span><span class="sm" style="display:block;color:{{ o.demandC }}">{{ o.demand }}</span></span><sc-if value="{{ o.isOn }}"><i class="bi bi-check-circle-fill" aria-hidden="true" style="color:#6366F1"></i></sc-if></button></sc-for>
+</div>
+<sc-if value="{{ e.subj }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Chọn môn muốn dạy.</span></sc-if>
+<div style="padding-top:18px;border-top:1px solid #EEF0F5"><div class="lbl">Cấp độ dạy được <span class="req">*</span></div><p class="sm muted" style="margin:4px 0 10px">Chọn một hoặc nhiều cấp độ trung tâm đang mở cho môn này.</p>
+<div class="row" style="flex-wrap:wrap"><sc-for list="{{ levels }}" as="l"><button type="button" aria-pressed="{{ l.on }}" onClick="{{ l.toggle }}" class="btn sm" style="height:34px;padding:0 14px;border-color:{{ l.bd }};background:{{ l.bg }};color:{{ l.c }}"><sc-if value="{{ l.isOn }}"><i class="bi bi-check-lg" aria-hidden="true"></i></sc-if>{{ l.label }}</button></sc-for></div>
+<sc-if value="{{ e.level }}"><span class="err" role="alert" style="margin-top:8px"><i class="bi bi-exclamation-circle"></i>Chọn ít nhất 1 cấp độ.</span></sc-if></div>
+</sc-if>
+
+<sc-if value="{{ st2 }}">
+<div><h3 style="margin:0;font-size:16px;font-weight:600">Làm bài test năng lực {{ f.subj }}</h3><p class="sm muted" style="margin:4px 0 0">Mỗi môn có bài test riêng. Làm xong, chụp màn hình trang kết quả và nộp ở bên dưới.</p></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;align-items:stretch">
+<div style="padding:18px;border-radius:12px;background:radial-gradient(100% 140% at 0% 0%,#EEF0FF 0%,rgba(238,240,255,0) 60%),#FAFBFE;border:1px solid #E6E9F2;display:flex;flex-direction:column;gap:14px">
+<div class="row"><span class="chip" style="background:#fff;color:#4F46E5;border:1px solid #DCDFFB">Bài test · {{ test.code }}</span><span class="sm muted" style="margin-left:auto">{{ test.updated }}</span></div>
+<div class="b6" style="font-size:17px">{{ test.title }}</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><sc-for list="{{ test.meta }}" as="m"><div style="padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #EEF0F5"><div class="sm muted">{{ m.k }}</div><div class="b6" style="margin-top:2px">{{ m.v }}</div></div></sc-for></div>
+<a href="{{ test.link }}" target="_blank" rel="noopener" onClick="{{ markOpened }}" class="btn pri" style="height:42px;font-size:15px"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở bài test {{ f.subj }}</a>
+<sc-if value="{{ testOpened }}"><span class="row sm" style="gap:6px;color:#0F766E;justify-content:center"><i class="bi bi-check-circle" aria-hidden="true"></i>Đã mở bài test lúc {{ f.openedAt }}</span></sc-if>
+</div>
+<ol style="list-style:none;margin:0;padding:16px;border-radius:12px;border:1px solid #EEF0F5;display:flex;flex-direction:column;gap:12px">
+<li class="row sm" style="align-items:flex-start;gap:10px;line-height:18px"><span class="tile" style="width:24px;height:24px;font-size:11px;background:#EEF0FF;color:#4F46E5;font-weight:700">1</span>Bấm mở bài test, làm trong thời gian quy định.</li>
+<li class="row sm" style="align-items:flex-start;gap:10px;line-height:18px"><span class="tile" style="width:24px;height:24px;font-size:11px;background:#EEF0FF;color:#4F46E5;font-weight:700">2</span>Chụp màn hình trang kết quả, thấy rõ họ tên và điểm.</li>
+<li class="row sm" style="align-items:flex-start;gap:10px;line-height:18px"><span class="tile" style="width:24px;height:24px;font-size:11px;background:#EEF0FF;color:#4F46E5;font-weight:700">3</span>Nhập điểm và tải ảnh kết quả bên dưới.</li>
+<li class="row sm" style="align-items:flex-start;gap:10px;line-height:18px;color:#646B85"><i class="bi bi-info-circle" aria-hidden="true" style="margin-top:2px"></i>Chưa đạt có thể làm lại sau 7 ngày.</li>
+</ol>
+</div>
+<div style="padding:18px;border-radius:12px;border:1px solid #E6E9F2;display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px;align-items:start">
+<div class="field"><label for="diem">Điểm của bạn <span class="req">*</span></label><div class="row" style="gap:6px"><input id="diem" class="inp" inputMode="decimal" style="width:84px;text-align:center;font-weight:600" value="{{ f.score }}" onChange="{{ onScore }}" aria-invalid="{{ e.score }}" placeholder="0–10"><span class="muted">/ 10</span></div><sc-if value="{{ scoreMsg.show }}"><span class="sm row" style="gap:5px;color:{{ scoreMsg.c }}"><i class="bi {{ scoreMsg.icon }}" aria-hidden="true"></i>{{ scoreMsg.text }}</span></sc-if></div>
+<div class="field"><span class="lbl">Ảnh chụp kết quả <span class="req">*</span></span>
+<sc-if value="{{ noShot }}" hint-placeholder-val="{{ true }}"><div class="row" style="gap:8px"><label for="anh-test" class="btn" style="flex:1;border-style:dashed;border-color:{{ shotBd }}"><i class="bi bi-plus-lg" aria-hidden="true" style="color:#4F46E5"></i>Tải ảnh kết quả</label><input id="anh-test" type="file" accept="image/*,.pdf" onChange="{{ onShot }}" class="sr"><span class="sm muted">hoặc</span><input class="inp" aria-label="Link ảnh kết quả" style="flex:1" value="{{ shotLink }}" onChange="{{ onShotLink }}" onBlur="{{ commitShotLink }}" placeholder="Dán link ảnh (https://…)"></div></sc-if>
+<sc-if value="{{ hasShot }}"><div class="row" style="padding:10px 12px;border:1px solid #E6E9F2;border-radius:10px;gap:10px"><span class="tile" style="background:#E6FAF7;color:#0F766E"><i class="bi bi-check-circle" aria-hidden="true"></i></span><span class="ell b5" style="flex:1;font-size:13px">{{ f.shot }}</span><button type="button" class="icon-btn sm" onClick="{{ removeShot }}" aria-label="Bỏ ảnh kết quả"><i class="bi bi-x-lg"></i></button></div></sc-if>
+<sc-if value="{{ e.shot }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nộp ảnh chụp kết quả bài test.</span></sc-if></div>
+</div>
+<sc-if value="{{ e.score }}"><span class="err" role="alert" style="margin-top:-8px"><i class="bi bi-exclamation-circle"></i>Nhập điểm từ 0 đến 10.</span></sc-if>
+</sc-if>
+
+<sc-if value="{{ st3 }}">
+<div><h3 style="margin:0;font-size:16px;font-weight:600">Bằng cấp, chứng chỉ</h3><p class="sm muted" style="margin:4px 0 0">VD: thẻ sinh viên, bảng điểm, bằng tốt nghiệp, chứng chỉ IELTS, giấy khen. Thêm được nhiều mục, tải tệp hoặc dán link.</p></div>
+<sc-if value="{{ isResend }}"><div class="banner" style="background:#FDECEC;border-color:#F8C9CA;padding:10px 12px"><span class="ic" style="width:24px;height:24px;font-size:12px;color:#C2292E"><i class="bi bi-info-circle" aria-hidden="true"></i></span><span class="sm" style="color:#7A2A2D">Lần trước bị từ chối: {{ resendReason }}. Bổ sung minh chứng chuyên môn rõ ràng hơn.</span></div></sc-if>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ proofs }}" as="m"><div class="row" style="padding:12px;border:1px solid #E6E9F2;border-radius:12px;gap:10px"><span class="tile" style="background:{{ m.tBg }};color:{{ m.tC }}"><i class="bi {{ m.icon }}" aria-hidden="true"></i></span><span style="flex:1;min-width:0"><span class="b5" style="display:block;font-size:13px">{{ m.type }}</span><sc-if value="{{ m.isLink }}"><a href="{{ m.value }}" target="_blank" rel="noopener" class="sm ell" style="display:block">{{ m.short }}</a></sc-if><sc-if value="{{ m.isFile }}"><span class="sm muted ell" style="display:block">{{ m.value }}</span></sc-if></span><button type="button" class="icon-btn sm" onClick="{{ m.remove }}" aria-label="Bỏ minh chứng {{ m.type }}"><i class="bi bi-x-lg"></i></button></div></sc-for>
+</div>
+<div style="border:1.5px dashed {{ fileBd }};border-radius:12px;padding:16px;background:#FAFBFE;display:flex;flex-direction:column;gap:12px">
+<div class="row" style="gap:10px"><span class="lbl">Thêm minh chứng</span><div class="tabs" role="tablist" aria-label="Cách thêm minh chứng" style="margin-left:auto"><sc-for list="{{ pModes }}" as="t"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="height:28px;padding:0 10px;font-size:12px"><i class="bi {{ t.icon }}" aria-hidden="true"></i>{{ t.label }}</button></sc-for></div></div>
+<div class="row" style="gap:8px;flex-wrap:wrap"><sc-for list="{{ typeChips }}" as="t"><button type="button" aria-pressed="{{ t.on }}" onClick="{{ t.pick }}" class="btn sm" style="border-color:{{ t.bd }};background:{{ t.bg }};color:{{ t.c }}"><i class="bi {{ t.icon }}" aria-hidden="true"></i>{{ t.label }}</button></sc-for></div>
+<sc-if value="{{ modeFile }}" hint-placeholder-val="{{ true }}"><label for="tep" class="row" style="justify-content:center;gap:8px;height:44px;border:1px solid #E6E9F2;border-radius:10px;background:#fff;cursor:pointer;font-size:13px;font-weight:500"><i class="bi bi-plus-lg" aria-hidden="true" style="color:#4F46E5"></i>Chọn tệp {{ pTypeLower }} (PDF hoặc ảnh, tối đa 5 MB)</label><input id="tep" type="file" accept=".pdf,image/*" onChange="{{ onFile }}" class="sr"></sc-if>
+<sc-if value="{{ modeLink }}"><div class="row" style="gap:8px"><label for="link-mc" class="sr">Link minh chứng</label><input id="link-mc" class="inp" type="url" value="{{ pLink }}" onChange="{{ onPLink }}" aria-invalid="{{ linkErr }}" placeholder="https://drive.google.com/…"><button type="button" class="btn" onClick="{{ addLink }}">Thêm {{ pTypeLower }}</button></div><span class="sm" style="color:{{ linkHintC }};line-height:18px">{{ linkHint }}</span></sc-if>
+</div>
+<sc-if value="{{ e.file }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Thêm ít nhất 1 bằng cấp hoặc chứng chỉ.</span></sc-if>
+</sc-if>
+
+<sc-if value="{{ st4 }}">
+<div><h3 style="margin:0;font-size:16px;font-weight:600">Xem lại và gửi</h3><p class="sm muted" style="margin:4px 0 0">Kiểm tra lại thông tin. Admin sẽ xem đúng những nội dung này để duyệt.</p></div>
+<div class="info" style="border:1px solid #EEF0F5;border-radius:12px">
+<dl><div><dt>Môn</dt><dd class="b6">{{ f.subj }}</dd></div><div><dt>Cấp độ</dt><dd>{{ sumLevels }}</dd></div><div><dt>Bài test</dt><dd class="b5" style="color:{{ scoreMsg.c }}">{{ reviewTest }}</dd></div></dl>
+<dl><div><dt>Ảnh kết quả</dt><dd class="ell">{{ f.shot }}</dd></div><div><dt>Minh chứng</dt><dd>{{ reviewProofs }}</dd></div><div><dt>Giờ rảnh</dt><dd>{{ freeN }} khung/tuần</dd></div></dl>
+</div>
+<div class="field"><label for="kn">Kinh nghiệm dạy môn này <span class="req">*</span></label><textarea id="kn" class="inp" rows="4" value="{{ f.exp }}" onChange="{{ onExp }}" aria-invalid="{{ e.exp }}" placeholder="VD: 3 năm luyện thi vào 10, 20 học sinh đạt 8+; quen dạy học sinh mất gốc"></textarea><div class="row sm"><sc-if value="{{ e.exp }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Mô tả ngắn kinh nghiệm, tối thiểu 15 ký tự.</span></sc-if><span class="muted" style="margin-left:auto">{{ expCount }}</span></div></div>
+<label class="row" style="align-items:flex-start;gap:10px;cursor:pointer;padding:12px 14px;border-radius:10px;background:#F7F8FC;border:1px solid {{ agreeBd }}"><input type="checkbox" checked="{{ f.agree }}" onChange="{{ onAgree }}" style="width:16px;height:16px;margin:2px 0 0;accent-color:#6366F1" aria-invalid="{{ e.agree }}"><span class="sm" style="line-height:18px">Tôi cam kết bài test do chính tôi làm, thông tin và minh chứng là đúng sự thật. Trung tâm có thể hủy duyệt nếu phát hiện sai lệch.</span></label>
+</sc-if>
+</div>
+</div>
+
+<div class="row" style="padding:16px 28px;border-top:1px solid #EEF0F5;background:#FAFBFE;gap:10px">
+<span class="sm muted">Bước {{ stepN }}/4 · {{ stepName }}</span>
+<div class="bar" style="width:140px;height:6px"><span style="width:{{ stepW }};background:#6366F1;transition:width .3s"></span></div>
+<span style="flex:1"></span>
+<button type="button" class="btn" onClick="{{ backOrClose }}">{{ backText }}</button>
+<sc-if value="{{ notLast }}" hint-placeholder-val="{{ true }}"><button type="button" class="btn pri" onClick="{{ next }}" style="min-width:132px">Tiếp tục<i class="bi bi-chevron-right" aria-hidden="true"></i></button></sc-if>
+<sc-if value="{{ isLast }}"><button type="button" class="btn pri" onClick="{{ submit }}" style="min-width:132px"><i class="bi bi-send" aria-hidden="true"></i>Gửi đăng ký</button></sc-if>
+</div>
+</section>
+</div>
+</sc-if>
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Bình thường","Đang đăng ký môn mới"],"default":"Bình thường","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, added: [], status: {}, drawer: false, step: 1, resend: null, f: null, tried: false, free: null, saved: null, goal: 20, edit: false, pType: 'Bằng cấp', pMode: 'file', pLink: '', linkTried: false, shotLink: '',
+    p: { phone: '0905 662 318', edu: 'Cử nhân Sư phạm Toán · ĐH Sư phạm Đà Nẵng', bio: 'Dạy theo lộ trình rõ ràng, gửi nhận xét cho phụ huynh sau mỗi buổi.', bank: 'Vietcombank ···· 4821' }, toast: null };
+  componentWillUnmount() { clearTimeout(this.tt); }
+  toast(t) { clearTimeout(this.tt); this.setState({ toast: t }); this.tt = setTimeout(() => this.setState({ toast: null }), 5000); }
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Bình thường';
+    const demo = key === 'Đang đăng ký môn mới';
+    const reset = { drawer: demo, step: demo ? 2 : 1, f: null, resend: null, tried: false };
+    const S = S0.key === key ? S0 : { ...S0, ...reset };
+    const set = p => this.setState(S0.key === key ? p : { ...reset, ...p, key });
+    const pad = n => String(n).padStart(2, '0');
+    const nowStr = () => { const t = new Date(); return `${pad(t.getHours())}:${pad(t.getMinutes())}`; };
+    const TONE = { teal: { bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, orange: { bg: '#FFF4E5', c: '#B45309', dot: '#F59E0B' }, red: { bg: '#FDECEC', c: '#C2292E', dot: '#E5484D' }, neutral: { bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' } };
+
+    // ===== Môn đã đăng ký =====
+    const BASE = [
+      { id: 'ie', name: 'IELTS', level: 'Band 5.0 – 7.0', proof: 'Bài test 9,0/10 · IELTS 8.0', st: 'ok' },
+      { id: 't9', name: 'Toán 9', level: 'Ôn thi vào 10', proof: 'Bài test 8,5/10 · Bằng cử nhân Sư phạm Toán', st: 'ok' },
+      { id: 'v8', name: 'Ngữ văn 8', level: 'THCS', proof: 'Bài test 8,0/10 · Bảng điểm', st: 'ok' },
+      { id: 'ta9', name: 'Tiếng Anh 9', level: 'Ôn thi vào 10', proof: 'Bài test 8,8/10 · IELTS 8.0 · gửi 08/11', st: 'pending', note: 'Admin thường duyệt trong 1–2 ngày làm việc' },
+      { id: 'vl10', name: 'Vật lý 10', level: 'THPT', proof: 'Bài test 6,5/10 · chưa có bằng cấp', st: 'no', note: 'Từ chối 02/09: thiếu minh chứng chuyên môn' }
+    ];
+    const SM = { ok: { ...TONE.teal, st: 'Đã duyệt' }, pending: { ...TONE.orange, st: 'Chờ duyệt' }, no: { ...TONE.red, st: 'Từ chối' }, withdrawn: { ...TONE.neutral, st: 'Đã rút' } };
+    const all = BASE.concat(S.added).map(s => ({ ...s, st: S.status[s.id] || s.st }));
+    const subjects = all.filter(s => s.st !== 'withdrawn').map(s => ({ name: s.name, level: s.level, proof: s.proof, ...SM[s.st], note: s.st === 'ok' ? '' : (s.note || ''), noteC: s.st === 'no' ? '#C2292E' : '#646B85',
+      hl: s.isNew ? '#FFFCF5' : 'transparent', canResend: s.st === 'no', canWithdraw: s.st === 'pending',
+      resend: () => set({ drawer: true, step: 2, resend: s, f: { subj: s.name, levels: [s.level], proofs: [], exp: '', agree: false, score: '', shot: '', opened: false, openedAt: '' }, tried: false }),
+      withdraw: () => { set({ status: { ...S.status, [s.id]: 'withdrawn' } }); this.toast(`Đã rút đăng ký môn ${s.name}`); } }));
+    const okN = all.filter(s => s.st === 'ok').length;
+
+    // ===== Giờ rảnh =====
+    const DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const ROWS = [['Sáng', '08:00–11:00'], ['Chiều', '14:00–17:00'], ['Tối sớm', '17:30–19:00'], ['Tối', '19:00–21:00']];
+    const SAVED = S.saved || ['0-2', '1-3', '2-2', '3-3', '4-3', '5-1'];
+    const BUSY = ['0-3', '2-3', '3-2', '5-0', '4-2'];
+    const free = S.free || SAVED;
+    const dirty = free.slice().sort().join() !== SAVED.slice().sort().join();
+    const grid = ROWS.map(([label, time], r) => ({ label, time, cells: DAYS.map((d, i) => { const k = i + '-' + r, b = BUSY.includes(k), on = free.includes(k);
+      return { busy: b, isFree: on && !b, on: on ? 'true' : 'false', cur: b ? 'not-allowed' : 'pointer', bg: b ? '#EEF0FF' : on ? '#E6FAF7' : '#F7F8FC', bd: b ? '#A5B4FC' : on ? '#5FD3C3' : '#E6E9F2', c: b ? '#4F46E5' : '#0F766E',
+        aria: `${d} ${label} ${time}: ${b ? 'đang có lớp' : on ? 'rảnh' : 'không rảnh'}`, toggle: () => { if (b) return; set({ free: on ? free.filter(x => x !== k) : free.concat([k]) }); } }; }) }));
+
+    // ===== Danh mục do trung tâm cấu hình (môn, cấp độ, bài test) — thêm/bớt ở phía quản trị =====
+    const CATALOG = [
+      { name: 'Toán 6', abbr: 'T6', demand: 'Nhu cầu cao', hot: true }, { name: 'Toán 7', abbr: 'T7', demand: '4 yêu cầu đang mở' }, { name: 'Toán 8', abbr: 'T8', demand: 'Nhu cầu cao', hot: true },
+      { name: 'Tiếng Anh 6', abbr: 'A6', demand: '3 yêu cầu đang mở' }, { name: 'Tiếng Anh 7', abbr: 'A7', demand: '2 yêu cầu đang mở' }, { name: 'Tiếng Anh 8', abbr: 'A8', demand: 'Nhu cầu cao', hot: true },
+      { name: 'Vật lý 10', abbr: 'L10', demand: '2 yêu cầu đang mở' }, { name: 'Hóa học 9', abbr: 'H9', demand: '5 yêu cầu đang mở' }, { name: 'Tin học 8', abbr: 'TH', demand: '1 yêu cầu đang mở' }
+    ];
+    const LEVELS = ['THCS', 'Ôn thi vào 10', 'THPT', 'Mất gốc', 'Học sinh giỏi'];
+    const PT = [['Bằng cấp', 'bi-mortarboard'], ['Bảng điểm', 'bi-clipboard-check'], ['Thẻ sinh viên', 'bi-person'], ['Chứng chỉ', 'bi-check-circle'], ['Giấy khen', 'bi-flag'], ['Khác', 'bi-journal-bookmark']];
+    const PI = Object.fromEntries(PT);
+    const slug = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/\s+/g, '-');
+
+    const blank = { subj: '', levels: [], proofs: [], exp: '', agree: false, score: '', shot: '', opened: false, openedAt: '' };
+    const sample = { subj: 'Toán 8', levels: ['THCS', 'Mất gốc'], proofs: [{ type: 'Bằng cấp', kind: 'file', value: 'bang-cu-nhan-su-pham-toan.pdf' }, { type: 'Bảng điểm', kind: 'link', value: 'https://drive.google.com/file/d/1aBcD-bang-diem-dhsp/view' }], exp: '', agree: false, score: '8.5', shot: 'ket-qua-test-toan-8.png', opened: true, openedAt: '21:30' };
+    const f = S.f || (demo && !S.resend ? sample : blank);
+    const upd = p => set({ f: { ...f, ...p } });
+    const taken = all.filter(s => s.st !== 'withdrawn' && s.st !== 'no').map(s => s.name);
+    const scoreNum = parseFloat(String(f.score).replace(',', '.'));
+    const scoreOk = !isNaN(scoreNum) && scoreNum >= 0 && scoreNum <= 10;
+    const valid = { 1: !!f.subj && f.levels.length > 0, 2: scoreOk && !!f.shot, 3: f.proofs.length > 0, 4: f.exp.trim().length >= 15 && f.agree };
+    const e = S.tried ? {
+      subj: S.step === 1 && !f.subj, level: S.step === 1 && !f.levels.length, score: S.step === 2 && !scoreOk, shot: S.step === 2 && !f.shot,
+      file: S.step === 3 && !f.proofs.length, exp: S.step === 4 && f.exp.trim().length < 15, agree: S.step === 4 && !f.agree } : {};
+
+    const subjCards = (S.resend ? CATALOG.filter(c => c.name === S.resend.name).concat(CATALOG.some(c => c.name === S.resend.name) ? [] : [{ name: S.resend.name, abbr: 'L10', demand: 'Gửi lại' }]) : CATALOG.filter(c => !taken.includes(c.name))).map(c => {
+      const on = f.subj === c.name;
+      return { ...c, isOn: on, on: on ? 'true' : 'false', off: !!S.resend && !on, bd: on ? '#6366F1' : '#E6E9F2', bg: on ? '#F5F6FF' : '#fff', sh: on ? '0 0 0 3px #EEF0FF' : 'none',
+        tBg: on ? '#6366F1' : '#EEF0FF', tC: on ? '#fff' : '#4F46E5', demandC: c.hot ? '#C2410C' : '#646B85', pick: () => upd({ subj: c.name, score: f.subj === c.name ? f.score : '', shot: f.subj === c.name ? f.shot : '', opened: f.subj === c.name ? f.opened : false }) };
+    });
+    const levels = LEVELS.concat(f.levels.filter(x => !LEVELS.includes(x))).map(l => { const on = f.levels.includes(l); return { label: l, isOn: on, on: on ? 'true' : 'false', bd: on ? '#6366F1' : '#E6E9F2', bg: on ? '#F5F6FF' : '#fff', c: on ? '#4338CA' : '#1E2235', toggle: () => upd({ levels: on ? f.levels.filter(x => x !== l) : f.levels.concat([l]) }) }; });
+
+    const test = { code: f.subj ? `BT-${slug(f.subj).toUpperCase()}` : '', title: `Kiểm tra năng lực giảng dạy ${f.subj}`, updated: 'Cập nhật 01/11/2026', link: `https://giasuonline.vn/bai-test/${slug(f.subj || 'mon')}`,
+      meta: [{ k: 'Số câu', v: '30 câu' }, { k: 'Thời gian', v: '45 phút' }, { k: 'Điểm đạt', v: 'Từ 7,0/10' }] };
+    const scoreMsg = !String(f.score).trim() ? { show: false, c: '#646B85', icon: '', text: '' } : !scoreOk ? { show: true, c: '#C2292E', icon: 'bi-exclamation-circle', text: 'Điểm phải từ 0 đến 10' } : scoreNum >= 7 ? { show: true, c: '#0F766E', icon: 'bi-check-circle', text: 'Đạt ngưỡng' } : { show: true, c: '#B45309', icon: 'bi-exclamation-triangle', text: 'Dưới ngưỡng 7,0, Admin có thể từ chối' };
+
+    const proofs = f.proofs.map((m, i) => ({ type: m.type, value: m.value, isLink: m.kind === 'link', isFile: m.kind === 'file', short: m.value.replace(/^https:\/\//, ''), icon: m.kind === 'link' ? 'bi-box-arrow-up-right' : PI[m.type], tBg: m.kind === 'link' ? '#EAF2FF' : '#E6FAF7', tC: m.kind === 'link' ? '#1D4ED8' : '#0F766E', remove: () => upd({ proofs: f.proofs.filter((_, j) => j !== i) }) }));
+    const typeChips = PT.map(([label, icon]) => { const on = S.pType === label; return { label, icon, on: on ? 'true' : 'false', bd: on ? '#6366F1' : '#E6E9F2', bg: on ? '#F5F6FF' : '#fff', c: on ? '#4338CA' : '#1E2235', pick: () => set({ pType: label }) }; });
+    const linkBad = !/^https:\/\/\S+\.\S+/.test((S.pLink || '').trim());
+
+    const STEPS = [['Môn & cấp độ', f.subj ? `${f.subj} · ${f.levels.length || 0} cấp độ` : 'Chọn môn muốn dạy'], ['Bài test năng lực', valid[2] ? `Đã nộp · ${String(f.score).replace('.', ',')}/10` : 'Làm test đúng môn'], ['Bằng cấp, chứng chỉ', f.proofs.length ? `${f.proofs.length} minh chứng` : 'Thẻ SV, bảng điểm, bằng…'], ['Xem lại & gửi', 'Kinh nghiệm, cam kết']];
+    const maxReach = valid[1] ? (valid[2] ? (valid[3] ? 4 : 3) : 2) : 1;
+    const steps = STEPS.map(([label, sub], i) => {
+      const n = i + 1, cur = S.step === n, done = valid[n] && !cur && n < 4, locked = n > maxReach && !cur;
+      return { n, label, sub, done, notDone: !done, locked, cur: cur ? 'step' : 'false', cursor: locked ? 'not-allowed' : 'pointer',
+        bg: cur ? '#EEF0FF' : 'transparent', cBg: done ? '#14B8A6' : cur ? '#6366F1' : '#fff', cBd: done ? '#14B8A6' : cur ? '#6366F1' : '#D5D9E6', cC: done || cur ? '#fff' : '#646B85',
+        tc: locked ? '#8A91A8' : '#1E2235', sc: done ? '#0F766E' : cur ? '#4F46E5' : '#646B85', go: () => { if (!locked) set({ step: n, tried: false }); } };
+    });
+
+    const pct = Math.min(100, 60 + okN * 8 + (free.length >= 5 ? 10 : 0) + (S.p.bank ? 6 : 0));
+    const info = [{ k: 'Số điện thoại / Zalo', v: S.p.phone }, { k: 'Học vấn', v: S.p.edu }, { k: 'Giới thiệu với phụ huynh', v: S.p.bio }, { k: 'Tài khoản nhận thù lao', v: S.p.bank }];
+    const setP = {}; ['phone', 'edu', 'bio', 'bank'].forEach(k => { setP[k] = ev => set({ p: { ...S.p, [k]: ev.target.value } }); });
+    const scoreTxt = String(f.score).replace('.', ',');
+    return {
+      pct, pctW: pct + '%', pctHint: pct >= 100 ? 'Hồ sơ đầy đủ' : 'Thêm môn dạy và giờ rảnh để nhận nhiều lời mời hơn',
+      subjects, okN, openNew: () => set({ drawer: true, step: 1, resend: null, f: blank, tried: false }),
+      days: DAYS, grid, freeN: free.length, freeLabel: `Rảnh (${free.length} khung)`, dirty, saveOff: !dirty, saveIcon: dirty ? 'bi-check-lg' : 'bi-check-circle', saveText: dirty ? 'Lưu giờ rảnh' : 'Đã lưu',
+      resetFree: () => set({ free: null }), saveFree: () => { set({ saved: free, free: null }); this.toast(`Đã lưu ${free.length} khung giờ rảnh. Lời mời mới sẽ theo giờ này.`); },
+      goal: S.goal, decGoal: () => set({ goal: Math.max(4, S.goal - 1) }), incGoal: () => set({ goal: Math.min(60, S.goal + 1) }),
+      viewInfo: !S.edit, editInfo: S.edit, info, p: S.p, setP, editText: S.edit ? 'Lưu' : 'Sửa', editIcon: S.edit ? 'bi-check-lg' : 'bi-pencil',
+      toggleEdit: () => { if (S.edit) this.toast('Đã lưu thông tin cá nhân'); set({ edit: !S.edit }); },
+
+      drawer: S.drawer, drawerTitle: S.resend ? `Gửi lại hồ sơ môn ${S.resend.name}` : 'Đăng ký môn mới', closeDrawer: () => set({ drawer: false }),
+      steps, st1: S.step === 1, st2: S.step === 2, st3: S.step === 3, st4: S.step === 4, stepN: S.step, stepName: STEPS[S.step - 1][0], stepW: S.step / 4 * 100 + '%',
+      notLast: S.step < 4, isLast: S.step === 4, backText: S.step === 1 ? 'Hủy' : 'Quay lại',
+      backOrClose: () => S.step === 1 ? set({ drawer: false }) : set({ step: S.step - 1, tried: false }),
+      next: () => { if (!valid[S.step]) { set({ tried: true }); return; } set({ step: S.step + 1, tried: false }); },
+      f, e, subjCards, levels, test, testOpened: !!f.opened, markOpened: () => upd({ opened: true, openedAt: nowStr() }),
+      onScore: ev => upd({ score: ev.target.value.replace(/[^\d.,]/g, '').slice(0, 4) }), scoreMsg,
+      noShot: !f.shot, hasShot: !!f.shot, shotBd: e.shot ? '#E5484D' : '#C9CEDC', removeShot: () => upd({ shot: '' }),
+      onShot: ev => { const fl = ev.target.files && ev.target.files[0]; if (fl) upd({ shot: fl.name }); },
+      shotLink: S.shotLink, onShotLink: ev => set({ shotLink: ev.target.value }),
+      commitShotLink: () => { const v = (S.shotLink || '').trim(); if (/^https:\/\/\S+\.\S+/.test(v)) set({ f: { ...f, shot: v }, shotLink: '' }); },
+      proofs, typeChips, pTypeLower: S.pType.toLowerCase(),
+      pModes: [['file', 'Tải tệp', 'bi-plus-lg'], ['link', 'Dán link', 'bi-box-arrow-up-right']].map(([v, label, icon]) => ({ label, icon, on: S.pMode === v ? 'true' : 'false', pick: () => set({ pMode: v, linkTried: false }) })),
+      modeFile: S.pMode === 'file', modeLink: S.pMode === 'link', pLink: S.pLink, onPLink: ev => set({ pLink: ev.target.value, linkTried: false }),
+      linkErr: linkBad && S.linkTried, linkHint: linkBad && S.linkTried ? 'Link cần bắt đầu bằng https:// và mở được ở chế độ “Ai có link đều xem được”.' : 'Nhớ bật quyền “Ai có link đều xem được” để Admin mở được.', linkHintC: linkBad && S.linkTried ? '#C2292E' : '#646B85',
+      addLink: () => { if (linkBad) { set({ linkTried: true }); return; } set({ f: { ...f, proofs: f.proofs.concat([{ type: S.pType, kind: 'link', value: S.pLink.trim() }]) }, pLink: '', linkTried: false }); },
+      onFile: ev => { const fl = ev.target.files && ev.target.files[0]; if (fl) upd({ proofs: f.proofs.concat([{ type: S.pType, kind: 'file', value: fl.name }]) }); },
+      fileBd: e.file ? '#E5484D' : '#C9CEDC', isResend: !!S.resend, resendReason: 'thiếu minh chứng chuyên môn',
+      sumSubj: f.subj || 'Chưa chọn môn', sumLevels: f.levels.length ? f.levels.join(' · ') : 'Chưa chọn cấp độ',
+      sumTest: valid[2] ? `Bài test ${scoreTxt}/10` : 'Chưa nộp bài test', sumTestC: valid[2] ? '#0F766E' : '#646B85', sumTestIcon: valid[2] ? 'bi-check-circle-fill' : 'bi-circle',
+      sumProof: f.proofs.length ? `${f.proofs.length} minh chứng` : 'Chưa có minh chứng', sumProofC: f.proofs.length ? '#0F766E' : '#646B85', sumProofIcon: f.proofs.length ? 'bi-check-circle-fill' : 'bi-circle',
+      reviewTest: valid[2] ? `${scoreTxt}/10 · ${scoreNum >= 7 ? 'đạt ngưỡng' : 'dưới ngưỡng 7,0'}` : '—', reviewProofs: f.proofs.length ? f.proofs.map(m => m.type).join(', ') : '—',
+      onExp: ev => upd({ exp: ev.target.value }), expCount: `${f.exp.trim().length} ký tự`, onAgree: ev => upd({ agree: ev.target.checked }), agreeBd: e.agree ? '#E5484D' : '#EEF0F5',
+      submit: () => {
+        if (!valid[4]) { set({ tried: true }); return; }
+        const proofTxt = `Bài test ${scoreTxt}/10 · ${f.proofs.map(m => m.type).join(', ')}`;
+        if (S.resend) set({ drawer: false, tried: false, status: { ...S.status, [S.resend.id]: 'pending' } });
+        else set({ drawer: false, tried: false, added: S.added.concat([{ id: 'n' + Date.now(), name: f.subj, level: f.levels.join(' · '), proof: `${proofTxt} · gửi hôm nay`, st: 'pending', note: 'Admin thường duyệt trong 1–2 ngày làm việc', isNew: true }]) });
+        this.toast(`Đã gửi đăng ký môn ${f.subj}. Bạn sẽ nhận email khi Admin duyệt.`);
+      },
+      hasToast: !!S.toast, toastText: S.toast || '', hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

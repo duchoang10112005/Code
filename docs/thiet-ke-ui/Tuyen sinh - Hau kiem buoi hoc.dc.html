@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Hậu kiểm buổi học · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#4F46E5">Bảng điều phối</small></div></div>
+<nav class="nav">
+<div class="nav-h">VẬN HÀNH</div>
+<a href="Trang chu Tuyen sinh.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html"><i class="bi bi-inbox"></i><span>Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Hoc vien.dc.html"><i class="bi bi-people"></i><span>Học viên</span></a>
+<a href="Tuyen sinh - Gia su.dc.html"><i class="bi bi-mortarboard"></i><span>Gia sư</span></a>
+<a href="Tuyen sinh - Khoa hoc.dc.html"><i class="bi bi-journal-bookmark"></i><span>Khóa học</span></a>
+<a href="#" aria-current="page"><i class="bi bi-clipboard-check"></i><span>Hậu kiểm buổi học</span><sc-if value="{{ navBadge }}" hint-placeholder-val="{{ true }}"><b class="badge">{{ navBadge }}</b></sc-if></a>
+<div class="nav-h">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html"><i class="bi bi-calculator"></i><span>Đối soát thù lao</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#E0E7FF;color:#4338CA;font-size:12px">TT</div><div style="flex:1;min-width:0"><b>Trần Thu Trang</b><span class="role" style="background:#EEF0FF;color:#4F46E5">Tuyển sinh</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><h1>Hậu kiểm buổi học</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo" style="margin-left:auto"><i class="bi bi-bell"></i></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<div class="head"><div style="flex:1;min-width:320px"><h2 class="h2">Hậu kiểm buổi học</h2><p class="lead">Kiểm tra buổi học của các gia sư bạn đã mời. Hệ thống tự đối chiếu dữ liệu Zoom và phiếu đánh giá; buổi có cảnh báo cần bạn xem kỹ trước khi kết luận.</p></div></div>
+
+<section class="card kpis" aria-label="Tổng quan hậu kiểm">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4"><div class="kpi"><div class="v" style="color:{{ k.c }}">{{ k.v }}</div><div class="l">{{ k.l }}</div></div></sc-for>
+</section>
+
+<section aria-label="Gia sư bạn phụ trách" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+<sc-for list="{{ tutors }}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{ t.pick }}" aria-pressed="{{ t.on }}" class="card" style="padding:12px 14px;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;border-color:{{ t.bd }};box-shadow:{{ t.sh }};color:#1E2235"><span class="av" style="width:36px;height:36px;font-size:12px;background:{{ t.avBg }};color:{{ t.avC }}">{{ t.ini }}</span><span style="flex:1;min-width:0"><b class="b6" style="display:block">{{ t.name }}</b><span class="sm muted">{{ t.sub }}</span></span><span style="text-align:right"><b class="b6" style="display:block;color:{{ t.rateC }}">{{ t.rate }}</b><span class="sm" style="color:{{ t.warnC }}">{{ t.warn }}</span></span></button></sc-for>
+</section>
+
+<div class="row" style="gap:12px;flex-wrap:wrap">
+<div class="tabs" role="tablist" aria-label="Lọc trạng thái hậu kiểm"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="cnt">{{ t.n }}</span></button></sc-for></div>
+<div class="search" style="width:300px;margin-left:auto"><i class="bi bi-search" aria-hidden="true"></i><label for="tim" class="sr">Tìm buổi</label><input id="tim" class="inp" value="{{ q }}" onChange="{{ onQ }}" placeholder="Mã buổi (BH-00398), học viên, lớp"></div>
+</div>
+
+<sc-if value="{{ bulk.show }}"><div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 16px;position:sticky;top:64px;z-index:10">
+<label class="row" style="gap:10px;cursor:pointer"><input type="checkbox" checked="{{ bulk.allOn }}" ref="{{ setMixed }}" onChange="{{ bulk.toggleAll }}" aria-label="Chọn tất cả buổi chưa kiểm tra" style="width:18px;height:18px;margin:0;accent-color:#6366F1"><span><span class="b6" style="display:block">{{ bulk.title }}</span><span class="sm" style="color:{{ bulk.textC }}">{{ bulk.text }}</span></span></label>
+<span style="flex:1"></span>
+<button type="button" class="btn sm" onClick="{{ bulk.pickClean }}" disabled="{{ bulk.cleanOff }}"><i class="bi bi-check-circle" aria-hidden="true" style="color:#0F766E"></i>Chỉ chọn buổi đạt đủ tiêu chí</button>
+<sc-if value="{{ bulk.allMixed }}"><button type="button" class="btn sm" onClick="{{ bulk.clear }}">Bỏ chọn</button></sc-if>
+<button type="button" class="btn sm pri" onClick="{{ bulk.run }}" disabled="{{ bulk.off }}"><i class="bi bi-check-lg" aria-hidden="true"></i>{{ bulk.runLabel }}</button>
+</div></sc-if>
+<sc-if value="{{ confirmOpen }}"><div class="overlay"><div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="cf-t" aria-describedby="cf-d">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:#FFF4E5;color:#B45309"><i class="bi bi-exclamation-triangle"></i></span><div><h2 id="cf-t">{{ confirmTitle }}</h2><p id="cf-d">{{ confirmText }}</p></div></div>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeConfirm }}">Quay lại</button><button type="button" class="btn" onClick="{{ onlyClean }}">Chỉ giữ buổi đạt đủ</button><button type="button" class="btn pri" onClick="{{ confirmBulk }}">Vẫn đánh dấu hợp lệ</button></div>
+</div></div></sc-if>
+
+<div style="display:grid;grid-template-columns:400px minmax(0,1fr);gap:20px;align-items:start">
+<section aria-label="Danh sách buổi" style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ items }}" as="it" hint-placeholder-count="5">
+<div class="card" style="position:relative;display:flex;align-items:stretch;border-color:{{ it.bd }};box-shadow:{{ it.sh }}">
+<span style="position:absolute;left:-1px;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:{{ it.rail }}"></span>
+<sc-if value="{{ it.canPick }}"><label style="display:grid;place-items:center;padding:0 0 0 14px;cursor:pointer"><input type="checkbox" checked="{{ it.checked }}" onChange="{{ it.check }}" aria-label="Chọn {{ it.code }} để duyệt nhanh" style="width:16px;height:16px;margin:0;accent-color:#6366F1"></label></sc-if>
+<button type="button" onClick="{{ it.pick }}" aria-current="{{ it.sel }}" style="flex:1;min-width:0;padding:12px 14px;border:none;background:none;text-align:left;cursor:pointer;color:#1E2235;display:flex;flex-direction:column;gap:4px">
+<span class="row" style="gap:6px"><span class="sm b6" style="color:#4A5068">{{ it.code }}</span><span class="sm muted">· {{ it.date }}</span><span class="chip" style="margin-left:auto;background:{{ it.bg }};color:{{ it.c }}"><span class="d" style="background:{{ it.dot }}"></span>{{ it.st }}</span></span>
+<span class="b6 ell">{{ it.cls }}</span>
+<span class="row sm muted" style="gap:6px"><span class="av" style="width:18px;height:18px;font-size:8px;background:{{ it.avBg }};color:{{ it.avC }}">{{ it.ini }}</span><span class="ell">{{ it.tutor }}</span><sc-if value="{{ it.hasWarn }}"><span class="row" style="gap:4px;margin-left:auto;color:#B45309;font-weight:500;white-space:nowrap"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>{{ it.warnText }}</span></sc-if></span>
+</button>
+</div>
+</sc-for>
+<sc-if value="{{ listEmpty }}"><div class="card empty"><span class="ring" style="border-style:solid;border-color:#B5ECE3;color:#0F766E"><i class="bi bi-check-lg"></i></span><b class="b6" style="color:#1E2235">Không còn buổi nào trong mục này</b>{{ emptyText }}</div></sc-if>
+</section>
+
+<sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ true }}">
+<article class="card" aria-labelledby="ct-t">
+<div style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border-bottom:1px solid #EEF0F5">
+<span class="tile" style="width:44px;height:44px;border-radius:12px;font-size:18px;background:#EEF0FF;color:#4F46E5"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span>
+<div style="flex:1;min-width:0"><div class="row"><span class="sm b6 muted">{{ d.code }} · {{ d.no }}</span><span class="chip" style="background:{{ d.bg }};color:{{ d.c }}"><span class="d" style="background:{{ d.dot }}"></span>{{ d.st }}</span></div><h3 id="ct-t" style="margin:4px 0 0;font-size:18px;line-height:26px;font-weight:600">{{ d.cls }}</h3><div class="sm muted" style="margin-top:2px">{{ d.when }} · gia sư {{ d.tutor }} · xác nhận lúc {{ d.confirmed }}</div></div>
+<a href="Gia su - Chi tiet buoi hoc v2.dc.html" class="btn sm"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Mở buổi học</a>
+</div>
+<div style="padding:20px 24px;display:flex;flex-direction:column;gap:20px">
+
+<section aria-labelledby="tc-t">
+<div class="row" style="margin-bottom:10px"><h4 id="tc-t" style="margin:0;font-size:14px;font-weight:600">Tiêu chí tự động</h4><span class="sm" style="margin-left:auto;color:{{ d.passC }};font-weight:600">{{ d.passText }}</span></div>
+<ul style="list-style:none;margin:0;padding:0;border:1px solid #EEF0F5;border-radius:10px">
+<sc-for list="{{ d.checks }}" as="c"><li style="display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid {{ c.bt }}"><span class="tile" style="width:26px;height:26px;font-size:12px;background:{{ c.bg }};color:{{ c.c }}"><i class="bi {{ c.icon }}" aria-hidden="true"></i></span><span style="font-size:13px">{{ c.label }}</span><span class="sm b6" style="color:{{ c.c }}">{{ c.value }}</span></li></sc-for>
+</ul>
+</section>
+
+<section aria-labelledby="zm-t"><div class="row" style="margin-bottom:10px"><h4 id="zm-t" style="margin:0;font-size:14px;font-weight:600">Tham gia Zoom</h4><a href="#" class="sm b5" style="margin-left:auto">Xem bản ghi (lưu đến {{ d.recUntil }})</a></div>
+<div style="display:flex;flex-direction:column;gap:12px;padding:14px 16px;border:1px solid #EEF0F5;border-radius:10px"><sc-for list="{{ d.attend }}" as="a"><div><div class="row sm" style="margin-bottom:6px"><span class="b5" style="font-size:13px">{{ a.who }}</span><span style="margin-left:auto;color:#4A5068">{{ a.detail }} · <b class="b6" style="color:{{ a.c }}">{{ a.pct }}%</b></span></div><div role="img" aria-label="{{ a.aria }}" style="position:relative;height:8px;border-radius:4px;background:#EEF0F5"><div style="height:100%;width:{{ a.w }};border-radius:4px;background:{{ a.bar }}"></div><span aria-hidden="true" style="position:absolute;left:67%;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:#1E2235;opacity:.55"></span></div></div></sc-for></div></section>
+
+<section aria-labelledby="dg-t"><h4 id="dg-t" style="margin:0 0 10px;font-size:14px;font-weight:600">Phiếu đánh giá của gia sư</h4>
+<div class="info" style="border:1px solid #EEF0F5;border-radius:10px"><dl><div><dt>Nội dung</dt><dd>{{ d.content }}</dd></div><div><dt>Mức tiếp thu</dt><dd class="b5">{{ d.level }}</dd></div></dl><dl><div><dt>Nhận xét</dt><dd>{{ d.comment }}</dd></div><div><dt>Ghi chú gia sư</dt><dd style="color:{{ d.noteC }}">{{ d.tnote }}</dd></div></dl></div></section>
+
+<sc-if value="{{ d.isTodo }}" hint-placeholder-val="{{ true }}">
+<section aria-labelledby="kl-t" style="padding:16px;border-radius:12px;background:#FAFBFE;border:1px solid #EEF0F5;display:flex;flex-direction:column;gap:12px">
+<h4 id="kl-t" style="margin:0;font-size:14px;font-weight:600">Kết luận của bạn</h4>
+<div class="row" style="flex-wrap:wrap"><span class="sm muted">Nếu có vấn đề, chọn lý do:</span><sc-for list="{{ reasons }}" as="r"><button type="button" aria-pressed="{{ r.on }}" onClick="{{ r.pick }}" class="btn sm" style="border-color:{{ r.bd }};background:{{ r.bg }};color:{{ r.c }}">{{ r.label }}</button></sc-for></div>
+<div class="field"><label for="gc">Ghi chú <span class="opt">(bắt buộc khi có vấn đề · gia sư sẽ đọc được)</span></label><textarea id="gc" class="inp" rows="2" value="{{ note }}" onChange="{{ onNote }}" aria-invalid="{{ noteErr }}" placeholder="VD: Đã gọi phụ huynh xác nhận buổi học diễn ra đủ giờ qua Zalo"></textarea><sc-if value="{{ noteErr }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Chọn lý do và ghi chú để gia sư biết cần khắc phục gì.</span></sc-if></div>
+<div class="row"><span class="sm muted" style="flex:1;line-height:18px">Có vấn đề: thù lao buổi này chuyển sang Tạm giữ cho đến khi bạn xử lý xong.</span><button type="button" class="btn danger" onClick="{{ flag }}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>Có vấn đề</button><button type="button" class="btn pri" onClick="{{ approve }}"><i class="bi bi-check-lg" aria-hidden="true"></i>Hợp lệ</button></div>
+</section>
+</sc-if>
+<sc-if value="{{ d.isFlag }}">
+<section aria-labelledby="xl-t" style="padding:16px;border-radius:12px;background:#FFFAF2;border:1px solid #F6DDB0;display:flex;flex-direction:column;gap:12px">
+<div class="row"><i class="bi bi-exclamation-triangle" aria-hidden="true" style="color:#B45309"></i><h4 id="xl-t" style="margin:0;font-size:14px;font-weight:600">Đang có vấn đề · {{ d.flagReason }}</h4></div>
+<div class="sm" style="color:#4A5068;line-height:18px">{{ d.flagNote }}</div>
+<div class="row" style="flex-wrap:wrap"><span class="sm muted" style="flex:1">Sau khi trao đổi với gia sư hoặc phụ huynh, chọn cách xử lý:</span><button type="button" class="btn danger" onClick="{{ resolveVoid }}">Không tính thù lao (hủy buổi)</button><button type="button" class="btn pri" onClick="{{ resolveOk }}"><i class="bi bi-check-lg" aria-hidden="true"></i>Đã xử lý · tính thù lao</button></div>
+</section>
+</sc-if>
+<sc-if value="{{ d.isDone }}"><div class="banner" style="background:{{ d.doneBg }};border-color:{{ d.doneBd }}"><span class="ic" style="color:{{ d.c }}"><i class="bi bi-check-circle" aria-hidden="true"></i></span><div><div class="b6">{{ d.doneTitle }}</div><div class="sm" style="color:#4A5068">{{ d.doneText }}</div></div></div></sc-if>
+</div>
+</article>
+</sc-if>
+<sc-if value="{{ noDetail }}"><div class="card empty" style="min-height:360px;justify-content:center"><span class="ring"><i class="bi bi-clipboard-check"></i></span>Chọn một buổi ở danh sách để xem chi tiết hậu kiểm.</div></sc-if>
+</div>
+</main>
+</div>
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><button type="button" class="btn sm" onClick="{{ undo }}">Hoàn tác</button><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Có buổi cần kiểm tra","Đã kiểm tra hết"],"default":"Có buổi cần kiểm tra","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, st: {}, notes: {}, tab: 'todo', tutor: '', q: '', sel: null, picked: [], reason: '', note: '', tried: false, toast: null, prev: null };
+  componentWillUnmount() { clearTimeout(this.tt); }
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Có buổi cần kiểm tra';
+    const S = S0.key === key ? S0 : { ...S0, st: {}, notes: {}, picked: [], sel: null };
+    const set = p => this.setState(S0.key === key ? p : { st: {}, notes: {}, picked: [], sel: null, ...p, key });
+    const TONE = { teal: { bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, orange: { bg: '#FFF4E5', c: '#B45309', dot: '#F59E0B' }, red: { bg: '#FDECEC', c: '#C2292E', dot: '#E5484D' }, neutral: { bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' }, blue: { bg: '#EAF2FF', c: '#1D4ED8', dot: '#3B82F6' } };
+    const TU = { nl: ['Phạm Ngọc Lan', 'NL', '#FFE4DA', '#C2410C'], ha: ['Nguyễn Hoài An', 'HA', '#E0E7FF', '#4338CA'], qn: ['Lê Quỳnh Như', 'QN', '#FDF2D0', '#9A6700'] };
+    // [id, code, cls, no, date, when, tutor, late(phút), gsMin, gsPct, hvMin, hvPct, evalLen, zalo, status, content, level, comment, tnote, confirmed]
+    const RAW = [
+      ['s1', 'BH-00398', 'IELTS · Trần Gia Bảo', 'Buổi 5/16 · học bù', '07/11', 'T7 07/11 · 08:00–09:30', 'nl', 0, 92, 100, 37, 41, 160, true, 'todo', 'Writing Task 1 – biểu đồ cột', 'Tiếp thu cơ bản', 'Bảo nắm được cấu trúc, cần luyện thêm so sánh số liệu.', 'Học viên rớt mạng từ 08:35, cô gọi Zalo dạy tiếp đến hết giờ.', '07/11 · 11:20'],
+      ['s2', 'BH-00391', 'Hóa học 9 · Phan Minh Khôi', 'Buổi 4/20', '06/11', 'T6 06/11 · 18:00–19:30', 'qn', 31, 49, 54, 88, 98, 140, true, 'todo', 'Bài toán hỗn hợp kim loại', 'Tiếp thu tốt', 'Khôi làm đúng 4/5 bài, cần cẩn thận khi cân bằng phương trình.', 'Không có', '06/11 · 22:05'],
+      ['s3', 'BH-00406', 'IELTS · Lý Gia Hân', 'Buổi 9/24', '08/11', 'CN 08/11 · 20:00–21:30', 'ha', 2, 90, 100, 88, 98, 12, true, 'todo', 'Speaking Part 2', 'Tiếp thu tốt', 'Học tốt ạ.', 'Không có', '08/11 · 21:50'],
+      ['s4', 'BH-00402', 'Toán 9 · Nguyễn Minh Anh', 'Buổi 8/10', '06/11', 'T6 06/11 · 19:30–21:00', 'nl', 0, 91, 100, 89, 99, 210, true, 'todo', 'Hệ phương trình bậc nhất hai ẩn', 'Tiếp thu tốt', 'Minh Anh giải nhanh, trình bày rõ ràng. Tuần sau ôn hình học.', 'Không có', '06/11 · 21:15'],
+      ['s5', 'BH-00404', 'Tiếng Anh 6 · Hoàng Bảo Ngọc', 'Buổi 2/36', '07/11', 'T7 07/11 · 17:30–18:30', 'ha', 1, 60, 100, 58, 97, 180, true, 'todo', 'Giới thiệu bản thân, sở thích', 'Tiếp thu cơ bản', 'Bé mạnh dạn hơn buổi trước, cần luyện phát âm âm cuối.', 'Không có', '07/11 · 19:02'],
+      ['s6', 'BH-00395', 'Ngữ văn 8 · Lê Thu Hà', 'Buổi 2/10', '05/11', 'T5 05/11 · 18:00–19:00', 'nl', 0, 61, 100, 60, 100, 175, true, 'todo', 'Văn bản thuyết minh', 'Tiếp thu cơ bản', 'Hà hiểu bố cục, cần thêm ví dụ khi viết đoạn.', 'Không có', '05/11 · 19:40'],
+      ['s7', 'BH-00389', 'Hóa học 9 · Phan Minh Khôi', 'Buổi 3/20', '04/11', 'T4 04/11 · 18:00–19:30', 'qn', 0, 90, 100, 87, 97, 150, false, 'flag', 'Dãy hoạt động hóa học', 'Tiếp thu cơ bản', 'Khôi còn nhầm vị trí kim loại.', 'Không có', '04/11 · 21:30'],
+      ['s8', 'BH-00380', 'Toán 9 · Nguyễn Minh Anh', 'Buổi 7/10', '02/11', 'T2 02/11 · 19:30–21:00', 'nl', 0, 90, 100, 90, 100, 190, true, 'ok', 'Phương trình bậc hai', 'Tiếp thu tốt', 'Làm tốt các dạng cơ bản.', 'Không có', '02/11 · 21:10'],
+      ['s9', 'BH-00377', 'IELTS · Lý Gia Hân', 'Buổi 8/24', '01/11', 'CN 01/11 · 20:00–21:30', 'ha', 0, 90, 100, 85, 94, 200, true, 'ok', 'Listening Section 3', 'Tiếp thu cơ bản', 'Cần luyện nghe số liệu.', 'Không có', '01/11 · 21:45']
+    ];
+    const FLAGS0 = { s7: ['Phụ huynh phản ánh', 'Phụ huynh báo buổi bắt đầu trễ và gia sư chưa gửi nhận xét qua Zalo. Đã nhắn gia sư lúc 05/11 09:00.'] };
+    const sessions = RAW.map(r => {
+      const [id, code, cls, no, date, when, tid, late, gsMin, gsPct, hvMin, hvPct, evalLen, zalo, st0, content, level, comment, tnote, confirmed] = r;
+      const st = key === 'Đã kiểm tra hết' && st0 === 'todo' ? 'ok' : (S.st[id] || st0);
+      const checks = [
+        ['Gia sư vào đúng giờ (trễ tối đa 5 phút)', late <= 5, late ? `Trễ ${late} phút` : 'Đúng giờ'],
+        ['Gia sư tham gia từ 67% thời lượng', gsPct >= 67, `${gsPct}%`],
+        ['Học viên tham gia từ 67% thời lượng', hvPct >= 67, `${hvPct}%`],
+        ['Phiếu đánh giá đầy đủ (nhận xét từ 30 ký tự)', evalLen >= 30, evalLen >= 30 ? 'Đủ' : `${evalLen} ký tự`],
+        ['Đã gửi nhận xét cho phụ huynh qua Zalo', zalo, zalo ? 'Đã gửi' : 'Chưa gửi']
+      ];
+      const warns = checks.filter(c => !c[1]);
+      return { id, code, cls, no, date, when, tid, gsMin, gsPct, hvMin, hvPct, st, content, level, comment, tnote, confirmed, checks, warns };
+    });
+    const STM = { todo: { ...TONE.blue, st: 'Chưa kiểm tra' }, flag: { ...TONE.orange, st: 'Có vấn đề' }, ok: { ...TONE.teal, st: 'Hợp lệ' }, resolved: { ...TONE.neutral, st: 'Đã xử lý' }, void: { ...TONE.red, st: 'Không tính' } };
+    const inTab = (s, t) => t === 'todo' ? s.st === 'todo' : t === 'warn' ? s.st === 'todo' && s.warns.length > 0 : t === 'flag' ? s.st === 'flag' : ['ok', 'resolved', 'void'].includes(s.st);
+    const q = (S.q || '').trim().toLowerCase().replace(/[\s-]/g, '');
+    const list = sessions.filter(s => inTab(s, S.tab) && (!S.tutor || s.tid === S.tutor) && (!q || (s.code + s.cls + TU[s.tid][0]).toLowerCase().replace(/[\s-]/g, '').includes(q)))
+      .sort((a, b) => b.warns.length - a.warns.length);
+    const selId = S.sel && list.find(s => s.id === S.sel) ? S.sel : (list[0] ? list[0].id : null);
+    const cur = list.find(s => s.id === selId);
+    const todoIds = list.filter(s => s.st === 'todo').map(s => s.id);
+    const cleanIds = list.filter(s => s.st === 'todo' && !s.warns.length).map(s => s.id);
+    const picked = S.picked.filter(id => todoIds.includes(id));
+    const pickedWarn = picked.filter(id => !cleanIds.includes(id));
+    const items = list.map(s => { const sel = s.id === selId, t = TU[s.tid];
+      return { code: s.code, date: s.date, cls: s.cls, tutor: t[0], ini: t[1], avBg: t[2], avC: t[3], ...STM[s.st], sel: sel ? 'true' : 'false', bd: sel ? '#6366F1' : '#E6E9F2', sh: sel ? '0 0 0 3px #EEF0FF' : '0 1px 2px rgba(16,24,40,.05)', rail: sel ? '#6366F1' : 'transparent',
+        hasWarn: s.st === 'todo' && s.warns.length > 0, warnText: `${s.warns.length} cảnh báo`, canPick: s.st === 'todo', checked: picked.includes(s.id),
+        check: e => set({ picked: e.target.checked ? picked.concat([s.id]) : picked.filter(x => x !== s.id) }), pick: () => set({ sel: s.id, reason: '', note: '', tried: false }) }; });
+    const cnt = t => sessions.filter(s => inTab(s, t) && (!S.tutor || s.tid === S.tutor)).length;
+    const tabs = [['todo', 'Cần kiểm tra'], ['warn', 'Có cảnh báo'], ['flag', 'Có vấn đề'], ['done', 'Đã kiểm tra']].map(([v, label]) => ({ label, n: cnt(v), on: S.tab === v ? 'true' : 'false', pick: () => set({ tab: v, sel: null }) }));
+    const tutors = Object.keys(TU).map(id => { const mine = sessions.filter(s => s.tid === id), doneN = mine.filter(s => s.st !== 'todo').length, okN = mine.filter(s => s.st === 'ok' || s.st === 'resolved').length, warnN = mine.filter(s => s.st === 'todo' && s.warns.length).length + mine.filter(s => s.st === 'flag').length; const on = S.tutor === id;
+      return { name: TU[id][0], ini: TU[id][1], avBg: TU[id][2], avC: TU[id][3], sub: `${mine.length} buổi tuần này`, rate: doneN ? `${Math.round(okN / doneN * 100)}% hợp lệ` : 'Chưa có', rateC: '#0F766E', warn: warnN ? `${warnN} cần chú ý` : 'Ổn định', warnC: warnN ? '#B45309' : '#646B85',
+        on: on ? 'true' : 'false', bd: on ? '#6366F1' : '#E6E9F2', sh: on ? '0 0 0 3px #EEF0FF' : '0 1px 2px rgba(16,24,40,.05)', pick: () => set({ tutor: on ? '' : id, sel: null }) }; });
+    const allTodo = sessions.filter(s => s.st === 'todo');
+    const kpis = [{ v: allTodo.length, l: 'Buổi chưa kiểm tra', c: '#1D4ED8' }, { v: allTodo.filter(s => s.warns.length).length, l: 'Có cảnh báo tự động', c: '#B45309' }, { v: sessions.filter(s => s.st === 'flag').length, l: 'Đang có vấn đề', c: '#C2292E' }, { v: '94%', l: 'Tỷ lệ hợp lệ tháng 11', c: '#0F766E' }];
+
+    const att = (who, min, pct) => ({ who, detail: `${min} phút`, pct, w: Math.min(100, pct) + '%', c: pct < 67 ? '#C2292E' : '#0F766E', bar: pct < 67 ? '#E5484D' : '#14B8A6', aria: `${who} ${min} phút, ${pct}%, ngưỡng 67%` });
+    const REASONS = ['Vào trễ', 'Thiếu thời lượng', 'Đánh giá sơ sài', 'Phụ huynh phản ánh', 'Khác'];
+    let d = {};
+    if (cur) {
+      const pass = cur.checks.length - cur.warns.length;
+      const fl = S.notes[cur.id] || FLAGS0[cur.id] || ['', ''];
+      d = { ...cur, ...STM[cur.st], tutor: TU[cur.tid][0], recUntil: '07/12/2026',
+        checks: cur.checks.map((c, i) => ({ label: c[0], value: c[2], icon: c[1] ? 'bi-check-lg' : 'bi-exclamation-triangle', bg: c[1] ? '#E6FAF7' : '#FFF4E5', c: c[1] ? '#0F766E' : '#B45309', bt: i ? '#EEF0F5' : 'transparent' })),
+        passText: `Đạt ${pass}/${cur.checks.length}`, passC: pass === cur.checks.length ? '#0F766E' : '#B45309',
+        attend: [att('Gia sư', cur.gsMin, cur.gsPct), att('Học viên', cur.hvMin, cur.hvPct)],
+        noteC: cur.tnote === 'Không có' ? '#646B85' : '#1E2235',
+        isTodo: cur.st === 'todo', isFlag: cur.st === 'flag', isDone: ['ok', 'resolved', 'void'].includes(cur.st), flagReason: fl[0], flagNote: fl[1],
+        doneTitle: cur.st === 'void' ? 'Không tính thù lao · buổi hủy với lý do “Không đạt hậu kiểm”' : cur.st === 'resolved' ? 'Đã xử lý · thù lao được tính' : 'Hợp lệ · thù lao Tạm tính',
+        doneText: cur.st === 'ok' ? 'Buổi sẽ được tính khi đối soát cuối tháng.' : 'Kết quả đã gửi cho gia sư và ghi vào nhật ký thao tác.',
+        doneBg: cur.st === 'void' ? '#FDECEC' : '#F2FCFA', doneBd: cur.st === 'void' ? '#F8C9CA' : '#B5ECE3' };
+    }
+    const reasons = REASONS.map(r => { const on = S.reason === r; return { label: r, on: on ? 'true' : 'false', bd: on ? '#F59E0B' : '#E6E9F2', bg: on ? '#FFF4E5' : '#fff', c: on ? '#B45309' : '#1E2235', pick: () => set({ reason: on ? '' : r }) }; });
+    const decide = (id, st, msg, extra) => { if (!id) return; clearTimeout(this.tt); set({ st: { ...S.st, [id]: st }, prev: { st: S.st, notes: S.notes }, toast: msg, reason: '', note: '', tried: false, sel: null, ...(extra || {}) }); this.tt = setTimeout(() => this.setState({ toast: null }), 6000); };
+    const noteErr = S.tried && (!S.reason || S.note.trim().length < 5);
+    const doBulk = () => { const add = {}; picked.forEach(id => { add[id] = 'ok'; }); clearTimeout(this.tt); set({ st: { ...S.st, ...add }, prev: { st: S.st, notes: S.notes }, picked: [], confirmBulk: false, toast: `Đã đánh dấu hợp lệ ${picked.length} buổi`, sel: null }); this.tt = setTimeout(() => this.setState({ toast: null }), 6000); };
+    const navBadge = allTodo.filter(s => s.warns.length).length + sessions.filter(s => s.st === 'flag').length;
+    return {
+      kpis, tutors, tabs, q: S.q, onQ: e => set({ q: e.target.value, sel: null }), items, listEmpty: items.length === 0,
+      emptyText: S.tab === 'flag' ? 'Không có buổi nào đang có vấn đề.' : 'Thử bỏ lọc gia sư hoặc ô tìm kiếm.', navBadge,
+      bulk: { show: todoIds.length > 0 && (S.tab === 'todo' || S.tab === 'warn'),
+        title: picked.length ? `Đã chọn ${picked.length}/${todoIds.length} buổi` : `Duyệt nhanh ${todoIds.length} buổi chưa kiểm tra`,
+        text: pickedWarn.length ? `Trong đó ${pickedWarn.length} buổi có cảnh báo, bạn sẽ được hỏi lại trước khi đánh dấu hợp lệ.` : `${cleanIds.length} buổi đạt đủ 5 tiêu chí tự động. Tick từng buổi hoặc chọn tất cả.`,
+        textC: pickedWarn.length ? '#B45309' : '#4A5068',
+        allOn: todoIds.length > 0 && picked.length === todoIds.length, allMixed: picked.length > 0 && picked.length < todoIds.length,
+        toggleAll: () => set({ picked: picked.length === todoIds.length ? [] : todoIds }),
+        cleanOff: !cleanIds.length, pickClean: () => set({ picked: cleanIds }), clearOff: !picked.length, clear: () => set({ picked: [] }),
+        off: !picked.length, runLabel: `Đánh dấu hợp lệ (${picked.length})`,
+        run: () => { if (pickedWarn.length) { set({ confirmBulk: true }); return; } doBulk(); } },
+      confirmOpen: !!S.confirmBulk, confirmTitle: `Đánh dấu hợp lệ ${picked.length} buổi?`, confirmText: `${pickedWarn.length} buổi có cảnh báo tự động (${list.filter(s => pickedWarn.includes(s.id)).map(s => s.code).join(', ')}). Hãy chắc chắn bạn đã xem dữ liệu Zoom hoặc đã xác nhận với phụ huynh.`,
+      closeConfirm: () => set({ confirmBulk: false }), setMixed: el => { if (el) el.indeterminate = picked.length > 0 && picked.length < todoIds.length; }, confirmBulk: () => doBulk(), onlyClean: () => { set({ confirmBulk: false, picked: picked.filter(id => cleanIds.includes(id)) }); },
+      hasDetail: !!cur, noDetail: !cur, d, reasons, note: S.note, onNote: e => set({ note: e.target.value }), noteErr,
+      approve: () => cur && decide(cur.id, 'ok', `${cur.code} hợp lệ · thù lao Tạm tính`),
+      flag: () => { if (!cur) return; if (!S.reason || S.note.trim().length < 5) { set({ tried: true }); return; } decide(cur.id, 'flag', `${cur.code} có vấn đề · thù lao chuyển sang Tạm giữ, đã báo gia sư`, { notes: { ...S.notes, [cur.id]: [S.reason, S.note.trim()] }, tab: 'flag' }); },
+      resolveOk: () => cur && decide(cur.id, 'resolved', `${cur.code} đã xử lý · thù lao được tính`),
+      resolveVoid: () => cur && decide(cur.id, 'void', `${cur.code} không tính thù lao · buổi hủy (Không đạt hậu kiểm)`),
+      hasToast: !!S.toast, toastText: S.toast || '',
+      undo: () => { clearTimeout(this.tt); const pv = S.prev || { st: {}, notes: {} }; set({ st: pv.st, notes: pv.notes, toast: null }); },
+      hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

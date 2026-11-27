@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Nhật ký thao tác · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#0F766E">Trung tâm điều hành</small></div></div>
+<nav class="nav">
+<div class="nav-h">TỔNG QUAN</div>
+<a href="Trang chu Quan tri vien.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Quan tri - Can xem xet.dc.html"><i class="bi bi-exclamation-triangle"></i><span>Cần xem xét</span><b class="badge">5</b></a>
+<div class="nav-h">VẬN HÀNH</div>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html"><i class="bi bi-inbox"></i><span>Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Chi tiet khoa hoc.dc.html"><i class="bi bi-journal-bookmark"></i><span>Khóa học</span></a>
+<a href="Quan tri - Ho so gia su.dc.html"><i class="bi bi-mortarboard"></i><span>Gia sư</span></a>
+<div class="nav-h">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html"><i class="bi bi-calculator"></i><span>Đối soát thù lao</span></a>
+<div class="nav-h">HỆ THỐNG</div>
+<a href="Quan tri - Tai khoan.dc.html"><i class="bi bi-people"></i><span>Tài khoản</span></a>
+<a href="#" aria-current="page"><i class="bi bi-clock-history"></i><span>Nhật ký thao tác</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#D5F5EF;color:#0F766E;font-size:12px">HM</div><div style="flex:1;min-width:0"><b>Hoàng Văn Minh</b><span class="role" style="background:#E6FAF7;color:#0F766E">Quản trị viên</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><a href="#">Hệ thống</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Nhật ký thao tác</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo" style="margin-left:auto"><i class="bi bi-bell"></i></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<div class="head">
+<div style="flex:1;min-width:320px"><h2 class="h2">Nhật ký thao tác</h2><p class="lead">Mọi thay đổi trên hệ thống: ai làm, lúc nào, thay đổi gì. Nhật ký chỉ xem, không sửa hay xóa được.</p></div>
+<button type="button" class="btn" onClick="{{ exportCsv }}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Xuất CSV</button>
+</div>
+
+<section class="card" aria-label="Bộ lọc">
+<div class="row" style="padding:12px 16px;flex-wrap:wrap;gap:10px">
+<div class="tabs" role="tablist" aria-label="Khoảng thời gian"><sc-for list="{{ ranges }}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}</button></sc-for></div>
+<label for="ng" class="sr">Người thao tác</label><select id="ng" class="inp" style="width:200px" value="{{ actor }}" onChange="{{ onActor }}"><option value="">Mọi người thao tác</option><sc-for list="{{ actors }}" as="a"><option value="{{ a }}">{{ a }}</option></sc-for></select>
+<label for="lo" class="sr">Loại đối tượng</label><select id="lo" class="inp" style="width:180px" value="{{ kind }}" onChange="{{ onKind }}"><option value="">Mọi đối tượng</option><sc-for list="{{ kinds }}" as="k"><option value="{{ k }}">{{ k }}</option></sc-for></select>
+<div class="search" style="flex:1;min-width:220px"><i class="bi bi-search" aria-hidden="true"></i><label for="q" class="sr">Tìm trong nhật ký</label><input id="q" class="inp" value="{{ q }}" onChange="{{ onQ }}" placeholder="Tìm mã YC, KH, BH hoặc tên"></div>
+<sc-if value="{{ hasFilter }}"><button type="button" class="btn sm" onClick="{{ clear }}"><i class="bi bi-x-lg" aria-hidden="true"></i>Xóa lọc</button></sc-if>
+</div>
+</section>
+
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+<section class="card" aria-label="{{ g.label }}">
+<div class="card-h"><h3>{{ g.label }}</h3><span class="sm muted">{{ g.n }} thao tác</span></div>
+<ol style="list-style:none;margin:0;padding:6px 0">
+<sc-for list="{{ g.items }}" as="x" hint-placeholder-count="4">
+<li>
+<button type="button" onClick="{{ x.toggle }}" aria-expanded="{{ x.open }}" style="width:100%;display:grid;grid-template-columns:52px 36px minmax(0,1fr) auto 20px;gap:12px;align-items:center;padding:10px 20px;border:none;background:{{ x.bg }};cursor:pointer;text-align:left;color:#1E2235" class="gt-hover">
+<span class="sm b6" style="color:#4A5068">{{ x.time }}</span>
+<span class="av" style="width:32px;height:32px;font-size:11px;background:{{ x.avBg }};color:{{ x.avC }}">{{ x.ini }}</span>
+<span style="min-width:0"><span style="display:block;font-size:14px;line-height:20px"><b class="b6">{{ x.actor }}</b> {{ x.verb }} <span class="b5" style="color:#4F46E5">{{ x.obj }}</span></span><span class="sm muted" style="display:block">{{ x.role }} · {{ x.kind }}</span></span>
+<span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end"><sc-if value="{{ x.hasChange }}"><span class="chip" style="background:#F1F3F9;color:#4A5068">{{ x.from }}</span><i class="bi bi-chevron-right" aria-hidden="true" style="font-size:10px;color:#646B85"></i><span class="chip" style="background:{{ x.toBg }};color:{{ x.toC }}">{{ x.to }}</span></sc-if></span>
+<i class="bi bi-chevron-down" aria-hidden="true" style="color:#646B85;transform:rotate({{ x.rot }}deg);transition:transform .2s"></i>
+</button>
+<sc-if value="{{ x.isOpen }}">
+<div style="margin:0 20px 10px 112px;border:1px solid #EEF0F5;border-radius:10px;overflow:hidden;--cols:160px minmax(0,1fr) minmax(0,1fr)">
+<div class="gt-h"><span>Trường</span><span>Trước</span><span>Sau</span></div>
+<sc-for list="{{ x.fields }}" as="r"><div class="gt-r sm" style="min-height:40px"><span class="muted">{{ r.k }}</span><span>{{ r.a }}</span><span class="b5">{{ r.b }}</span></div></sc-for>
+<div class="row sm muted" style="padding:10px 16px;gap:16px;flex-wrap:wrap"><span class="row" style="gap:6px"><i class="bi bi-info-circle" aria-hidden="true"></i>{{ x.note }}</span><span style="margin-left:auto">{{ x.meta }}</span></div>
+</div>
+</sc-if>
+</li>
+</sc-for>
+</ol>
+</section>
+</sc-for>
+<sc-if value="{{ noData }}"><section class="card empty"><span class="ring"><i class="bi bi-search"></i></span><b class="b6" style="color:#1E2235">Không có thao tác phù hợp</b>Thử đổi khoảng thời gian hoặc xóa bộ lọc.<button type="button" class="btn sm" onClick="{{ clear }}" style="margin-top:6px">Xóa lọc</button></section></sc-if>
+</main>
+</div>
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Có dữ liệu","Không có kết quả"],"default":"Có dữ liệu","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { range: 'week', actor: '', kind: '', q: '', open: null, toast: null };
+  componentWillUnmount() { clearTimeout(this.tt); }
+  renderVals() {
+    const P = this.props, S = this.state, set = p => this.setState(p);
+    const empty = P.state === 'Không có kết quả';
+    const A = { 'Phạm Ngọc Lan': ['Gia sư', 'NL', '#FFE4DA', '#C2410C'], 'Trần Thu Trang': ['Tuyển sinh', 'TT', '#E0E7FF', '#4338CA'], 'Lý Hồng Nhung': ['Tuyển sinh', 'HN', '#E0E7FF', '#4338CA'], 'Hoàng Văn Minh': ['Quản trị viên', 'HM', '#D5F5EF', '#0F766E'], 'Lê Quỳnh Như': ['Gia sư', 'QN', '#FDF2D0', '#9A6700'], 'Hệ thống': ['Tự động', 'HT', '#F1F3F9', '#4A5068'] };
+    const TO = { teal: ['#E6FAF7', '#0F766E'], orange: ['#FFF4E5', '#B45309'], red: ['#FDECEC', '#C2292E'], blue: ['#EAF2FF', '#1D4ED8'], neutral: ['#F1F3F9', '#4A5068'] };
+    const L = [
+      ['09/11', '20:58', 'Phạm Ngọc Lan', 'tạo 3 buổi học cho', 'KH-0005 · IELTS', 'Buổi học', null, [['Buổi tạo mới', '—', 'BH-00430, BH-00431, BH-00432'], ['Phòng Zoom', '—', 'Đã tạo 3/3']], 'Gửi lịch phụ huynh qua Zalo'],
+      ['09/11', '20:41', 'Trần Thu Trang', 'đề xuất đổi gia sư cho', 'KH-0005 · IELTS', 'Khóa học', ['Phạm Ngọc Lan', 'Nguyễn Hoài An · chờ duyệt', 'orange'], [['Gia sư', 'Phạm Ngọc Lan', 'Nguyễn Hoài An'], ['Trạng thái đề xuất', '—', 'Chờ Admin duyệt']], 'Lý do: gia sư bận lịch thi từ tháng 12'],
+      ['09/11', '19:42', 'Phạm Ngọc Lan', 'xác nhận hoàn tất', 'BH-00405 · Toán 9', 'Buổi học', ['Chờ xác nhận', 'Hoàn tất', 'teal'], [['Trạng thái', 'Chờ xác nhận', 'Hoàn tất'], ['Mức tiếp thu', '—', 'Tiếp thu tốt'], ['Thù lao', '—', 'Tạm tính 120.000đ']], 'Đã gửi nhận xét cho phụ huynh'],
+      ['09/11', '18:10', 'Hoàng Văn Minh', 'điều chỉnh thù lao', 'Lê Quỳnh Như · T11/2026', 'Thù lao', ['0đ', '−120.000đ', 'red'], [['Điều chỉnh', '0đ', '−120.000đ'], ['Tổng tháng', '1.560.000đ', '1.440.000đ']], 'Lý do: trừ buổi trùng lịch ngày 02/11'],
+      ['09/11', '16:20', 'Hệ thống', 'tự hủy', 'BH-00399 · Ngữ văn 8', 'Buổi học', ['Đã lên lịch', 'Tự hủy', 'red'], [['Trạng thái', 'Đã lên lịch', 'Đã hủy'], ['Lý do hủy', '—', 'Quá hạn xác nhận']], 'Quá 12 giờ sau giờ kết thúc chưa xác nhận'],
+      ['09/11', '14:03', 'Trần Thu Trang', 'gửi lời mời', 'YC-0027 · Tiếng Anh 6', 'Yêu cầu', ['Mới', 'Đang mời gia sư', 'blue'], [['Trạng thái', 'Mới', 'Đang mời gia sư'], ['Gia sư được mời', '—', 'Phạm Ngọc Lan, Nguyễn Hoài An']], 'Lời mời hết hạn sau 24 giờ'],
+      ['09/11', '09:15', 'Hoàng Văn Minh', 'khóa tài khoản', 'Vũ Minh Khang', 'Tài khoản', ['Hoạt động', 'Đã khóa', 'neutral'], [['Trạng thái', 'Hoạt động', 'Đã khóa']], 'Lý do: gia sư nghỉ dạy từ 11/2026'],
+      ['08/11', '20:05', 'Trần Thu Trang', 'tạo buổi học bù', 'BH-00412 · IELTS', 'Buổi học', null, [['Buổi', '—', 'Buổi 6/16 · học bù cho 31/10'], ['Thời gian', '—', 'T2 09/11 · 08:00–09:30']], 'Phụ huynh đồng ý qua Zalo'],
+      ['08/11', '19:10', 'Phạm Ngọc Lan', 'đăng ký thêm môn', 'Tiếng Anh 9', 'Hồ sơ gia sư', ['—', 'Chờ duyệt', 'orange'], [['Môn', '—', 'Tiếng Anh 9'], ['Minh chứng', '—', 'IELTS 8.0']], 'Đang ở mục Cần xem xét'],
+      ['08/11', '11:30', 'Hoàng Văn Minh', 'duyệt hợp lệ', 'BH-00388 · Vật lý 10', 'Buổi học', ['Đang xem xét', 'Hoàn tất', 'teal'], [['Trạng thái', 'Đang xem xét', 'Hoàn tất'], ['Thù lao', 'Tạm giữ', 'Tạm tính']], 'Ghi chú: học viên rớt mạng, đã dạy bù qua Zalo'],
+      ['07/11', '22:05', 'Lê Quỳnh Như', 'xác nhận hoàn tất', 'BH-00391 · Hóa học 9', 'Buổi học', ['Chờ xác nhận', 'Hoàn tất', 'teal'], [['Trạng thái', 'Chờ xác nhận', 'Hoàn tất']], 'Hậu kiểm: gia sư tham gia 54%'],
+      ['07/11', '10:00', 'Lý Hồng Nhung', 'tạm dừng', 'KH-0012 · Toán 6', 'Khóa học', ['Đang học', 'Tạm dừng', 'orange'], [['Trạng thái', 'Đang học', 'Tạm dừng']], 'Lý do: học viên nghỉ thi học kỳ'],
+      ['07/11', '08:40', 'Hệ thống', 'đánh dấu cần xem xét', 'BH-00398 · IELTS', 'Buổi học', ['Hoàn tất', 'Đang xem xét', 'orange'], [['Hậu kiểm', 'Chưa kiểm tra', 'Có vấn đề'], ['Thù lao', 'Tạm tính', 'Tạm giữ']], 'Học viên tham gia 41%, dưới ngưỡng 67%']
+    ];
+    const ql = S.q.trim().toLowerCase();
+    const inRange = d => S.range === 'today' ? d === '09/11' : S.range === 'week' ? true : true;
+    const flt = empty ? [] : L.map((x, i) => ({ x, i })).filter(({ x }) => inRange(x[0]) && (!S.actor || x[2] === S.actor) && (!S.kind || x[5] === S.kind) && (!ql || (x[2] + ' ' + x[4]).toLowerCase().includes(ql)));
+    const DAYL = { '09/11': 'Hôm nay · Thứ Hai, 09/11/2026', '08/11': 'Hôm qua · Chủ Nhật, 08/11/2026', '07/11': 'Thứ Bảy, 07/11/2026' };
+    const days = [...new Set(flt.map(o => o.x[0]))];
+    const groups = days.map(d => {
+      const items = flt.filter(o => o.x[0] === d).map(({ x, i }) => {
+        const [date, time, actor, verb, obj, kind, ch, fields, note] = x, a = A[actor], open = S.open === i;
+        return { time, actor, verb, obj, kind, role: a[0], ini: a[1], avBg: a[2], avC: a[3], hasChange: !!ch, from: ch ? ch[0] : '', to: ch ? ch[1] : '', toBg: ch ? TO[ch[2]][0] : '', toC: ch ? TO[ch[2]][1] : '',
+          open: open ? 'true' : 'false', isOpen: open, rot: open ? 180 : 0, bg: open ? '#FAFBFE' : 'transparent', toggle: () => set({ open: open ? null : i }),
+          fields: fields.map(([k, a2, b]) => ({ k, a: a2, b })), note, meta: actor === 'Hệ thống' ? 'Tác vụ tự động' : `IP 113.161.xx.xx · ${date} ${time}` };
+      });
+      return { label: DAYL[d], n: items.length, items };
+    });
+    const hasFilter = !!(S.actor || S.kind || S.q || S.range !== 'week');
+    return {
+      ranges: [['today', 'Hôm nay'], ['week', '7 ngày'], ['month', '30 ngày']].map(([v, label]) => ({ label, on: S.range === v ? 'true' : 'false', pick: () => set({ range: v }) })),
+      actors: Object.keys(A), kinds: ['Yêu cầu', 'Khóa học', 'Buổi học', 'Thù lao', 'Tài khoản', 'Hồ sơ gia sư'],
+      actor: S.actor, kind: S.kind, q: S.q, onActor: e => set({ actor: e.target.value }), onKind: e => set({ kind: e.target.value }), onQ: e => set({ q: e.target.value }),
+      hasFilter, clear: () => set({ actor: '', kind: '', q: '', range: 'week' }),
+      groups, noData: groups.length === 0,
+      exportCsv: () => { clearTimeout(this.tt); set({ toast: `Đã xuất ${flt.length} dòng nhật ký ra nhat-ky-thao-tac.csv` }); this.tt = setTimeout(() => this.setState({ toast: null }), 5000); },
+      hasToast: !!S.toast, toastText: S.toast || '', hideToast: () => set({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

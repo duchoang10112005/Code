@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Tài khoản · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#0F766E">Trung tâm điều hành</small></div></div>
+<nav class="nav">
+<div class="nav-h">TỔNG QUAN</div>
+<a href="Trang chu Quan tri vien.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Quan tri - Can xem xet.dc.html"><i class="bi bi-exclamation-triangle"></i><span>Cần xem xét</span><b class="badge">5</b></a>
+<div class="nav-h">VẬN HÀNH</div>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html"><i class="bi bi-inbox"></i><span>Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Chi tiet khoa hoc.dc.html"><i class="bi bi-journal-bookmark"></i><span>Khóa học</span></a>
+<a href="Quan tri - Ho so gia su.dc.html"><i class="bi bi-mortarboard"></i><span>Gia sư</span></a>
+<div class="nav-h">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html"><i class="bi bi-calculator"></i><span>Đối soát thù lao</span></a>
+<div class="nav-h">HỆ THỐNG</div>
+<a href="#" aria-current="page"><i class="bi bi-people"></i><span>Tài khoản</span></a>
+<a href="Quan tri - Nhat ky thao tac.dc.html"><i class="bi bi-clock-history"></i><span>Nhật ký thao tác</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#D5F5EF;color:#0F766E;font-size:12px">HM</div><div style="flex:1;min-width:0"><b>Hoàng Văn Minh</b><span class="role" style="background:#E6FAF7;color:#0F766E">Quản trị viên</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><a href="#">Hệ thống</a><i class="bi bi-chevron-right" aria-hidden="true"></i><h1>Tài khoản</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo" style="margin-left:auto"><i class="bi bi-bell"></i></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<div class="head">
+<div style="flex:1;min-width:320px"><h2 class="h2">Tài khoản</h2><p class="lead">Tạo tài khoản cho nhân viên Tuyển sinh và gia sư, khóa hoặc đặt lại mật khẩu khi cần.</p></div>
+<button type="button" class="btn pri" onClick="{{ openCreate }}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo tài khoản</button>
+</div>
+
+<section class="card kpis" aria-label="Tổng quan tài khoản">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4"><div class="kpi"><div class="v" style="color:{{ k.c }}">{{ k.v }}</div><div class="l">{{ k.l }}</div></div></sc-for>
+</section>
+
+<section class="card" aria-labelledby="ds-t">
+<div class="card-h" style="flex-wrap:wrap"><h3 id="ds-t" class="sr">Danh sách tài khoản</h3>
+<div class="tabs" role="tablist" aria-label="Lọc theo vai trò"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="cnt">{{ t.n }}</span></button></sc-for></div>
+<div class="row" style="margin-left:auto">
+<label for="tt" class="sr">Lọc trạng thái</label><select id="tt" class="inp" style="width:170px" value="{{ stFilter }}" onChange="{{ onSt }}"><option value="">Mọi trạng thái</option><option value="active">Hoạt động</option><option value="new">Chưa đăng nhập</option><option value="locked">Đã khóa</option></select>
+<div class="search" style="width:260px"><i class="bi bi-search" aria-hidden="true"></i><label for="q" class="sr">Tìm tài khoản</label><input id="q" class="inp" value="{{ q }}" onChange="{{ onQ }}" placeholder="Tìm tên, email, số điện thoại"></div>
+</div></div>
+<div role="table" aria-label="Danh sách tài khoản" style="--cols:minmax(0,2fr) 128px 128px 140px minmax(0,1fr) 52px">
+<div role="row" class="gt-h"><span role="columnheader">Người dùng</span><span role="columnheader">Vai trò</span><span role="columnheader">Số điện thoại</span><span role="columnheader">Trạng thái</span><span role="columnheader">Đăng nhập gần nhất</span><span role="columnheader" class="sr">Thao tác</span></div>
+<sc-for list="{{ rows }}" as="u" hint-placeholder-count="7">
+<div role="row" class="gt-r" style="position:relative;background:{{ u.hl }}">
+<span role="cell" class="who"><span class="av" style="width:34px;height:34px;font-size:12px;background:{{ u.avBg }};color:{{ u.avC }}">{{ u.ini }}</span><span style="min-width:0"><b class="ell">{{ u.name }}<span class="sm muted" style="font-weight:400">{{ u.you }}</span></b><small class="ell">{{ u.email }}</small></span></span>
+<span role="cell"><span class="role" style="height:22px;padding:0 9px;font-size:12px;background:{{ u.rBg }};color:{{ u.rC }}">{{ u.role }}</span></span>
+<span role="cell" class="sm">{{ u.phone }}</span>
+<span role="cell"><span class="chip" style="background:{{ u.bg }};color:{{ u.c }}"><span class="d" style="background:{{ u.dot }}"></span>{{ u.st }}</span></span>
+<span role="cell" class="sm muted">{{ u.last }}</span>
+<span role="cell" style="text-align:right"><button type="button" class="icon-btn sm" onClick="{{ u.toggle }}" aria-label="Thao tác cho {{ u.name }}" aria-expanded="{{ u.menuOpen }}" aria-haspopup="menu"><i class="bi bi-three-dots"></i></button></span>
+<sc-if value="{{ u.isMenu }}"><div class="menu" role="menu" style="right:16px;top:46px"><button type="button" role="menuitem" onClick="{{ u.reset }}"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Đặt lại mật khẩu</button><sc-if value="{{ u.canLock }}"><button type="button" role="menuitem" onClick="{{ u.lock }}" style="color:#C2292E"><i class="bi bi-lock" aria-hidden="true"></i>Khóa tài khoản</button></sc-if><sc-if value="{{ u.canUnlock }}"><button type="button" role="menuitem" onClick="{{ u.unlock }}" style="color:#0F766E"><i class="bi bi-check-circle" aria-hidden="true"></i>Mở khóa</button></sc-if><sc-if value="{{ u.isTutor }}"><a href="Quan tri - Ho so gia su.dc.html" role="menuitem" class="row" style="height:34px;padding:0 10px;font-size:13px;border-radius:6px;color:#1E2235"><i class="bi bi-mortarboard" aria-hidden="true"></i>Xem hồ sơ gia sư</a></sc-if></div></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ noRows }}"><div class="empty"><span class="ring"><i class="bi bi-search"></i></span>Không có tài khoản phù hợp bộ lọc.</div></sc-if>
+</div>
+</section>
+</main>
+</div>
+
+<sc-if value="{{ drawer }}">
+<div class="overlay" style="place-items:stretch end">
+<section role="dialog" aria-modal="true" aria-labelledby="tk-t" style="width:460px;height:100vh;background:#fff;box-shadow:-24px 0 64px rgba(16,24,40,.18);display:flex;flex-direction:column;animation:gso-in .25s ease both">
+<div class="row" style="padding:18px 24px;border-bottom:1px solid #EEF0F5"><h2 id="tk-t" style="margin:0;font-size:17px;font-weight:600">{{ drawerTitle }}</h2><button type="button" class="icon-btn sm" style="margin-left:auto" onClick="{{ closeAll }}" aria-label="Đóng"><i class="bi bi-x-lg"></i></button></div>
+<sc-if value="{{ showForm }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;overflow:auto;padding:20px 24px;display:flex;flex-direction:column;gap:18px">
+<fieldset style="margin:0;padding:0;border:none"><legend class="lbl" style="margin-bottom:8px">Vai trò <span class="req">*</span></legend>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><sc-for list="{{ roleOpts }}" as="r"><label style="display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid {{ r.bd }};border-radius:10px;background:{{ r.bg }};cursor:pointer"><span class="row" style="justify-content:space-between"><span class="tile" style="width:28px;height:28px;font-size:13px;background:{{ r.tBg }};color:{{ r.tC }}"><i class="bi {{ r.icon }}" aria-hidden="true"></i></span><input type="radio" name="vai-tro" checked="{{ r.on }}" onChange="{{ r.pick }}" style="accent-color:#6366F1;margin:0"></span><span class="b6" style="font-size:13px">{{ r.label }}</span><span class="sm muted" style="line-height:16px">{{ r.desc }}</span></label></sc-for></div></fieldset>
+<div class="field"><label for="hoten">Họ và tên <span class="req">*</span></label><input id="hoten" class="inp" value="{{ f.name }}" onChange="{{ set.name }}" aria-invalid="{{ e.name }}" placeholder="VD: Nguyễn Thị Hồng"><sc-if value="{{ e.name }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập họ và tên.</span></sc-if></div>
+<div class="field"><label for="email">Email đăng nhập <span class="req">*</span></label><input id="email" type="email" class="inp" value="{{ f.email }}" onChange="{{ set.email }}" aria-invalid="{{ e.email }}" placeholder="ten@giasuonline.vn"><sc-if value="{{ e.email }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ emailErr }}</span></sc-if></div>
+<div class="field"><label for="sdt">Số điện thoại <span class="opt">(không bắt buộc)</span></label><input id="sdt" class="inp" inputMode="tel" value="{{ f.phone }}" onChange="{{ set.phone }}" placeholder="09xx xxx xxx"></div>
+<sc-if value="{{ isTutorRole }}"><div class="banner" style="background:#F5F6FF;border-color:#DCDFFB;align-items:flex-start"><span class="ic" style="color:#4F46E5"><i class="bi bi-info-circle" aria-hidden="true"></i></span><span style="font-size:13px;line-height:20px;color:#4A5068">Gia sư cần tự khai báo môn dạy, giờ rảnh và được duyệt môn trước khi nhận lời mời.</span></div></sc-if>
+<label class="row" style="align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" checked="{{ f.mail }}" onChange="{{ toggleMail }}" style="width:16px;height:16px;margin:2px 0 0;accent-color:#6366F1"><span><span class="b5" style="display:block">Gửi thông tin đăng nhập qua email</span><span class="sm muted">Người dùng phải đổi mật khẩu tạm ở lần đăng nhập đầu tiên.</span></span></label>
+</div>
+<div class="actions" style="padding:16px 24px;border-top:1px solid #EEF0F5"><button type="button" class="btn" onClick="{{ closeAll }}">Hủy</button><button type="button" class="btn pri" onClick="{{ submit }}">Tạo tài khoản</button></div>
+</sc-if>
+<sc-if value="{{ showDone }}">
+<div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px">
+<div class="row" style="gap:12px"><span class="dlg-ic" style="background:#E6FAF7;color:#0F766E"><i class="bi bi-check-lg"></i></span><div><div class="b6">Đã tạo tài khoản cho {{ created.name }}</div><div class="sm muted">{{ created.role }} · {{ created.email }}</div></div></div>
+<div style="padding:14px 16px;border-radius:10px;background:#F7F8FC;border:1px solid #EEF0F5"><div class="sm muted">Mật khẩu tạm</div><div class="row" style="margin-top:4px"><span style="font-size:20px;font-weight:600;letter-spacing:.12em">{{ created.pwd }}</span><button type="button" class="btn sm" style="margin-left:auto" onClick="{{ copyPwd }}"><i class="bi {{ pwdIcon }}" aria-hidden="true"></i>{{ pwdText }}</button></div><div class="sm muted" style="margin-top:6px">{{ created.mailNote }}</div></div>
+</div>
+<div class="actions" style="padding:16px 24px;border-top:1px solid #EEF0F5"><button type="button" class="btn" onClick="{{ again }}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Tạo thêm</button><button type="button" class="btn pri" onClick="{{ closeAll }}">Xong</button></div>
+</sc-if>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{ dlgOpen }}">
+<div class="overlay"><div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dg">
+<div class="row" style="gap:12px;align-items:flex-start"><span class="dlg-ic" style="background:{{ dlg.bg }};color:{{ dlg.c }}"><i class="bi {{ dlg.icon }}"></i></span><div><h2 id="dg">{{ dlg.title }}</h2><p>{{ dlg.text }}</p></div></div>
+<sc-if value="{{ dlg.isLock }}"><div class="field"><label for="ld">Lý do <span class="req">*</span></label><input id="ld" class="inp" value="{{ reason }}" onChange="{{ onReason }}" aria-invalid="{{ reasonErr }}" placeholder="VD: Gia sư nghỉ dạy từ 11/2026"><sc-if value="{{ reasonErr }}"><span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>Nhập lý do khóa.</span></sc-if></div></sc-if>
+<sc-if value="{{ dlg.isReset }}"><div style="padding:12px 14px;border-radius:10px;background:#F7F8FC;border:1px solid #EEF0F5" class="row"><span class="sm muted">Mật khẩu tạm mới</span><b style="margin-left:auto;letter-spacing:.12em">{{ dlg.pwd }}</b><button type="button" class="icon-btn sm" onClick="{{ copyPwd }}" aria-label="Sao chép mật khẩu tạm"><i class="bi {{ pwdIcon }}"></i></button></div></sc-if>
+<div class="actions"><button type="button" class="btn" autoFocus="{{ true }}" onClick="{{ closeAll }}">{{ dlg.cancel }}</button><sc-if value="{{ dlg.isLock }}"><button type="button" class="btn dangerfill" onClick="{{ confirmLock }}">Khóa tài khoản</button></sc-if></div>
+</div></div>
+</sc-if>
+<sc-if value="{{ hasToast }}"><div class="toast" role="status"><span class="ok"><i class="bi bi-check-lg"></i></span><span>{{ toastText }}</span><button type="button" class="icon-btn sm" onClick="{{ hideToast }}" aria-label="Đóng thông báo"><i class="bi bi-x-lg"></i></button></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Danh sách","Đang tạo tài khoản"],"default":"Danh sách","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, role: 'all', st: '', q: '', menu: null, drawer: null, f: null, tried: false, created: null, added: [], status: {}, dlg: null, target: null, reason: '', copied: false, toast: null };
+  componentWillUnmount() { clearTimeout(this.tt); clearTimeout(this.ct); }
+  toast(t) { clearTimeout(this.tt); this.setState({ toast: t }); this.tt = setTimeout(() => this.setState({ toast: null }), 5000); }
+  pwd() { const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 8; i++) s += c[(i * 7 + (Date.now() >> 6) + i * i) % c.length]; return s; }
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Danh sách';
+    const S = S0.key === key ? S0 : { ...S0, drawer: key === 'Đang tạo tài khoản' ? 'form' : null, f: null, created: null };
+    const set = p => this.setState(S0.key === key ? p : { drawer: key === 'Đang tạo tài khoản' ? 'form' : null, f: null, created: null, ...p, key });
+    const RT = { admin: { label: 'Quản trị viên', bg: '#E6FAF7', c: '#0F766E' }, ts: { label: 'Tuyển sinh', bg: '#EEF0FF', c: '#4F46E5' }, tutor: { label: 'Gia sư', bg: '#FFEFEA', c: '#C2410C' } };
+    const STT = { active: { label: 'Hoạt động', bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, new: { label: 'Chưa đăng nhập', bg: '#EAF2FF', c: '#1D4ED8', dot: '#3B82F6' }, locked: { label: 'Đã khóa', bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' } };
+    const BASE = [
+      ['u1', 'Hoàng Văn Minh', 'minh.hv@giasuonline.vn', '0905 100 200', 'admin', 'active', 'Đang trực tuyến', 'HM', '#D5F5EF', '#0F766E'],
+      ['u2', 'Trần Thu Trang', 'trang.tt@giasuonline.vn', '0914 223 556', 'ts', 'active', 'Hôm nay · 20:41', 'TT', '#E0E7FF', '#4338CA'],
+      ['u3', 'Lý Hồng Nhung', 'nhung.lh@giasuonline.vn', '0935 778 120', 'ts', 'active', 'Hôm nay · 17:05', 'HN', '#E0E7FF', '#4338CA'],
+      ['u4', 'Phạm Ngọc Lan', 'ngoclan.pham@gmail.com', '0905 662 318', 'tutor', 'active', 'Hôm nay · 20:58', 'NL', '#FFE4DA', '#C2410C'],
+      ['u5', 'Nguyễn Hoài An', 'hoaian.ng@gmail.com', '0978 450 112', 'tutor', 'active', 'Hôm qua · 22:10', 'HA', '#E0E7FF', '#4338CA'],
+      ['u6', 'Đỗ Thanh Tùng', 'thanhtung.do@gmail.com', '0912 304 889', 'tutor', 'active', '07/11 · 19:22', 'TT', '#D5F5EF', '#0F766E'],
+      ['u7', 'Lê Quỳnh Như', 'quynhnhu.le@gmail.com', '0868 120 447', 'tutor', 'active', '08/11 · 21:03', 'QN', '#FDF2D0', '#9A6700'],
+      ['u8', 'Vũ Minh Khang', 'minhkhang.vu@gmail.com', '0399 552 010', 'tutor', 'locked', '12/10 · 08:40', 'MK', '#F1F3F9', '#4A5068'],
+      ['u9', 'Trương Bảo Ngọc', 'baongoc.tr@gmail.com', '0935 118 204', 'tutor', 'new', 'Chưa đăng nhập', 'BN', '#EAF2FF', '#1D4ED8']
+    ].map(([id, name, email, phone, role, st, last, ini, avBg, avC]) => ({ id, name, email, phone, role, st, last, ini, avBg, avC }));
+    const all = S.added.concat(BASE).map(u => ({ ...u, st: S.status[u.id] || u.st }));
+    const ql = S.q.trim().toLowerCase();
+    const filt = all.filter(u => (S.role === 'all' || u.role === S.role) && (!S.st || u.st === S.st) && (!ql || [u.name, u.email, u.phone].join(' ').toLowerCase().includes(ql)));
+    const rows = filt.map(u => {
+      const isMenu = S.menu === u.id, me = u.id === 'u1';
+      return { ...u, role: RT[u.role].label, rBg: RT[u.role].bg, rC: RT[u.role].c, ...STT[u.st], st: STT[u.st].label, you: me ? ' · bạn' : '', hl: S.added.length && u.id === S.added[0].id ? '#F7FFFD' : 'transparent',
+        isMenu, menuOpen: isMenu ? 'true' : 'false', toggle: () => set({ menu: isMenu ? null : u.id }), isTutor: u.role === 'tutor',
+        canLock: u.st !== 'locked' && !me, canUnlock: u.st === 'locked',
+        reset: () => set({ menu: null, dlg: 'reset', target: { ...u, pwd: this.pwd() }, copied: false }),
+        lock: () => set({ menu: null, dlg: 'lock', target: u, reason: '', tried: false }),
+        unlock: () => { set({ menu: null, status: { ...S.status, [u.id]: 'active' } }); this.toast(`Đã mở khóa tài khoản ${u.name}`); } };
+    });
+    const tabs = [['all', 'Tất cả'], ['admin', 'Quản trị viên'], ['ts', 'Tuyển sinh'], ['tutor', 'Gia sư']].map(([v, label]) => ({ label, n: all.filter(u => v === 'all' || u.role === v).length, on: S.role === v ? 'true' : 'false', pick: () => set({ role: v, menu: null }) }));
+    const kpis = [{ v: all.length, l: 'Tổng tài khoản', c: '#1E2235' }, { v: all.filter(u => u.st === 'active').length, l: 'Đang hoạt động', c: '#0F766E' }, { v: all.filter(u => u.st === 'new').length, l: 'Chưa đăng nhập lần nào', c: '#1D4ED8' }, { v: all.filter(u => u.st === 'locked').length, l: 'Đã khóa', c: '#4A5068' }];
+
+    const f = S.f || { role: 'ts', name: '', email: '', phone: '', mail: true };
+    const emailBad = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()), emailDup = all.some(u => u.email === f.email.trim().toLowerCase());
+    const e = { name: S.tried && f.name.trim().length < 2, email: S.tried && (emailBad || emailDup) };
+    const setF = {}; ['name', 'email', 'phone'].forEach(k => { setF[k] = ev => set({ f: { ...f, [k]: ev.target.value } }); });
+    const roleOpts = [['ts', 'Tuyển sinh', 'Tạo yêu cầu, mời gia sư', 'bi-inbox', '#EEF0FF', '#4F46E5'], ['tutor', 'Gia sư', 'Nhận lớp, dạy, đánh giá', 'bi-mortarboard', '#FFEFEA', '#C2410C'], ['admin', 'Quản trị viên', 'Toàn quyền hệ thống', 'bi-shield-lock', '#E6FAF7', '#0F766E']].map(([v, label, desc, icon, tBg, tC]) => ({ label, desc, icon, tBg, tC, on: f.role === v, bd: f.role === v ? '#6366F1' : '#E6E9F2', bg: f.role === v ? '#F5F6FF' : '#fff', pick: () => set({ f: { ...f, role: v } }) }));
+    const cr = S.created;
+    const dlgMap = { lock: { isLock: true, isReset: false, icon: 'bi-lock', bg: '#FDECEC', c: '#C2292E', title: `Khóa tài khoản ${S.target ? S.target.name : ''}?`, text: 'Người dùng bị đăng xuất ngay và không đăng nhập được nữa. Dữ liệu vẫn được giữ.', cancel: 'Quay lại', pwd: '' },
+      reset: { isLock: false, isReset: true, icon: 'bi-arrow-repeat', bg: '#EEF0FF', c: '#4F46E5', title: `Đã đặt lại mật khẩu cho ${S.target ? S.target.name : ''}`, text: 'Mật khẩu tạm đã gửi qua email. Người dùng phải đổi ở lần đăng nhập tới.', cancel: 'Xong', pwd: S.target && S.target.pwd ? S.target.pwd : '' } };
+    const copyPwd = () => { const pw = S.dlg === 'reset' ? dlgMap.reset.pwd : (cr ? cr.pwd : ''); try { navigator.clipboard && navigator.clipboard.writeText(pw).catch(() => {}); } catch (x) {} clearTimeout(this.ct); set({ copied: true }); this.ct = setTimeout(() => this.setState({ copied: false }), 2000); };
+    return {
+      kpis, tabs, rows, noRows: rows.length === 0, q: S.q, onQ: ev => set({ q: ev.target.value }), stFilter: S.st, onSt: ev => set({ st: ev.target.value }),
+      openCreate: () => set({ drawer: 'form', f: null, tried: false, created: null }), drawer: !!S.drawer, showForm: S.drawer === 'form', showDone: S.drawer === 'done',
+      drawerTitle: S.drawer === 'done' ? 'Tạo tài khoản thành công' : 'Tạo tài khoản', roleOpts, f, e, set: setF, isTutorRole: f.role === 'tutor',
+      emailErr: emailDup ? 'Email này đã có tài khoản.' : 'Email chưa đúng định dạng.',
+      toggleMail: ev => set({ f: { ...f, mail: ev.target.checked } }),
+      submit: () => {
+        if (f.name.trim().length < 2 || emailBad || emailDup) { set({ tried: true, f }); return; }
+        const name = f.name.trim(), parts = name.split(' '), ini = (parts[parts.length - 2] || ' ')[0] + parts[parts.length - 1][0];
+        const u = { id: 'n' + Date.now(), name, email: f.email.trim().toLowerCase(), phone: f.phone || '—', role: f.role, st: 'new', last: 'Chưa đăng nhập', ini: ini.toUpperCase(), avBg: '#EAF2FF', avC: '#1D4ED8' };
+        set({ added: [u].concat(S.added), drawer: 'done', created: { name, role: RT[f.role].label, email: u.email, pwd: this.pwd(), mailNote: f.mail ? 'Đã gửi email kèm hướng dẫn đăng nhập.' : 'Chưa gửi email. Hãy gửi mật khẩu này cho người dùng.' }, tried: false, copied: false });
+      },
+      created: cr || { name: '', role: '', email: '', pwd: '', mailNote: '' }, again: () => set({ drawer: 'form', f: null, tried: false, created: null }),
+      pwdText: S.copied ? 'Đã sao chép' : 'Sao chép', pwdIcon: S.copied ? 'bi-check-lg' : 'bi-copy', copyPwd,
+      closeAll: () => set({ drawer: null, dlg: null }),
+      dlgOpen: !!S.dlg, dlg: dlgMap[S.dlg] || dlgMap.lock, reason: S.reason, reasonErr: S.tried && S.reason.trim().length < 5, onReason: ev => set({ reason: ev.target.value }),
+      confirmLock: () => { if (S.reason.trim().length < 5) { set({ tried: true }); return; } set({ dlg: null, tried: false, status: { ...S.status, [S.target.id]: 'locked' } }); this.toast(`Đã khóa tài khoản ${S.target.name}`); },
+      hasToast: !!S.toast, toastText: S.toast || '', hideToast: () => this.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

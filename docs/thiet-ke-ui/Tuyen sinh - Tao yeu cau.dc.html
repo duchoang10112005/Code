@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Tạo yêu cầu · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><style>body{margin:0;background:#F7F8FC;font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;color:#1E2235;font-size:14px;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#6366F1;text-decoration:none}a:hover{color:#4F46E5;text-decoration:underline}button,input,select,textarea{font-family:inherit}:focus-visible{outline:2px solid #6366F1;outline-offset:2px}@keyframes gso-slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}</style></helmet>
+<div style="display:flex;min-height:100vh;min-width:1280px;background:#F7F8FC;font-variant-numeric:tabular-nums">
+<a href="#noi-dung" style="position:absolute;left:-9999px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50" style-focus="left:8px">Bỏ qua menu</a>
+
+<aside aria-label="Menu chính" style="width:240px;flex:none;background:#fff;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+<div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 16px">
+<div style="width:32px;height:32px;flex:none;border-radius:8px;background:#6366F1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px">G</div>
+<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:14px;line-height:18px">Gia Sư Online</div><div style="font-size:12px;line-height:16px;color:#4F46E5;font-weight:500">Bảng điều phối</div></div>
+</div>
+<nav style="padding:8px 12px;display:flex;flex-direction:column;gap:2px;flex:1">
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:8px 10px 6px">VẬN HÀNH</div>
+<a href="Trang chu Tuyen sinh.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-house-door" style="font-size:17px"></i><span>Trang chủ</span></a>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html" aria-current="page" style="position:relative;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:500;text-decoration:none"><span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#6366F1"></span><i class="bi bi-inbox" style="font-size:17px"></i><span style="flex:1">Yêu cầu học tập</span></a>
+<a href="Tuyen sinh - Hoc vien.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-people" style="font-size:17px"></i><span>Học viên</span></a>
+<a href="Tuyen sinh - Gia su.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-mortarboard" style="font-size:17px"></i><span>Gia sư</span></a>
+<a href="Tuyen sinh - Khoa hoc.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-journal-bookmark" style="font-size:17px"></i><span>Khóa học</span></a>
+<a href="Tuyen sinh - Hau kiem buoi hoc.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-clipboard-check" style="font-size:17px"></i><span style="flex:1">Hậu kiểm buổi học</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">4</span></a>
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:16px 10px 6px">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-calculator" style="font-size:17px"></i><span>Đối soát thù lao</span></a>
+</nav>
+<div style="border-top:1px solid #E6E9F2;padding:12px 16px;display:flex;align-items:center;gap:10px">
+<div style="width:32px;height:32px;flex:none;border-radius:50%;background:#E0E7FF;color:#4338CA;display:grid;place-items:center;font-weight:600;font-size:12px">TT</div>
+<div style="min-width:0;flex:1"><div style="font-weight:500;font-size:13px">Trần Thu Trang</div><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:#EEF0FF;color:#4F46E5;font-size:11px;font-weight:500">Tuyển sinh</span></div>
+</div>
+</aside>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;height:56px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid #E6E9F2;display:flex;align-items:center;gap:16px;padding:0 32px">
+<nav aria-label="Đường dẫn" style="display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap"><a href="Tuyen sinh - Yeu cau hoc tap.dc.html" style="color:#646B85">Yêu cầu học tập</a><i class="bi bi-chevron-right" style="font-size:11px;color:#9AA1B8"></i><span style="font-weight:600">Tạo yêu cầu</span></nav>
+<span style="margin-left:auto;color:#646B85;font-size:13px;white-space:nowrap">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" style="flex:1;width:100%;max-width:1200px;margin:0 auto;padding:24px 32px 0;display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:24px;align-items:start">
+<form onSubmit="{{ submit }}" noValidate="{{ true }}" style="display:flex;flex-direction:column;gap:0;min-width:0">
+<div style="margin-bottom:20px"><h1 style="margin:0;font-size:22px;line-height:30px;font-weight:600">Tạo yêu cầu học tập</h1><div style="font-size:13px;color:#646B85;margin-top:2px">Ghi lại khi đang nghe phụ huynh. Ô có dấu <span style="color:#E5484D">*</span> là bắt buộc.</div></div>
+
+<sc-if value="{{ hasErrors }}">
+<div role="alert" tabIndex="-1" style="display:flex;gap:12px;padding:12px 16px;margin-bottom:20px;border-radius:12px;background:#FDECEC;border:1px solid #F8C9CA">
+<i class="bi bi-exclamation-triangle" style="color:#C2292E;font-size:16px;margin-top:1px"></i>
+<div><div style="font-weight:600;color:#7A2A2D">Còn {{ errCount }} mục cần sửa trước khi tạo yêu cầu</div><ul style="margin:4px 0 0;padding-left:18px;font-size:13px;color:#7A2A2D;line-height:20px"><sc-for list="{{ errList }}" as="e"><li><a href="#{{ e.id }}" style="color:#C2292E;text-decoration:underline">{{ e.msg }}</a></li></sc-for></ul></div>
+</div></sc-if>
+
+<div style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:0 24px">
+<section aria-labelledby="k-hv" style="padding:24px 0 20px;display:grid;grid-template-columns:148px minmax(0,1fr);gap:28px">
+<div><h2 id="k-hv" style="margin:0;font-size:15px;font-weight:600">Học viên</h2><p style="margin:4px 0 0;font-size:12px;color:#646B85;line-height:18px">Chọn học viên đã có hoặc nhập mới.</p></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div role="radiogroup" aria-label="Nguồn học viên" style="display:inline-grid;grid-template-columns:1fr 1fr;gap:2px;padding:2px;background:#F1F3F9;border-radius:8px;width:fit-content">
+<sc-for list="{{ hvModes }}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ o.on }}" onClick="{{ o.pick }}" style="height:30px;padding:0 14px;white-space:nowrap;text-align:center;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:{{ o.bg }};color:{{ o.c }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for>
+</div>
+<sc-if value="{{ hvExisting }}">
+<div style="display:flex;flex-direction:column;gap:6px;position:relative"><label for="hv-tim" style="font-size:13px;font-weight:500">Tìm học viên <span style="color:#E5484D">*</span></label>
+<div style="position:relative"><i class="bi bi-search" style="position:absolute;left:10px;top:10px;color:#9AA1B8"></i><input id="hv-tim" value="{{ hvQ }}" onChange="{{ onHvQ }}" placeholder="Tên học viên hoặc SĐT phụ huynh" aria-invalid="{{ e.hv }}" aria-describedby="hv-loi" style="width:100%;height:36px;padding:0 10px 0 32px;border:1px solid {{ b.hv }};border-radius:8px;font-size:14px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></div>
+<sc-if value="{{ showHvList }}"><div role="listbox" style="border:1px solid #E6E9F2;border-radius:10px;padding:4px;background:#fff;box-shadow:0 8px 24px rgba(16,24,40,.08)">
+<sc-for list="{{ hvList }}" as="h"><button type="button" role="option" onClick="{{ h.pick }}" style="width:100%;display:flex;align-items:center;gap:10px;height:44px;padding:0 10px;border:none;background:transparent;border-radius:6px;cursor:pointer;text-align:left" style-hover="background:#F7F8FC"><span style="width:28px;height:28px;border-radius:50%;background:{{ h.avBg }};color:{{ h.avC }};display:grid;place-items:center;font-size:11px;font-weight:600">{{ h.initials }}</span><span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:500;color:#1E2235">{{ h.name }}</span><span style="display:block;font-size:12px;color:#646B85">{{ h.sub }}</span></span></button></sc-for>
+</div></sc-if>
+<sc-if value="{{ hvPicked }}"><div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #C7CBF9;background:#FAFAFF;border-radius:10px"><span style="width:32px;height:32px;border-radius:50%;background:#FFE4DA;color:#C2410C;display:grid;place-items:center;font-size:11px;font-weight:600">KL</span><div style="flex:1"><div style="font-weight:500">Võ Khánh Linh</div><div style="font-size:12px;color:#646B85">Lớp 8 · đã có 1 yêu cầu trước (YC-0029) · phụ huynh Chị Võ Thị Lan</div></div><button type="button" onClick="{{ unpickHv }}" style="height:28px;padding:0 8px;border:none;background:transparent;color:#646B85;font-size:13px;cursor:pointer" style-hover="color:#1E2235">Đổi</button></div></sc-if>
+<sc-if value="{{ e.hv }}"><span id="hv-loi" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn một học viên.</span></sc-if>
+</div></sc-if>
+<sc-if value="{{ hvNew }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><label for="hv-ten" style="font-size:13px;font-weight:500">Họ tên học viên <span style="color:#E5484D">*</span></label><input id="hv-ten" value="{{ f.name }}" onChange="{{ set.name }}" placeholder="VD: Nguyễn Minh Anh" aria-invalid="{{ e.name }}" aria-describedby="hv-ten-loi" style="height:36px;padding:0 10px;border:1px solid {{ b.name }};border-radius:8px;font-size:14px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"><sc-if value="{{ e.name }}"><span id="hv-ten-loi" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Nhập họ tên học viên.</span></sc-if></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="hv-lop" style="font-size:13px;font-weight:500">Lớp hiện tại</label><input id="hv-lop" value="{{ f.grade }}" onChange="{{ set.grade }}" placeholder="VD: Lớp 9" style="height:36px;padding:0 10px;border:1px solid #E6E9F2;border-radius:8px;font-size:14px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></div>
+</div></sc-if>
+</div></section>
+
+<section aria-labelledby="k-mon" style="padding:20px 0;border-top:1px solid #E6E9F2;display:grid;grid-template-columns:148px minmax(0,1fr);gap:28px">
+<div><h2 id="k-mon" style="margin:0;font-size:15px;font-weight:600">Môn và mục tiêu</h2><p style="margin:4px 0 0;font-size:12px;color:#646B85;line-height:18px">Hệ thống chỉ đề xuất gia sư đã được duyệt đúng môn và cấp độ.</p></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><label for="mon" style="font-size:13px;font-weight:500">Môn học <span style="color:#E5484D">*</span></label><select id="mon" value="{{ f.subject }}" onChange="{{ set.subject }}" aria-invalid="{{ e.subject }}" style="height:36px;padding:0 10px;border:1px solid {{ b.subject }};border-radius:8px;font-size:14px;color:#1E2235;background:#fff"><option value="">Chọn môn</option><option>Toán</option><option>Vật lý</option><option>Hóa học</option><option>Tiếng Anh</option><option>IELTS</option><option>Ngữ văn</option></select><sc-if value="{{ e.subject }}"><span style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn môn học.</span></sc-if></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="cap" style="font-size:13px;font-weight:500">Cấp độ <span style="color:#E5484D">*</span></label><select id="cap" value="{{ f.level }}" onChange="{{ set.level }}" aria-invalid="{{ e.level }}" style="height:36px;padding:0 10px;border:1px solid {{ b.level }};border-radius:8px;font-size:14px;color:#1E2235;background:#fff"><option value="">Chọn cấp độ</option><option>Tiểu học</option><option>Lớp 6–7</option><option>Lớp 8–9</option><option>THPT</option><option>Luyện thi vào 10</option><option>IELTS 5.0–6.0</option><option>IELTS 6.5–7.5</option></select><sc-if value="{{ e.level }}"><span style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Chọn cấp độ.</span></sc-if></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="muc-tieu" style="font-size:13px;font-weight:500">Mục tiêu học tập <span style="color:#E5484D">*</span></label><textarea id="muc-tieu" rows="2" value="{{ f.goal }}" onChange="{{ set.goal }}" placeholder="VD: Lấy lại gốc đại số, đạt 8 điểm học kỳ I" aria-invalid="{{ e.goal }}" style="padding:8px 10px;border:1px solid {{ b.goal }};border-radius:8px;font-size:14px;color:#1E2235;resize:vertical" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></textarea><sc-if value="{{ e.goal }}"><span style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Ghi mục tiêu để gia sư hiểu học viên cần gì.</span></sc-if><span style="font-size:12px;color:#9AA1B8">Gia sư sẽ thấy mục tiêu này trong lời mời nhận lớp.</span></div>
+</div></section>
+
+<section aria-labelledby="k-lich" style="padding:20px 0;border-top:1px solid #E6E9F2;display:grid;grid-template-columns:148px minmax(0,1fr);gap:28px">
+<div><h2 id="k-lich" style="margin:0;font-size:15px;font-weight:600">Lịch mong muốn <span style="color:#E5484D">*</span></h2><p style="margin:4px 0 0;font-size:12px;color:#646B85;line-height:18px">Bấm vào ô để chọn. Dùng để so khớp giờ rảnh của gia sư.</p></div>
+<div id="lich" style="display:flex;flex-direction:column;gap:8px">
+<div role="grid" aria-label="Chọn thứ và khung giờ" style="display:grid;grid-template-columns:104px repeat(7,minmax(0,1fr));gap:4px">
+<span></span><sc-for list="{{ days }}" as="d" hint-placeholder-count="7"><span style="text-align:center;font-size:12px;font-weight:600;color:#646B85;padding-bottom:2px">{{ d }}</span></sc-for>
+<sc-for list="{{ grid }}" as="row" hint-placeholder-count="4">
+<span style="font-size:12px;color:#646B85;line-height:15px;display:flex;flex-direction:column;justify-content:center"><b style="font-weight:500;color:#1E2235">{{ row.label }}</b>{{ row.time }}</span>
+<sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="7"><button type="button" role="gridcell" aria-pressed="{{ c.on }}" aria-label="{{ c.aria }}" onClick="{{ c.toggle }}" style="height:36px;border-radius:8px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .12s;box-shadow:{{ c.sh }}" style-hover="border-color:#6366F1;color:#4F46E5"><i class="bi {{ c.icon }}"></i></button></sc-for>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:{{ schedC }}"><i class="bi {{ schedIcon }}"></i>{{ schedText }}</div>
+</div></section>
+
+<section aria-labelledby="k-ph" style="padding:20px 0;border-top:1px solid #E6E9F2;display:grid;grid-template-columns:148px minmax(0,1fr);gap:28px">
+<div><h2 id="k-ph" style="margin:0;font-size:15px;font-weight:600">Liên hệ phụ huynh</h2><p style="margin:4px 0 0;font-size:12px;color:#646B85;line-height:18px">Chỉ Tuyển sinh và Quản trị viên thấy. Hệ thống gửi đánh giá buổi học qua Zalo số này.</p></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:6px"><label for="ph-ten" style="font-size:13px;font-weight:500">Tên phụ huynh <span style="color:#E5484D">*</span></label><input id="ph-ten" value="{{ f.parent }}" onChange="{{ set.parent }}" placeholder="VD: Chị Nguyễn Thu Hằng" aria-invalid="{{ e.parent }}" style="height:36px;padding:0 10px;border:1px solid {{ b.parent }};border-radius:8px;font-size:14px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"><sc-if value="{{ e.parent }}"><span style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Nhập tên phụ huynh.</span></sc-if></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="ph-sdt" style="font-size:13px;font-weight:500">SĐT / Zalo <span style="color:#E5484D">*</span></label><input id="ph-sdt" type="tel" inputMode="tel" value="{{ f.phone }}" onChange="{{ set.phone }}" placeholder="VD: 0912 345 678" aria-invalid="{{ e.phone }}" aria-describedby="sdt-goi-y" style="height:36px;padding:0 10px;border:1px solid {{ b.phone }};border-radius:8px;font-size:14px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"><span id="sdt-goi-y" style="font-size:12px;color:{{ phoneC }};display:inline-flex;gap:5px;align-items:center"><i class="bi {{ phoneIcon }}"></i>{{ phoneText }}</span></div>
+</div></section>
+
+<section aria-labelledby="k-gc" style="padding:20px 0 28px;border-top:1px solid #E6E9F2;display:grid;grid-template-columns:148px minmax(0,1fr);gap:28px">
+<div><h2 id="k-gc" style="margin:0;font-size:15px;font-weight:600">Ghi chú</h2><p style="margin:4px 0 0;font-size:12px;color:#646B85;line-height:18px">Không bắt buộc.</p></div>
+<textarea rows="3" value="{{ f.note }}" onChange="{{ set.note }}" aria-labelledby="k-gc" placeholder="VD: Học viên hơi nhút nhát, ưu tiên gia sư kiên nhẫn" style="padding:8px 10px;border:1px solid #E6E9F2;border-radius:8px;font-size:14px;color:#1E2235;resize:vertical" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></textarea>
+</section>
+
+<div style="position:sticky;bottom:0;z-index:10;margin:0 -24px;padding:12px 24px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid #E6E9F2;border-radius:0 0 12px 12px;display:flex;align-items:center;gap:8px">
+<span style="font-size:12px;color:#646B85;display:inline-flex;gap:6px;align-items:center"><i class="bi bi-cpu"></i>Sau khi tạo, hệ thống đề xuất gia sư ngay trên trang chi tiết.</span>
+<a href="Tuyen sinh - Yeu cau hoc tap.dc.html" style="margin-left:auto;height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-weight:500;font-size:14px;color:#1E2235;display:inline-flex;align-items:center;text-decoration:none" style-hover="background:#F7F8FC;text-decoration:none;color:#1E2235">Hủy</a>
+<button type="submit" style="height:36px;padding:0 16px;border:none;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" style-hover="background:#4F46E5"><sc-if value="{{ saving }}"><i class="bi bi-arrow-repeat"></i></sc-if>Tạo yêu cầu<kbd style="font:500 11px 'Be Vietnam Pro',sans-serif;padding:0 5px;border:1px solid rgba(255,255,255,.35);border-radius:4px;color:#E0E3FF">Ctrl ↵</kbd></button>
+</div>
+</div>
+<div style="height:24px"></div>
+</form>
+
+<aside aria-label="Xem trước" style="position:sticky;top:80px;display:flex;flex-direction:column;gap:16px;margin-top:70px">
+<div style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px">
+<div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#3B4256"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Xem trước yêu cầu</div>
+<div style="font-size:12px;color:#646B85;margin-top:2px">Tự cập nhật theo thông tin bạn nhập ở form bên trái</div>
+<div style="font-weight:600;font-size:15px;margin-top:12px;padding-top:12px;border-top:1px solid #EEF0F5">{{ pvTitle }}</div>
+<div style="font-size:13px;color:#646B85;margin-top:2px">{{ pvSub }}</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid #EEF0F5">
+<sc-for list="{{ checks }}" as="k" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:{{ k.c }}"><i class="bi {{ k.icon }}"></i>{{ k.label }}</div></sc-for>
+</div></div>
+<div style="display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:{{ matchBg }};font-size:13px;line-height:19px;color:{{ matchC }}"><i class="bi bi-people" style="font-size:16px"></i><span>{{ matchText }}</span></div>
+</aside>
+</main>
+</div>
+
+<sc-if value="{{ hasToast }}">
+<div role="status" style="position:fixed;top:72px;right:24px;z-index:80;display:flex;align-items:center;gap:12px;min-width:320px;padding:12px 14px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.14);animation:gso-slide .2s ease">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-check-lg"></i></span>
+<span style="flex:1;font-size:13px;font-weight:500">Đã tạo YC-0032 · hệ thống đã đề xuất {{ matchN }} gia sư</span>
+<a href="Tuyen sinh - Chi tiet yeu cau.dc.html" style="font-size:13px;font-weight:500">Mở yêu cầu</a>
+</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Trống&quot;,&quot;Đã điền&quot;,&quot;Lỗi&quot;],&quot;default&quot;:&quot;Trống&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;}}">
+class Component extends DCLogic {
+  state = { hvMode: 'new', hvQ: '', hvPick: false, f: { name: '', grade: '', subject: '', level: '', goal: '', parent: '', phone: '', note: '' }, slots: {}, tried: false, saving: false, toast: false };
+  componentDidMount() {
+    if (this.props.state === 'Lỗi') this.setState({ tried: true, f: { ...this.state.f, phone: '912 34 567' } });
+    this.onKey = e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.submit(); };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentDidUpdate(pp) {
+    if (pp.state !== this.props.state) {
+      const s = this.props.state;
+      if (s === 'Lỗi') this.setState({ tried: true, f: { name: '', grade: '', subject: '', level: '', goal: '', parent: '', phone: '912 34 567', note: '' }, slots: {} });
+      if (s === 'Đã điền') this.fill();
+      if (s === 'Trống') this.setState({ tried: false, f: { name: '', grade: '', subject: '', level: '', goal: '', parent: '', phone: '', note: '' }, slots: {} });
+    }
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); clearTimeout(this.tt); }
+  fill() { this.setState({ tried: false, hvMode: 'new', f: { name: 'Nguyễn Minh Anh', grade: 'Lớp 9', subject: 'Toán', level: 'Lớp 8–9', goal: 'Ôn thi vào 10, chắc phần hình học', parent: 'Chị Nguyễn Thu Hằng', phone: '+84 912 345 678', note: '' }, slots: { '1-2': true, '3-2': true, '5-0': true } }); }
+  phone(v) {
+    let d = (v || '').replace(/\D/g, '');
+    if (d.startsWith('84')) d = '0' + d.slice(2);
+    const ok = /^0[35789]\d{8}$/.test(d);
+    return { d, ok, pretty: ok ? `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}` : '', zalo: ok ? '84' + d.slice(1) : '' };
+  }
+  errors() {
+    const S = this.state, f = S.f, e = {};
+    if (S.hvMode === 'new' && !f.name.trim()) e.name = 'Họ tên học viên';
+    if (S.hvMode === 'old' && !S.hvPick) e.hv = 'Chọn học viên';
+    if (!f.subject) e.subject = 'Môn học';
+    if (!f.level) e.level = 'Cấp độ';
+    if (!f.goal.trim()) e.goal = 'Mục tiêu học tập';
+    if (!Object.values(S.slots).some(Boolean)) e.sched = 'Lịch học mong muốn (chọn ít nhất 1 ô)';
+    if (S.hvMode === 'new' && !f.parent.trim()) e.parent = 'Tên phụ huynh';
+    if (S.hvMode === 'new' && !this.phone(f.phone).ok) e.phone = 'SĐT / Zalo phụ huynh chưa đúng định dạng';
+    return e;
+  }
+  submit(ev) {
+    ev && ev.preventDefault && ev.preventDefault();
+    const e = this.errors();
+    if (Object.keys(e).length) { this.setState({ tried: true }); return; }
+    this.setState({ saving: true });
+    setTimeout(() => { this.setState({ saving: false, toast: true }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: false }), 6000); }, 600);
+  }
+  renderVals() {
+    const S = this.state, f = S.f;
+    const err = S.tried ? this.errors() : {};
+    const ids = { name: 'hv-ten', hv: 'hv-tim', subject: 'mon', level: 'cap', goal: 'muc-tieu', sched: 'lich', parent: 'ph-ten', phone: 'ph-sdt' };
+    const errList = Object.keys(err).map(k => ({ id: ids[k], msg: err[k] }));
+    const e = {}, b = {};
+    ['name', 'hv', 'subject', 'level', 'goal', 'parent', 'phone'].forEach(k => { e[k] = !!err[k]; b[k] = err[k] ? '#E5484D' : '#E6E9F2'; });
+    const set = {};
+    Object.keys(f).forEach(k => { set[k] = ev => { const v = ev.target.value; this.setState(s => ({ f: { ...s.f, [k]: v } })); }; });
+    const ph = this.phone(f.phone);
+    let phoneText = 'Nhập 10 số, có thể kèm +84. Hệ thống tự chuẩn hóa.', phoneC = '#9AA1B8', phoneIcon = 'bi-info-circle';
+    if (f.phone && ph.ok) { phoneText = `Sẽ lưu: ${ph.pretty} · Zalo ${ph.zalo}`; phoneC = '#15803D'; phoneIcon = 'bi-check-circle'; }
+    else if (f.phone && (S.tried || ph.d.length >= 10)) { phoneText = 'Số chưa đúng định dạng di động Việt Nam (VD: 0912 345 678).'; phoneC = '#C2292E'; phoneIcon = 'bi-exclamation-circle'; }
+    else if (S.tried && err.phone) { phoneText = 'Nhập SĐT / Zalo của phụ huynh.'; phoneC = '#C2292E'; phoneIcon = 'bi-exclamation-circle'; }
+
+    const DAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const ROWS = [['Sáng', '08:00–11:00'], ['Chiều', '14:00–17:00'], ['Tối sớm', '17:30–19:00'], ['Tối', '19:00–21:00']];
+    const grid = ROWS.map(([label, time], r) => ({ label, time, cells: DAYS.map((d, i) => { const k = i + '-' + (r === 3 ? 2 : r === 2 ? 3 : r); const on = !!S.slots[k];
+      return { on, aria: `${d} ${label} ${time}`, bg: on ? '#EEF0FF' : '#fff', fg: on ? '#4F46E5' : '#C3C8D9', sh: on ? '0 0 0 3px #EEF0FF' : 'none', icon: on ? 'bi-check-lg' : 'bi-plus-lg', bd: on ? '#6366F1' : (S.tried && err.sched ? '#F3B4B6' : '#E6E9F2'), toggle: () => this.setState(s => ({ slots: { ...s.slots, [k]: !s.slots[k] } })) }; }) }));
+    const picked = [];
+    ROWS.forEach(([label, time], r) => DAYS.forEach((d, i) => { const k = i + '-' + (r === 3 ? 2 : r === 2 ? 3 : r); if (S.slots[k]) picked.push(`${d} ${time.split('–')[0]}`); }));
+    const nSlots = picked.length;
+    const schedText = nSlots ? `Đã chọn ${nSlots} khung: ${picked.join(' · ')}` : (S.tried ? 'Chọn ít nhất 1 khung giờ học.' : 'Chưa chọn khung giờ nào.');
+    const matchN = !f.subject ? 0 : Math.max(0, Math.min(6, 2 + nSlots - (f.level ? 0 : 1)));
+    const hvL = [['Võ Khánh Linh', 'Lớp 8 · PH Chị Võ Thị Lan · 0905 123 456', 'KL', '#FFE4DA', '#C2410C'], ['Võ Minh Khôi', 'Lớp 5 · PH Anh Võ Văn Tài · 0938 222 101', 'MK', '#E0E7FF', '#4338CA']];
+    const name = S.hvMode === 'old' ? (S.hvPick ? 'Võ Khánh Linh' : '') : f.name.trim();
+    const checks = [
+      ['Học viên', !!name], ['Môn và cấp độ', !!(f.subject && f.level)], ['Mục tiêu', !!f.goal.trim()], ['Lịch mong muốn', nSlots > 0], ['Liên hệ phụ huynh', S.hvMode === 'old' ? S.hvPick : !!(f.parent.trim() && ph.ok)]
+    ].map(([label, ok]) => ({ label, icon: ok ? 'bi-check-circle-fill' : 'bi-circle', c: ok ? '#0F766E' : '#9AA1B8' }));
+    return {
+      hasErrors: S.tried && errList.length > 0, errCount: errList.length, errList, e, b, f, set,
+      hvModes: [['new', 'Học viên mới'], ['old', 'Đã có trong hệ thống']].map(([v, label]) => { const on = S.hvMode === v; return { label, on, pick: () => this.setState({ hvMode: v }), bg: on ? '#fff' : 'transparent', c: on ? '#1E2235' : '#646B85', sh: on ? '0 1px 2px rgba(16,24,40,.08)' : 'none' }; }),
+      hvNew: S.hvMode === 'new', hvExisting: S.hvMode === 'old', hvQ: S.hvQ, onHvQ: ev => this.setState({ hvQ: ev.target.value, hvPick: false }),
+      showHvList: S.hvMode === 'old' && !S.hvPick && S.hvQ.trim().length > 0, hvPicked: S.hvPick, unpickHv: () => this.setState({ hvPick: false, hvQ: '' }),
+      hvList: hvL.map(([name, sub, initials, avBg, avC]) => ({ name, sub, initials, avBg, avC, pick: () => this.setState({ hvPick: true }) })),
+      days: DAYS, grid, schedText, schedC: S.tried && err.sched ? '#C2292E' : nSlots ? '#4A5068' : '#9AA1B8', schedIcon: S.tried && err.sched ? 'bi-exclamation-circle' : 'bi-calendar3',
+      phoneText, phoneC, phoneIcon,
+      pvTitle: name ? `${name}${f.subject ? ' · ' + f.subject : ''}` : 'Chưa có tên học viên',
+      pvSub: [f.level, f.goal.trim()].filter(Boolean).join(' · ') || 'Các mục bên dưới sẽ được đánh dấu khi bạn điền xong.',
+      checks, matchN,
+      matchText: !f.subject ? 'Chọn môn và lịch học để xem số gia sư phù hợp.' : matchN ? `Có ${matchN} gia sư đã duyệt môn ${f.subject} và trùng ít nhất 1 khung giờ.` : `Chưa có gia sư môn ${f.subject} trùng lịch đã chọn. Thử chọn thêm khung giờ.`,
+      matchBg: f.subject && matchN ? '#E6FAF7' : '#F1F3F9', matchC: f.subject && matchN ? '#0F766E' : '#646B85',
+      submit: ev => this.submit(ev), saving: S.saving, hasToast: S.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

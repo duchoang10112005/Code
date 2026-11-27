@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Thu nhập · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><link rel="stylesheet" href="ui.css"></helmet>
+<div class="app">
+<a href="#noi-dung" class="skip">Bỏ qua menu</a>
+<aside class="side" aria-label="Menu chính">
+<div class="brand"><div class="logo">G</div><div style="flex:1;min-width:0"><b>Gia Sư Online</b><small style="color:#C2410C">Góc giảng dạy</small></div></div>
+<nav class="nav">
+<div class="nav-h">GIẢNG DẠY</div>
+<a href="Trang chu Gia su v2.dc.html"><i class="bi bi-house-door"></i><span>Trang chủ</span></a>
+<a href="Gia su - Loi moi nhan lop.dc.html"><i class="bi bi-envelope-open"></i><span>Lời mời nhận lớp</span><b class="badge">2</b></a>
+<a href="#"><i class="bi bi-collection"></i><span>Lớp của tôi</span></a>
+<a href="Gia su - Chi tiet buoi hoc v2.dc.html"><i class="bi bi-calendar3"></i><span>Buổi học</span><b class="badge">1</b></a>
+<a href="#" aria-current="page"><i class="bi bi-wallet2"></i><span>Thu nhập</span></a>
+<div class="nav-h">CÁ NHÂN</div>
+<a href="Gia su - Ho so cua toi.dc.html"><i class="bi bi-person-circle"></i><span>Hồ sơ của tôi</span></a>
+</nav>
+<div class="me"><div class="av" style="width:32px;height:32px;background:#FFE4DA;color:#C2410C;font-size:12px">NL</div><div style="flex:1;min-width:0"><b>Phạm Ngọc Lan</b><span class="role" style="background:#FFEFEA;color:#C2410C">Gia sư</span></div></div>
+</aside>
+
+<div class="main-col">
+<header class="top">
+<nav class="crumb" aria-label="Đường dẫn"><h1>Thu nhập</h1></nav>
+<button type="button" class="icon-btn" aria-label="Thông báo, 3 chưa đọc" style="margin-left:auto"><i class="bi bi-bell"></i><span class="dot-badge">3</span></button>
+<span class="muted" style="font-size:13px">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" class="page">
+<div class="head">
+<div style="flex:1;min-width:320px"><h2 class="h2">Thu nhập {{ mLabel }}</h2><p class="lead">Thù lao tính theo buổi bạn đã xác nhận hoàn tất. Trung tâm kiểm tra, chốt vào đầu tháng sau và chi trả ngày 05.</p></div>
+<div class="tabs" role="tablist" aria-label="Chọn tháng">
+<sc-for list="{{ months }}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="chip" style="height:18px;padding:0 7px;font-size:11px;background:{{ t.bg }};color:{{ t.c }}">{{ t.st }}</span></button></sc-for>
+</div>
+</div>
+
+<section class="card" aria-label="Tổng thu nhập tháng" style="overflow:hidden">
+<div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr)">
+<div style="padding:22px 24px;background:radial-gradient(120% 140% at 0% 0%,#FFE6DC 0%,rgba(255,230,220,0) 60%),#FFF8F5;border-right:1px solid #F3E4DE">
+<div class="sm b5" style="color:#C2410C">{{ hero.label }}</div>
+<div style="font-size:34px;line-height:44px;font-weight:700;letter-spacing:-.02em;margin-top:4px">{{ hero.amount }}</div>
+<div class="row sm" style="margin-top:6px;color:#4A5068;flex-wrap:wrap"><span>{{ hero.sub }}</span><sc-if value="{{ hero.hasHeld }}"><span class="chip" style="background:#FFF4E5;color:#B45309"><span class="d" style="background:#F59E0B"></span>{{ hero.heldText }}</span></sc-if></div>
+<div class="row sm" style="margin-top:14px;padding-top:12px;border-top:1px dashed #F0D5CB;gap:16px;color:#4A5068"><span class="row" style="gap:6px"><i class="bi bi-wallet2" aria-hidden="true"></i>Nhận qua Vietcombank ···· 4821</span><span class="row" style="gap:6px"><i class="bi bi-calendar3" aria-hidden="true"></i>{{ hero.payDay }}</span></div>
+</div>
+<div style="padding:18px 24px">
+<div class="row" style="margin-bottom:10px"><span class="b6">6 tháng gần nhất</span><span class="sm muted" style="margin-left:auto">đơn vị: triệu đồng</span></div>
+<div role="img" aria-label="{{ chartAria }}" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;align-items:end;height:120px">
+<sc-for list="{{ chart }}" as="c" hint-placeholder-count="6"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><span class="sm b6" style="color:{{ c.tc }}">{{ c.v }}</span><span style="width:100%;max-width:44px;height:{{ c.h }}px;border-radius:6px 6px 3px 3px;background:{{ c.bg }};border:1px {{ c.bs }} {{ c.bd }}"></span><span class="sm" style="color:{{ c.lc }};font-weight:{{ c.fw }}">{{ c.m }}</span></div></sc-for>
+</div>
+</div>
+</div>
+<nav class="flow" aria-label="Quy trình đối soát tháng" style="border-top:1px solid #EEF0F5">
+<sc-for list="{{ flow }}" as="s" hint-placeholder-count="4">
+<div aria-current="{{ s.cur }}" style="background:{{ s.bg }}"><span class="c" style="background:{{ s.cBg }};border-color:{{ s.cBd }};color:{{ s.cC }}"><sc-if value="{{ s.isDone }}"><i class="bi bi-check-lg" aria-hidden="true"></i></sc-if><sc-if value="{{ s.notDone }}">{{ s.n }}</sc-if></span><span style="min-width:0"><b style="color:{{ s.tc }}">{{ s.label }}</b><small style="color:{{ s.sc }}">{{ s.sub }}</small></span><span class="bar" style="background:{{ s.bar }}"></span></div>
+</sc-for>
+</nav>
+</section>
+
+<div class="grid-aside">
+<div class="stack">
+<section class="card" aria-labelledby="lop-t">
+<div class="card-h"><h3 id="lop-t">Theo lớp</h3></div>
+<div role="table" aria-label="Thu nhập theo lớp" style="--cols:minmax(0,1.6fr) 90px 110px minmax(0,1.2fr) 120px">
+<div role="row" class="gt-h"><span role="columnheader">Lớp</span><span role="columnheader" class="r">Buổi</span><span role="columnheader" class="r">Đơn giá</span><span role="columnheader">Tỷ trọng</span><span role="columnheader" class="r">Thành tiền</span></div>
+<sc-for list="{{ byClass }}" as="c" hint-placeholder-count="3">
+<div role="row" class="gt-r"><span role="cell" class="who"><span class="av" style="width:30px;height:30px;background:{{ c.avBg }};color:{{ c.avC }};font-size:11px">{{ c.ini }}</span><span style="min-width:0"><b>{{ c.name }}</b><small>{{ c.student }} · {{ c.dur }}</small></span></span><span role="cell" class="r b5">{{ c.n }}</span><span role="cell" class="r sm">{{ c.rate }}</span><span role="cell"><span class="bar" style="height:6px"><span style="width:{{ c.w }};background:{{ c.color }}"></span></span></span><span role="cell" class="r b6">{{ c.amt }}</span></div>
+</sc-for>
+</div>
+</section>
+
+<section class="card" aria-labelledby="bh-t">
+<div class="card-h"><h3 id="bh-t">Chi tiết từng buổi</h3>
+<div class="tabs" role="tablist" aria-label="Lọc buổi" style="margin-left:auto"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}">{{ t.label }}<span class="cnt">{{ t.n }}</span></button></sc-for></div>
+</div>
+<div role="table" aria-label="Thù lao từng buổi" style="--cols:120px minmax(0,1.4fr) 84px minmax(0,1.3fr) 110px">
+<div role="row" class="gt-h"><span role="columnheader">Ngày</span><span role="columnheader">Lớp · buổi</span><span role="columnheader">Thời lượng</span><span role="columnheader">Trạng thái</span><span role="columnheader" class="r">Thù lao</span></div>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+<div role="row" class="gt-r"><span role="cell"><span class="b5" style="display:block">{{ r.date }}</span><span class="sm muted">{{ r.time }}</span></span><span role="cell" style="min-width:0"><span class="b5 ell" style="display:block">{{ r.cls }}</span><span class="sm muted">{{ r.no }}</span></span><span role="cell" class="sm">{{ r.dur }}</span><span role="cell" style="min-width:0"><span class="chip" style="background:{{ r.bg }};color:{{ r.c }}"><span class="d" style="background:{{ r.dot }}"></span>{{ r.st }}</span><sc-if value="{{ r.note }}"><span class="sm" style="display:block;margin-top:3px;color:{{ r.c }}">{{ r.note }}</span></sc-if></span><span role="cell" class="r b6" style="color:{{ r.ac }};text-decoration:{{ r.deco }}">{{ r.amt }}</span></div>
+</sc-for>
+<sc-if value="{{ noRows }}"><div class="empty"><span class="ring"><i class="bi bi-wallet2"></i></span>Không có buổi nào trong mục này.</div></sc-if>
+</div>
+</section>
+</div>
+
+<aside class="stack-16 sticky" aria-label="Lưu ý">
+<sc-if value="{{ showPending }}" hint-placeholder-val="{{ true }}">
+<section class="card card-b" aria-labelledby="cn-t" style="border-color:#F6DDB0;background:#FFFCF5">
+<div class="row" style="margin-bottom:8px"><i class="bi bi-hourglass-split" aria-hidden="true" style="color:#B45309"></i><h3 id="cn-t" style="margin:0;font-size:14px;font-weight:600">Chưa được tính</h3></div>
+<p style="margin:0;font-size:13px;line-height:20px;color:#4A5068">Buổi <b class="b5" style="color:#1E2235">IELTS · Trần Gia Bảo 09/11</b> chưa xác nhận hoàn tất. Xác nhận trước <b class="b5" style="color:#1E2235">21:30 hôm nay</b> để được tính <b class="b5" style="color:#1E2235">150.000đ</b>.</p>
+<a href="Gia su - Chi tiet buoi hoc v2.dc.html" class="btn sm pri" style="margin-top:12px;width:100%"><i class="bi bi-clipboard-check" aria-hidden="true"></i>Đánh giá buổi học</a>
+</section>
+</sc-if>
+<section class="card card-b" aria-labelledby="ct-t">
+<h3 id="ct-t" style="margin:0 0 12px;font-size:14px;font-weight:600">Trạng thái thù lao</h3>
+<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ legend }}" as="l" hint-placeholder-count="4"><li style="display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:start"><span class="chip" style="justify-self:start;background:{{ l.bg }};color:{{ l.c }}"><span class="d" style="background:{{ l.dot }}"></span>{{ l.label }}</span><span class="sm" style="color:#4A5068;line-height:18px;padding-top:2px">{{ l.text }}</span></li></sc-for>
+</ul>
+</section>
+<section class="card card-b" aria-labelledby="hd-t">
+<h3 id="hd-t" style="margin:0 0 8px;font-size:14px;font-weight:600">Thắc mắc về thù lao?</h3>
+<p class="sm" style="margin:0;color:#4A5068;line-height:18px">Nhắn Tuyển sinh trước khi tháng được chốt. Sau khi chốt, khoản chênh lệch sẽ được điều chỉnh ở tháng kế tiếp.</p>
+<a href="#" class="btn sm" style="margin-top:12px;width:100%"><i class="bi bi-chat-dots" aria-hidden="true"></i>Nhắn Tuyển sinh</a>
+</section>
+</aside>
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Tháng 11 · đang mở","Tháng 11 · có buổi tạm giữ","Tháng 10 · đã chốt"],"default":"Tháng 11 · đang mở","tsType":"string","section":"Trạng thái màn"}}'>
+class Component extends DCLogic {
+  state = { key: null, month: null, tab: 'all' };
+  renderVals() {
+    const P = this.props, S0 = this.state, key = P.state || 'Tháng 11 · đang mở';
+    const S = S0.key === key ? S0 : { ...S0, month: null, tab: 'all' };
+    const set = p => this.setState(S0.key === key ? p : { month: null, tab: 'all', ...p, key });
+    const vnd = n => n.toLocaleString('vi-VN').replace(/,/g, '.') + 'đ';
+    const TONE = { teal: { bg: '#E6FAF7', c: '#0F766E', dot: '#14B8A6' }, orange: { bg: '#FFF4E5', c: '#B45309', dot: '#F59E0B' }, neutral: { bg: '#F1F3F9', c: '#4A5068', dot: '#8A94A6' }, indigo: { bg: '#EEF0FF', c: '#4F46E5', dot: '#6366F1' }, red: { bg: '#FDECEC', c: '#C2292E', dot: '#E5484D' } };
+    const month = S.month || (key.startsWith('Tháng 10') ? 10 : 11);
+    const heldMode = key.includes('tạm giữ') && month === 11;
+    const closed = month < 11;
+    const CL = { t9: { name: 'Toán 9', student: 'Nguyễn Minh Anh', dur: '90 phút', rate: 120000, ini: 'MA', avBg: '#E0E7FF', avC: '#4338CA', color: '#6366F1' }, ie: { name: 'IELTS', student: 'Trần Gia Bảo', dur: '90 phút', rate: 150000, ini: 'GB', avBg: '#D5F5EF', avC: '#0F766E', color: '#14B8A6' }, v8: { name: 'Ngữ văn 8', student: 'Lê Thu Hà', dur: '60 phút', rate: 90000, ini: 'TH', avBg: '#FFE4DA', avC: '#C2410C', color: '#FF7A59' } };
+    const NOV = [
+      ['T2 02/11', '19:30', 't9', 'Buổi 7/10', 'ok'], ['T3 03/11', '18:00', 'v8', 'Buổi 3/10', 'void', 'Tự hủy · quá hạn xác nhận'],
+      ['T4 04/11', '20:00', 'ie', 'Buổi 4/16', 'ok'], ['T5 05/11', '08:00', 'ie', 'Buổi 5/16', 'ok'], ['T5 05/11', '18:00', 'v8', 'Buổi 2/10', 'ok'],
+      ['T6 06/11', '19:30', 't9', 'Buổi 8/10', 'ok'], ['T7 07/11', '08:00', 'ie', 'Buổi 5/16 · bù', heldMode ? 'held' : 'ok', heldMode ? 'Đang xem xét: Zoom ghi nhận học viên 41%' : ''],
+      ['CN 08/11', '09:00', 'v8', 'Học bù buổi 3', 'ok'], ['T2 09/11', '08:00', 'ie', 'Buổi 6/16 · học bù', 'wait', 'Xác nhận trước 21:30 hôm nay']
+    ];
+    const OCT = [['T2 26/10', '19:30', 't9', 'Buổi 6/10'], ['T4 28/10', '20:00', 'ie', 'Buổi 3/16'], ['T5 29/10', '18:00', 'v8', 'Buổi 1/10'], ['T6 30/10', '19:30', 't9', 'Buổi 5/10'], ['T7 24/10', '08:00', 'ie', 'Buổi 2/16'], ['T2 19/10', '19:30', 't9', 'Buổi 4/10']].map(x => [...x, 'paid']);
+    const list = month === 11 ? NOV : month === 10 ? OCT : OCT.slice(0, 4).map(x => [x[0].replace('/10', '/09'), x[1], x[2], x[3], 'paid']);
+    const SM = { ok: { ...TONE.teal, st: 'Tạm tính' }, paid: { ...TONE.indigo, st: 'Đã đối soát' }, held: { ...TONE.orange, st: 'Tạm giữ' }, wait: { ...TONE.neutral, st: 'Chờ bạn xác nhận' }, void: { ...TONE.red, st: 'Đã hủy' } };
+    const grp = s => s === 'ok' || s === 'paid' ? 'ok' : s === 'held' || s === 'wait' ? 'hold' : 'void';
+    const counted = list.filter(x => x[4] === 'ok' || x[4] === 'paid');
+    const total = month === 10 ? 2160000 : month === 9 ? 2040000 : counted.reduce((a, x) => a + CL[x[2]].rate, 0);
+    const heldAmt = list.filter(x => x[4] === 'held').reduce((a, x) => a + CL[x[2]].rate, 0);
+    const nDone = month === 10 ? 18 : month === 9 ? 17 : counted.length;
+
+    const rows = list.filter(x => S.tab === 'all' || grp(x[4]) === S.tab).map(([date, time, c, no, s, note]) => {
+      const cl = CL[c], m = SM[s];
+      return { date, time, cls: `${cl.name} · ${cl.student}`, no, dur: cl.dur, ...m, note: note || '', amt: s === 'void' ? '0đ' : vnd(cl.rate),
+        ac: s === 'void' || s === 'wait' ? '#646B85' : s === 'held' ? '#B45309' : '#1E2235', deco: s === 'held' ? 'line-through' : 'none' };
+    });
+    const cnt = k => list.filter(x => k === 'all' || grp(x[4]) === k).length;
+    const tabs = [['all', 'Tất cả'], ['ok', 'Được tính'], ['hold', 'Chờ · tạm giữ'], ['void', 'Đã hủy']].map(([v, label]) => ({ label, n: cnt(v), on: S.tab === v ? 'true' : 'false', pick: () => set({ tab: v }) }));
+    const byClass = Object.keys(CL).map(id => { const n = month === 11 ? counted.filter(x => x[2] === id).length : list.filter(x => x[2] === id).length; const cl = CL[id]; return { ...cl, n, amt: vnd(n * cl.rate), rate: vnd(cl.rate), raw: n * cl.rate }; });
+    const maxC = Math.max(...byClass.map(c => c.raw), 1);
+    byClass.forEach(c => { c.w = c.raw / maxC * 100 + '%'; });
+
+    const HIST = [['T6', 1.92], ['T7', 2.34], ['T8', 1.56], ['T9', 2.04], ['T10', 2.16], ['T11', total / 1e6]];
+    const chart = HIST.map(([m, v], i) => { const on = (month === 11 && i === 5) || (month === 10 && i === 4) || (month === 9 && i === 3); const cur = i === 5;
+      return { m, v: v.toFixed(2).replace('.', ','), h: Math.max(6, v / 2.5 * 84), bg: cur ? 'repeating-linear-gradient(135deg,#C7CBF9 0 6px,#E0E3FF 6px 12px)' : on ? '#6366F1' : '#E1E4EC', bs: cur ? 'dashed' : 'solid', bd: cur ? '#A5B4FC' : 'transparent', tc: on ? '#1E2235' : '#646B85', lc: on ? '#1E2235' : '#646B85', fw: on ? 600 : 400 }; });
+
+    const FS = { done: { cBg: '#14B8A6', cBd: '#14B8A6', cC: '#fff', tc: '#1E2235', sc: '#0F766E', bg: '#fff', bar: 'transparent' }, cur: { cBg: '#6366F1', cBd: '#6366F1', cC: '#fff', tc: '#1E2235', sc: '#4F46E5', bg: '#F8F8FF', bar: '#6366F1' }, todo: { cBg: '#fff', cBd: '#D5D9E6', cC: '#646B85', tc: '#4A5068', sc: '#646B85', bg: '#fff', bar: 'transparent' } };
+    const fd = closed
+      ? [['done', 'Ghi nhận buổi dạy', `${nDone} buổi`], ['done', 'Tuyển sinh kiểm tra', 'Đã kiểm tra'], ['done', 'Quản trị viên chốt', `02/${month + 1 > 12 ? '01' : String(month + 1).padStart(2, '0')}/2026`], ['done', 'Chi trả', `Đã nhận 05/${String(month + 1).padStart(2, '0')}/2026`]]
+      : [['cur', 'Ghi nhận buổi dạy', 'Đang diễn ra đến 30/11'], ['todo', 'Tuyển sinh kiểm tra', 'Đầu tháng 12'], ['todo', 'Quản trị viên chốt', 'Trước 03/12'], ['todo', 'Chi trả', 'Ngày 05/12/2026']];
+    const flow = fd.map(([s, label, sub], i) => ({ ...FS[s], n: i + 1, label, sub, isDone: s === 'done', notDone: s !== 'done', cur: s === 'cur' ? 'step' : 'false' }));
+
+    const months = [[9, 'T9/2026'], [10, 'T10/2026'], [11, 'T11/2026']].map(([v, label]) => ({ label, st: v < 11 ? 'Đã chốt' : 'Đang mở', on: month === v ? 'true' : 'false', pick: () => set({ month: v, tab: 'all' }), ...(v < 11 ? { bg: '#EEF0FF', c: '#4F46E5' } : { bg: '#E6FAF7', c: '#0F766E' }) }));
+    const legend = [
+      { ...TONE.teal, label: 'Tạm tính', text: 'Buổi đã xác nhận hoàn tất, sẽ được kiểm tra khi chốt tháng.' },
+      { ...TONE.orange, label: 'Tạm giữ', text: 'Hậu kiểm Zoom có điểm cần xem lại. Trung tâm xử lý trong 3 ngày làm việc.' },
+      { ...TONE.indigo, label: 'Đã đối soát', text: 'Tháng đã chốt, số tiền không thay đổi nữa.' },
+      { ...TONE.red, label: 'Đã hủy', text: 'Buổi tự hủy hoặc bị hủy, không tính thù lao.' }
+    ];
+    return {
+      mLabel: `tháng ${month}/2026`, months, flow, chart, chartAria: `Thu nhập 6 tháng: ${HIST.map(h => `${h[0]} ${h[1].toFixed(2)} triệu`).join(', ')}`,
+      hero: { label: closed ? 'Đã nhận' : 'Tạm tính đến hôm nay', amount: vnd(total), sub: `${nDone} buổi được tính${closed ? '' : ' · còn 1 buổi chờ xác nhận'}`, hasHeld: heldAmt > 0, heldText: `Tạm giữ ${vnd(heldAmt)}`, payDay: closed ? `Đã chi 05/${String(month + 1).padStart(2, '0')}/2026` : 'Chi trả ngày 05/12/2026' },
+      byClass, tabs, rows, noRows: rows.length === 0, legend, showPending: month === 11
+    };
+  }
+}
+</script>
+</body>
+</html>

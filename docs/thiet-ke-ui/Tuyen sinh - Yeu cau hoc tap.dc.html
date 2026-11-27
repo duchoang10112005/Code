@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Yêu cầu học tập · Gia Sư Online</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet"><link rel="stylesheet" href="icons.css"><style>body{margin:0;background:#F7F8FC;font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;color:#1E2235;font-size:14px;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#6366F1;text-decoration:none}a:hover{color:#4F46E5;text-decoration:underline}button,input,select{font-family:inherit}:focus-visible{outline:2px solid #6366F1;outline-offset:2px}@keyframes gso-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}@keyframes gso-slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}</style></helmet>
+<div style="display:flex;min-height:100vh;min-width:1280px;background:#F7F8FC;font-variant-numeric:tabular-nums">
+<a href="#noi-dung" style="position:absolute;left:-9999px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50" style-focus="left:8px">Bỏ qua menu</a>
+
+<aside aria-label="Menu chính" style="width:240px;flex:none;background:#fff;border-right:1px solid #E6E9F2;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+<div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 16px">
+<div style="width:32px;height:32px;flex:none;border-radius:8px;background:#6366F1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px">G</div>
+<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:14px;line-height:18px">Gia Sư Online</div><div style="font-size:12px;line-height:16px;color:#4F46E5;font-weight:500">Bảng điều phối</div></div>
+<button aria-label="Thu gọn menu" style="width:28px;height:28px;flex:none;border:none;background:transparent;border-radius:6px;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-layout-sidebar"></i></button>
+</div>
+<nav style="padding:8px 12px;display:flex;flex-direction:column;gap:2px;flex:1">
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:8px 10px 6px">VẬN HÀNH</div>
+<a href="Trang chu Tuyen sinh.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-house-door" style="font-size:17px"></i><span>Trang chủ</span></a>
+<a href="#" aria-current="page" style="position:relative;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:500;text-decoration:none"><span style="position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#6366F1"></span><i class="bi bi-inbox" style="font-size:17px"></i><span style="flex:1">Yêu cầu học tập</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">3</span></a>
+<a href="Tuyen sinh - Hoc vien.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-people" style="font-size:17px"></i><span>Học viên</span></a>
+<a href="Tuyen sinh - Gia su.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-mortarboard" style="font-size:17px"></i><span>Gia sư</span></a>
+<a href="Tuyen sinh - Khoa hoc.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-journal-bookmark" style="font-size:17px"></i><span style="flex:1">Khóa học</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">2</span></a>
+<a href="Tuyen sinh - Hau kiem buoi hoc.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-clipboard-check" style="font-size:17px"></i><span style="flex:1">Hậu kiểm buổi học</span><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#FF7A59;color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center">4</span></a>
+<div style="font-size:11px;font-weight:600;letter-spacing:.06em;color:#9AA1B8;padding:16px 10px 6px">TÀI CHÍNH</div>
+<a href="Quan tri - Doi soat thu lao.dc.html" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:#646B85;text-decoration:none" style-hover="background:#F7F8FC;color:#1E2235;text-decoration:none"><i class="bi bi-calculator" style="font-size:17px"></i><span>Đối soát thù lao</span></a>
+</nav>
+<div style="border-top:1px solid #E6E9F2;padding:12px 16px;display:flex;align-items:center;gap:10px">
+<div style="width:32px;height:32px;flex:none;border-radius:50%;background:#E0E7FF;color:#4338CA;display:grid;place-items:center;font-weight:600;font-size:12px">TT</div>
+<div style="min-width:0;flex:1"><div style="font-weight:500;font-size:13px">Trần Thu Trang</div><span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;background:#EEF0FF;color:#4F46E5;font-size:11px;font-weight:500">Tuyển sinh</span></div>
+</div>
+</aside>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="position:sticky;top:0;z-index:20;height:56px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid #E6E9F2;display:flex;align-items:center;gap:16px;padding:0 32px">
+<h1 style="margin:0;font-size:16px;font-weight:600">Yêu cầu học tập</h1>
+<button style="margin-left:auto;width:320px;height:34px;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#F7F8FC;color:#9AA1B8;font-size:13px;cursor:pointer;text-align:left" style-hover="border-color:#D5D9E6;background:#fff"><i class="bi bi-search"></i><span style="flex:1;white-space:nowrap">Tìm mã YC/KH, học viên, gia sư…</span><kbd style="white-space:nowrap;font:500 11px 'Be Vietnam Pro',sans-serif;padding:2px 6px;border:1px solid #E6E9F2;border-radius:4px;background:#fff;color:#646B85">Ctrl K</kbd></button>
+<button aria-label="Thông báo" style="position:relative;width:36px;height:36px;border:none;background:transparent;border-radius:8px;color:#646B85;cursor:pointer;font-size:17px" style-hover="background:#F1F3F9"><i class="bi bi-bell"></i><span style="position:absolute;top:5px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#FF7A59;color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;border:2px solid #fff">4</span></button>
+<span style="color:#646B85;font-size:13px;white-space:nowrap">Thứ Hai, 09/11/2026</span>
+</header>
+
+<main id="noi-dung" style="flex:1;width:100%;max-width:1280px;margin:0 auto;padding:24px 32px 48px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1"><h2 style="margin:0;font-size:22px;line-height:30px;font-weight:600">Yêu cầu học tập</h2><div style="font-size:13px;color:#646B85;margin-top:2px">Mỗi yêu cầu đi từ lúc phụ huynh liên hệ đến khi mở khóa học.</div></div>
+<a href="Tuyen sinh - Tao yeu cau.dc.html" style="height:36px;padding:0 16px;border-radius:8px;background:#6366F1;color:#fff;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;white-space:nowrap" style-hover="background:#4F46E5;color:#fff;text-decoration:none"><i class="bi bi-plus-lg"></i>Tạo yêu cầu<kbd style="font:500 11px 'Be Vietnam Pro',sans-serif;padding:0 5px;border:1px solid rgba(255,255,255,.35);border-radius:4px;color:#E0E3FF">N</kbd></a>
+</div>
+
+<div role="tablist" aria-label="Lọc theo trạng thái" style="display:flex;gap:20px;border-bottom:1px solid #E6E9F2">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="7">
+<button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="position:relative;height:40px;padding:0;border:none;background:transparent;font-size:14px;font-weight:{{ t.fw }};color:{{ t.c }};cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap" style-hover="color:#1E2235">{{ t.label }}<span style="min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:{{ t.cbg }};color:{{ t.cc }};font-size:11px;font-weight:600;display:grid;place-items:center">{{ t.count }}</span><span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:1px;background:{{ t.line }}"></span></button>
+</sc-for>
+</div>
+
+<div style="display:flex;align-items:center;gap:8px">
+<label style="position:relative;width:300px"><i class="bi bi-search" style="position:absolute;left:10px;top:9px;color:#9AA1B8;font-size:14px"></i><input value="{{ q }}" onChange="{{ onQ }}" placeholder="Tìm mã YC, học viên, phụ huynh" aria-label="Tìm yêu cầu" style="width:100%;height:34px;padding:0 10px 0 32px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;color:#1E2235" style-focus="border-color:#6366F1;outline:none;box-shadow:0 0 0 3px #EEF0FF"></label>
+<select value="{{ subject }}" onChange="{{ onSubject }}" aria-label="Lọc theo môn" style="height:34px;padding:0 28px 0 10px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;color:#1E2235"><option value="">Tất cả môn</option><option>Toán</option><option>Vật lý</option><option>Tiếng Anh</option><option>IELTS</option><option>Ngữ văn</option><option>Hóa học</option></select>
+<select aria-label="Người tạo" style="height:34px;padding:0 28px 0 10px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;color:#1E2235"><option>Mọi người tạo</option><option>Tôi tạo</option></select>
+<sc-if value="{{ hasFilter }}"><button onClick="{{ clearFilter }}" style="height:34px;padding:0 10px;border:none;background:transparent;color:#646B85;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px" style-hover="color:#1E2235"><i class="bi bi-x-circle"></i>Xóa bộ lọc</button></sc-if>
+<span style="margin-left:auto;font-size:13px;color:#646B85">{{ resultText }}</span>
+</div>
+
+<div role="table" aria-label="Danh sách yêu cầu" style="background:#fff;border:1px solid #E6E9F2;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+<div role="row" style="display:grid;grid-template-columns:80px minmax(0,1fr) 150px 230px 110px 28px;gap:16px;align-items:center;height:38px;padding:0 16px;border-bottom:1px solid #E6E9F2;background:#F7F8FC;font-size:12px;font-weight:600;letter-spacing:.02em;color:#4A5068"><span role="columnheader">Mã</span><span role="columnheader">Học viên · môn, cấp độ</span><span role="columnheader">Trạng thái</span><span role="columnheader">Bước tiếp theo</span><span role="columnheader">Tạo lúc</span><span role="columnheader"></span></div>
+<sc-if value="{{ loading }}"><sc-for list="{{ skel }}" as="s"><div style="display:grid;grid-template-columns:80px minmax(0,1fr) 150px 230px 110px 28px;gap:16px;align-items:center;height:56px;padding:0 16px;border-bottom:1px solid #EEF0F5"><span style="height:10px;width:56px;border-radius:4px;background:#F1F3F9"></span><span style="height:10px;width:{{ s }};border-radius:4px;background:linear-gradient(90deg,#EEF0F5 0,#F7F8FC 40%,#EEF0F5 80%);background-size:800px 100%;animation:gso-shimmer 1.2s linear infinite"></span><span style="height:20px;width:100px;border-radius:10px;background:#F1F3F9"></span><span style="height:10px;width:70%;border-radius:4px;background:#F1F3F9"></span><span style="height:10px;width:70px;border-radius:4px;background:#F1F3F9"></span><span></span></div></sc-for></sc-if>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+<div role="row" style="position:relative;display:grid;grid-template-columns:80px minmax(0,1fr) 150px 230px 110px 28px;gap:16px;align-items:center;min-height:56px;padding:8px 16px;border-bottom:1px solid #EEF0F5;transition:background .15s" style-hover="background:#FAFBFE">
+<a role="cell" href="Tuyen sinh - Chi tiet yeu cau.dc.html" style="font-size:13px;font-weight:600;color:#4F46E5;white-space:nowrap">{{ r.code }}</a>
+<span role="cell" style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:30px;height:30px;flex:none;border-radius:50%;background:{{ r.avBg }};color:{{ r.avC }};display:grid;place-items:center;font-size:11px;font-weight:600">{{ r.initials }}</span><span style="min-width:0"><span style="display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.student }}</span><span style="display:block;font-size:12px;color:#646B85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.subject }}</span></span></span>
+<span role="cell"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:11px;background:{{ r.bg }};color:{{ r.c }};font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.d }}"></span>{{ r.status }}</span></span>
+<span role="cell" style="font-size:13px;color:{{ r.nextC }};line-height:18px;display:flex;align-items:center;gap:6px"><i class="bi {{ r.nextIcon }}" style="flex:none"></i><span>{{ r.next }}</span></span>
+<span role="cell" style="font-size:12px;color:#646B85;line-height:17px">{{ r.created }}<br><span style="color:#9AA1B8">{{ r.by }}</span></span>
+<button onClick="{{ r.onMenu }}" aria-label="Thao tác với {{ r.code }}" aria-expanded="{{ r.menuOpen }}" style="width:28px;height:28px;border:none;border-radius:8px;background:transparent;color:#9AA1B8;cursor:pointer" style-hover="background:#F1F3F9;color:#1E2235"><i class="bi bi-three-dots"></i></button>
+<sc-if value="{{ r.menuOpen }}">
+<div role="menu" style="position:absolute;right:16px;top:44px;z-index:15;width:200px;padding:4px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.12)">
+<a role="menuitem" href="Tuyen sinh - Chi tiet yeu cau.dc.html" style="height:32px;border-radius:6px;padding:0 10px;font-size:13px;color:#1E2235;display:flex;align-items:center;gap:8px;text-decoration:none" style-hover="background:#F7F8FC;text-decoration:none"><i class="bi bi-box-arrow-up-right"></i>Mở chi tiết</a>
+<button role="menuitem" onClick="{{ closeMenu }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#1E2235;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-pencil"></i>Sửa yêu cầu</button>
+<button role="menuitem" onClick="{{ closeMenu }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#1E2235;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#F7F8FC"><i class="bi bi-copy"></i>Sao chép SĐT phụ huynh</button>
+<sc-if value="{{ r.canClose }}"><button role="menuitem" onClick="{{ r.onClose }}" style="width:100%;height:32px;border:none;background:transparent;border-radius:6px;text-align:left;padding:0 10px;font-size:13px;color:#C2292E;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#FDECEC"><i class="bi bi-x-circle"></i>Đóng yêu cầu</button></sc-if>
+</div></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ noRows }}">
+<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:40px 16px">
+<span style="width:48px;height:48px;border-radius:50%;border:1.5px solid #D5D9E6;display:grid;place-items:center;color:#9AA1B8;font-size:20px"><i class="bi {{ emptyIcon }}"></i></span>
+<div style="font-weight:600;margin-top:6px">{{ emptyTitle }}</div>
+<div style="font-size:13px;color:#646B85;max-width:380px">{{ emptyDesc }}</div>
+<sc-if value="{{ hasFilter }}"><button onClick="{{ clearFilter }}" style="margin-top:4px;height:30px;padding:0 12px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-size:13px;font-weight:500;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Xóa bộ lọc</button></sc-if>
+</div></sc-if>
+<sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:8px;height:48px;padding:0 16px;font-size:13px;color:#646B85">
+<span>Hiển thị {{ range }}</span>
+<div style="margin-left:auto;display:flex;align-items:center;gap:4px">
+<button aria-label="Trang trước" disabled="{{ true }}" style="width:30px;height:30px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#C9CEDC;cursor:not-allowed"><i class="bi bi-chevron-left"></i></button>
+<button aria-current="page" style="min-width:30px;height:30px;border:1px solid #C7CBF9;border-radius:8px;background:#EEF0FF;color:#4F46E5;font-weight:600;font-size:13px">1</button>
+<button style="min-width:30px;height:30px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-size:13px;cursor:pointer" style-hover="background:#F7F8FC">2</button>
+<button style="min-width:30px;height:30px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#1E2235;font-size:13px;cursor:pointer" style-hover="background:#F7F8FC">3</button>
+<button aria-label="Trang sau" style="width:30px;height:30px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;color:#646B85;cursor:pointer" style-hover="background:#F7F8FC"><i class="bi bi-chevron-right"></i></button>
+</div></div></sc-if>
+</div>
+</main>
+</div>
+
+<sc-if value="{{ dialogOpen }}">
+<div style="position:fixed;inset:0;z-index:60;background:rgba(30,34,53,.28);backdrop-filter:blur(3px);display:grid;place-items:center">
+<div role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-d" style="width:460px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.2);padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:12px"><span style="width:36px;height:36px;flex:none;border-radius:50%;background:#FDECEC;color:#C2292E;display:grid;place-items:center"><i class="bi bi-x-circle"></i></span><div><h2 id="dlg-t" style="margin:0;font-size:16px;font-weight:600">Đóng yêu cầu {{ dlgCode }}?</h2><p id="dlg-d" style="margin:4px 0 0;font-size:13px;color:#646B85;line-height:20px">Yêu cầu chuyển sang "Đã đóng" và các lời mời đang chờ bị vô hiệu. Muốn tiếp tục phải tạo yêu cầu mới.</p></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label for="ly-do" style="font-size:13px;font-weight:500">Lý do đóng <span style="color:#E5484D">*</span></label>
+<select id="ly-do" value="{{ reason }}" onChange="{{ onReason }}" aria-invalid="{{ reasonErr }}" style="height:36px;border:1px solid {{ reasonBorder }};border-radius:8px;padding:0 10px;font-size:14px;color:#1E2235;background:#fff"><option value="">Chọn lý do</option><option>Phụ huynh không còn nhu cầu</option><option>Không tìm được gia sư phù hợp</option><option>Không liên lạc được phụ huynh</option><option>Trùng với yêu cầu khác</option><option>Lý do khác</option></select>
+<sc-if value="{{ reasonErr }}"><span role="alert" style="font-size:12px;color:#C2292E;display:inline-flex;gap:5px;align-items:center"><i class="bi bi-exclamation-circle"></i>Vui lòng chọn lý do đóng yêu cầu.</span></sc-if></div>
+<div style="display:flex;justify-content:flex-end;gap:8px">
+<button autoFocus="{{ true }}" onClick="{{ closeDialog }}" style="height:36px;padding:0 16px;border:1px solid #E6E9F2;border-radius:8px;background:#fff;font-weight:500;font-size:14px;color:#1E2235;cursor:pointer" style-hover="background:#F7F8FC">Quay lại</button>
+<button onClick="{{ confirmClose }}" style="height:36px;padding:0 16px;border:none;border-radius:8px;background:#E5484D;color:#fff;font-weight:500;font-size:14px;cursor:pointer" style-hover="background:#D13A40">Đóng yêu cầu</button>
+</div></div></div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}">
+<div role="status" style="position:fixed;top:72px;right:24px;z-index:80;display:flex;align-items:center;gap:12px;min-width:300px;padding:12px 14px;background:#fff;border:1px solid #E6E9F2;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.14);animation:gso-slide .2s ease">
+<span style="width:24px;height:24px;flex:none;border-radius:50%;background:#E6FAF7;color:#0F766E;display:grid;place-items:center;font-size:13px"><i class="bi bi-check-lg"></i></span>
+<span style="flex:1;font-size:13px;font-weight:500">{{ toastText }}</span>
+<button onClick="{{ undo }}" style="height:28px;padding:0 10px;border:none;border-radius:6px;background:#EEF0FF;color:#4F46E5;font-weight:500;font-size:13px;cursor:pointer">Hoàn tác</button>
+</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Bình thường&quot;,&quot;Rỗng&quot;],&quot;default&quot;:&quot;Bình thường&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Trạng thái màn&quot;}}">
+class Component extends DCLogic {
+  state = { loading: true, tab: 'all', q: '', subject: '', menuFor: null, closed: {}, dialog: null, reason: '', reasonErr: false, toast: null, lastClosed: null };
+  componentDidMount() { setTimeout(() => this.setState({ loading: false }), 600); }
+  componentWillUnmount() { clearTimeout(this.tt); }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const empty = P.state === 'Rỗng';
+    const ST = {
+      moi: { status: 'Mới', bg: '#EAF2FF', c: '#1D4ED8', d: '#3B82F6' },
+      moi_gs: { status: 'Đang mời gia sư', bg: '#FFF4E5', c: '#B45309', d: '#F59E0B' },
+      co_gs: { status: 'Đã có gia sư', bg: '#E6FAF7', c: '#0F766E', d: '#14B8A6' },
+      hoc_thu: { status: 'Học thử', bg: '#EEF0FF', c: '#4F46E5', d: '#6366F1' },
+      mo_khoa: { status: 'Đã mở khóa', bg: '#E8F7EE', c: '#15803D', d: '#16A34A' },
+      dong: { status: 'Đã đóng', bg: '#F1F3F9', c: '#646B85', d: '#8A94A6' }
+    };
+    const AV = [['#FFE4DA', '#C2410C'], ['#E0E7FF', '#4338CA'], ['#D5F5EF', '#0F766E'], ['#FDE7F3', '#BE185D'], ['#FEF3C7', '#92400E']];
+    const R = (code, student, subj, sub, st, next, tone, created, by) => ({ code, student, subj, subject: sub, st, next, tone, created, by });
+    const DATA = [
+      R('YC-0031', 'Lê Thu Hà', 'IELTS', 'IELTS · mục tiêu 6.5', 'moi', 'Tìm gia sư · có 4 gia sư phù hợp', 'act', '09/11 07:40', 'Trần Thu Trang'),
+      R('YC-0030', 'Ngô Bảo Châu', 'Ngữ văn', 'Ngữ văn · Lớp 7', 'hoc_thu', 'Học thử T3 10/11 20:00', 'info', '08/11 16:20', 'Trần Thu Trang'),
+      R('YC-0029', 'Võ Khánh Linh', 'Toán', 'Toán · Lớp 8', 'moi_gs', 'Chờ gia sư nhận · còn 2 giờ 15 phút', 'warn', '08/11 09:12', 'Trần Thu Trang'),
+      R('YC-0028', 'Hồ Minh Quân', 'IELTS', 'IELTS · mục tiêu 7.0', 'hoc_thu', 'Học thử T5 12/11 18:30', 'info', '07/11 14:05', 'Lý Hồng Nhung'),
+      R('YC-0027', 'Phạm Đức Huy', 'Vật lý', 'Vật lý · Lớp 11', 'moi_gs', 'Mời lại · 3 lời mời đã hết hạn', 'bad', '07/11 08:15', 'Trần Thu Trang'),
+      R('YC-0026', 'Đinh Gia Hưng', 'Tiếng Anh', 'Tiếng Anh · Lớp 6', 'co_gs', 'Chờ gia sư tạo buổi học thử', 'info', '06/11 10:30', 'Lý Hồng Nhung'),
+      R('YC-0024', 'Nguyễn Minh Anh', 'Toán', 'Toán · Lớp 9', 'hoc_thu', 'Ghi kết quả học thử', 'act', '05/11 19:02', 'Trần Thu Trang'),
+      R('YC-0023', 'Trịnh Mai Phương', 'Hóa học', 'Hóa học · Lớp 10', 'mo_khoa', 'Đã mở KH-0012', 'done', '04/11 09:45', 'Trần Thu Trang'),
+      R('YC-0021', 'Lương Tuấn Kiệt', 'Toán', 'Toán · Lớp 12', 'mo_khoa', 'Đã mở KH-0011', 'done', '02/11 15:10', 'Lý Hồng Nhung'),
+      R('YC-0019', 'Bùi Ngọc Hân', 'Hóa học', 'Hóa học · Lớp 12', 'moi_gs', 'Chờ gia sư nhận · còn 22 giờ', 'muted', '08/11 13:40', 'Lý Hồng Nhung'),
+      R('YC-0017', 'Mai Thanh Tâm', 'Ngữ văn', 'Ngữ văn · Lớp 9', 'dong', 'Đóng: Phụ huynh không còn nhu cầu', 'muted', '30/10 11:20', 'Trần Thu Trang')
+    ];
+    const TONE = { act: ['#4F46E5', 'bi-arrow-right-circle'], warn: ['#B45309', 'bi-stopwatch'], bad: ['#C2292E', 'bi-exclamation-circle'], info: ['#4A5068', 'bi-calendar3'], done: ['#15803D', 'bi-check-circle'], muted: ['#646B85', 'bi-dot'] };
+    const data = empty ? [] : DATA.map(r => S.closed[r.code] ? { ...r, st: 'dong', next: 'Đóng: ' + S.closed[r.code], tone: 'muted' } : r);
+    const ql = S.q.trim().toLowerCase();
+    const filtered = data.filter(r => (S.tab === 'all' || r.st === S.tab) && (!S.subject || r.subj === S.subject) && (!ql || (r.code + ' ' + r.student).toLowerCase().includes(ql)));
+    const rows = S.loading && !empty ? [] : filtered.map((r, i) => {
+      const [nextC, nextIcon] = TONE[r.tone];
+      const [avBg, avC] = AV[i % AV.length];
+      const initials = r.student.split(' ').slice(-2).map(w => w[0]).join('');
+      return { ...r, ...ST[r.st], nextC, nextIcon, avBg, avC, initials, menuOpen: S.menuFor === r.code, canClose: r.st !== 'dong' && r.st !== 'mo_khoa',
+        onMenu: () => this.setState(s => ({ menuFor: s.menuFor === r.code ? null : r.code })),
+        onClose: () => this.setState({ menuFor: null, dialog: r.code, reason: '', reasonErr: false }) };
+    });
+    const cnt = k => data.filter(r => k === 'all' || r.st === k).length;
+    const TABS = [['all', 'Tất cả'], ['moi', 'Mới'], ['moi_gs', 'Đang mời gia sư'], ['co_gs', 'Đã có gia sư'], ['hoc_thu', 'Học thử'], ['mo_khoa', 'Đã mở khóa'], ['dong', 'Đã đóng']];
+    const tabs = TABS.map(([k, label]) => { const on = S.tab === k; const urgent = (k === 'moi' || k === 'moi_gs') && cnt(k) > 0;
+      return { label, on, count: cnt(k), pick: () => this.setState({ tab: k }), fw: on ? 600 : 500, c: on ? '#1E2235' : '#646B85', line: on ? '#6366F1' : 'transparent',
+        cbg: urgent ? '#FFEFEA' : on ? '#EEF0FF' : '#F1F3F9', cc: urgent ? '#C2410C' : on ? '#4F46E5' : '#646B85' }; });
+    const hasFilter = !!(ql || S.subject);
+    const noRows = !(S.loading && !empty) && rows.length === 0;
+    return {
+      tabs, rows, loading: S.loading && !empty, skel: ['50%', '62%', '45%', '58%', '52%'],
+      q: S.q, onQ: e => this.setState({ q: e.target.value }), subject: S.subject, onSubject: e => this.setState({ subject: e.target.value }),
+      hasFilter, clearFilter: () => this.setState({ q: '', subject: '' }),
+      resultText: `${filtered.length} yêu cầu`,
+      noRows, hasRows: rows.length > 0, range: `1–${rows.length} trên ${rows.length}`,
+      emptyIcon: hasFilter ? 'bi-search' : 'bi-inbox',
+      emptyTitle: empty ? 'Chưa có yêu cầu học tập nào' : hasFilter ? 'Không tìm thấy yêu cầu phù hợp' : 'Không có yêu cầu nào ở trạng thái này',
+      emptyDesc: empty ? 'Khi phụ huynh liên hệ, bấm "Tạo yêu cầu" để ghi nhận và nhận đề xuất gia sư.' : hasFilter ? 'Thử từ khóa khác hoặc xóa bộ lọc môn.' : 'Chọn tab khác để xem các yêu cầu còn lại.',
+      closeMenu: () => this.setState({ menuFor: null }),
+      dialogOpen: !!S.dialog, dlgCode: S.dialog || '', reason: S.reason, reasonErr: S.reasonErr, reasonBorder: S.reasonErr ? '#E5484D' : '#E6E9F2',
+      onReason: e => this.setState({ reason: e.target.value, reasonErr: false }),
+      closeDialog: () => this.setState({ dialog: null }),
+      confirmClose: () => {
+        if (!S.reason) { this.setState({ reasonErr: true }); return; }
+        const code = S.dialog;
+        this.setState(s => ({ dialog: null, closed: { ...s.closed, [code]: s.reason }, toast: `Đã đóng yêu cầu ${code}`, lastClosed: code }));
+        clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: null }), 6000);
+      },
+      hasToast: !!S.toast, toastText: S.toast || '',
+      undo: () => { clearTimeout(this.tt); this.setState(s => { const c = { ...s.closed }; delete c[s.lastClosed]; return { closed: c, toast: null }; }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
