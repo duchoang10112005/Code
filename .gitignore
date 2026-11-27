@@ -5,3 +5,7 @@ db.sqlite3
 media/
 db_sao_luu_*.sqlite3
 staticfiles/
+
+# Cong cu / editor
+.vscode/
+.impeccable/
