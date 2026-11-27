@@ -77,7 +77,7 @@
       <span class="sm muted" style="margin-left:auto"><i class="bi bi-gear"></i> Xếp theo môn đã duyệt, cấp độ, giờ rảnh và số lớp đang dạy</span></div>
     <form method="post" action="{% url 'yeu_cau_gui_loi_moi' yc.pk %}" id="form-moi" class="card" style="overflow:hidden">{% csrf_token %}
       {% if de_xuat %}
-      <div class="gt-h" style="--cols:28px minmax(0,1fr) 90px 230px"><span></span><span>Gia sư · lý do đề xuất</span><span>Điểm khớp</span><span>Tiêu chí</span></div>
+      <div class="gt-h" style="--cols:28px minmax(0,1fr) 90px 230px"><span><input type="checkbox" data-chon-tat style="width:16px;height:16px;accent-color:#6366F1;cursor:pointer" aria-label="Chọn tất cả gia sư được đề xuất" title="Chọn tất cả"></span><span>Gia sư · lý do đề xuất</span><span>Điểm khớp</span><span>Tiêu chí</span></div>
       {% for d in de_xuat %}{% with u=d.ho_so.user %}
       <label class="gt-r" style="--cols:28px minmax(0,1fr) 90px 230px;cursor:{% if d.dang_cho or d.tam_nghi %}default{% else %}pointer{% endif %};{% if d.tam_nghi %}opacity:.6{% endif %}">
         <input type="checkbox" name="gia_su" value="{{ u.pk }}" style="width:16px;height:16px;accent-color:#6366F1"{% if d.dang_cho or d.tam_nghi %} disabled{% endif %} aria-label="Chọn {{ u.ho_ten }}">
@@ -224,13 +224,24 @@
 (function () {
   var f = document.getElementById("form-moi"), nut = document.querySelector("[data-nut-moi]");
   if (f && nut) {
+    var tat = f.querySelector("[data-chon-tat]");
     var cap = function () {
       var n = f.querySelectorAll("input[name=gia_su]:checked").length;
+      if (tat) {  /* ô "Chọn tất cả": đủ / một phần / chưa chọn */
+        var co = f.querySelectorAll("input[name=gia_su]:not(:disabled)").length;
+        tat.checked = co > 0 && n === co; tat.indeterminate = n > 0 && n < co; tat.disabled = co === 0;
+      }
       f.querySelector("[data-so-chon]") && (f.querySelector("[data-so-chon]").textContent = n);
       nut.disabled = n === 0;
       nut.querySelector("span").textContent = ({% if yc.trang_thai == 'DANG_TIM' %}"Mời thêm"{% else %}"Gửi lời mời"{% endif %}) + (n ? " (" + n + ")" : "");
     };
-    f.addEventListener("change", cap); cap();
+    f.addEventListener("change", function (e) {
+      if (e.target === tat) {
+        f.querySelectorAll("input[name=gia_su]:not(:disabled)").forEach(function (c) { c.checked = tat.checked; });
+      }
+      cap();
+    });
+    cap();
   }
   var dk = document.getElementById("drawer-khoa");
   if (dk) {
