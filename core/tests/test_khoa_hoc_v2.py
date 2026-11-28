@@ -205,3 +205,32 @@ class BaiTestDemoTest(NgoaiLe):
         call_command("gan_bai_test", verbosity=0)
         m.refresh_from_db()
         self.assertTrue(m.bai_test_url.endswith("/bai-test/#ly"))
+
+
+class DuLieuZoomNgoaiKhungTest(NgoaiLe):
+    """Dữ liệu Zoom của lượt họp khác dùng chung mã phòng (VD vào thử vài giây hôm khác) không được tính vào buổi."""
+
+    def buoi_gia(self):
+        from datetime import timedelta
+        from types import SimpleNamespace
+        from django.utils import timezone
+        bd = timezone.now().replace(microsecond=0) + timedelta(days=2)
+        return SimpleNamespace(bat_dau=bd, ket_thuc=bd + timedelta(minutes=90))
+
+    def test_loc_nguoi_tham_gia_ngoai_khung(self):
+        from datetime import timedelta
+        from core.integrations.zoom import NguoiThamGia
+        from core.services.buoi_hoc import loc_nguoi_trong_khung
+        b = self.buoi_gia()
+        thu = NguoiThamGia("a a", "", b.bat_dau - timedelta(days=2), b.bat_dau - timedelta(days=2) + timedelta(seconds=10), True)
+        that = NguoiThamGia("Gia sư", "", b.bat_dau - timedelta(minutes=5), b.ket_thuc, True)
+        self.assertEqual(loc_nguoi_trong_khung(b, [thu, that]), [that])
+
+    def test_loc_doan_ghi_ngoai_khung(self):
+        from datetime import timedelta
+        from core.services.buoi_hoc import loc_doan_trong_khung
+        b = self.buoi_gia()
+        thu = {"url": "u1", "phut": 0, "bat_dau": (b.bat_dau - timedelta(days=2)).isoformat()}
+        that = {"url": "u2", "phut": 88, "bat_dau": (b.bat_dau - timedelta(minutes=8)).isoformat()}
+        gia_lap = {"url": "u3", "phut": 0, "bat_dau": ""}
+        self.assertEqual(loc_doan_trong_khung(b, [thu, that, gia_lap]), [that, gia_lap])

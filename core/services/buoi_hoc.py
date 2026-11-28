@@ -672,6 +672,34 @@ def _phut_giao(khoang_a, khoang_b):
     return int(tong)
 
 
+def _khung_cua_buoi(buoi):
+    """Khoảng thời gian dữ liệu Zoom còn được coi là của buổi này: từ 30 phút trước giờ học tới 60 phút sau giờ kết thúc
+    (phòng mở sớm 10 phút, gia sư có thể ở lại thêm). Dữ liệu ngoài khung — VD vào thử phòng vài giây hôm khác — là của lượt
+    họp khác dùng chung mã phòng, không được tính vào buổi."""
+    return buoi.bat_dau - timedelta(minutes=30), buoi.ket_thuc + timedelta(minutes=60)
+
+
+def loc_nguoi_trong_khung(buoi, ds):
+    tu, den = _khung_cua_buoi(buoi)
+    return [p for p in ds if p.vao_luc and p.ra_luc and p.ra_luc >= tu and p.vao_luc <= den]
+
+
+def loc_doan_trong_khung(buoi, cac_doan):
+    """Giữ các đoạn ghi bắt đầu trong khung giờ của buổi. Đoạn không có giờ bắt đầu (chế độ giả lập) được giữ nguyên."""
+    from datetime import datetime as _dt
+    tu, den = _khung_cua_buoi(buoi)
+    giu = []
+    for d in cac_doan or []:
+        try:
+            bd = _dt.fromisoformat(str(d.get("bat_dau", "")).replace("Z", "+00:00"))
+        except ValueError:
+            giu.append(d)
+            continue
+        if tu <= bd <= den:
+            giu.append(d)
+    return giu
+
+
 def danh_gia_tham_gia(buoi, ds):
     """→ (đạt?, phút cùng có mặt, phút thực tế). Gia sư (host) và học viên phải cùng có mặt ≥ ngưỡng."""
     host = [(p.vao_luc, p.ra_luc) for p in ds if p.la_host and p.vao_luc and p.ra_luc]
@@ -714,6 +742,7 @@ def hau_kiem(now=None):
                     kiem_tra_ghi_chu="Gói Zoom không cung cấp danh sách người tham gia, buổi được giữ như gia sư xác nhận.")
                 dv_hk.cham(hk, None, co_du_lieu=False)
             else:
+                nguoi = loc_nguoi_trong_khung(b, nguoi)  # bỏ lượt họp khác dùng chung mã phòng
                 _, chung, thuc_te = danh_gia_tham_gia(b, nguoi)
                 BuoiHoc.objects.filter(pk=b.pk).update(phut_tham_gia_chung=chung, thoi_luong_thuc_te=thuc_te)
                 dv_hk.cham(hk, nguoi)
@@ -740,10 +769,12 @@ def hau_kiem(now=None):
             bg = zoom.lay_ban_ghi(b.zoom_meeting_id)
         except ZoomError:
             continue
-        if bg.san_sang:
+        doan = loc_doan_trong_khung(b, bg.cac_doan) if bg.san_sang else []
+        if doan:
+            chinh = max(doan, key=lambda d: d.get("phut", 0))
             BuoiHoc.objects.filter(pk=b.pk).update(
-                ban_ghi_trang_thai=BuoiHoc.BanGhi.SAN_SANG, ban_ghi_url=bg.share_url, ban_ghi_passcode=bg.passcode,
-                ban_ghi_cac_doan=bg.cac_doan,
+                ban_ghi_trang_thai=BuoiHoc.BanGhi.SAN_SANG, ban_ghi_url=chinh["url"], ban_ghi_passcode=chinh.get("passcode", ""),
+                ban_ghi_cac_doan=doan,
                 ban_ghi_het_han=now + timedelta(days=NV["NGAY_LUU_BAN_GHI"]))
         elif b.ket_thuc + timedelta(days=2) < now:
             BuoiHoc.objects.filter(pk=b.pk).update(ban_ghi_trang_thai=BuoiHoc.BanGhi.LOI)
