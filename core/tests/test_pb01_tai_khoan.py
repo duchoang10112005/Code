@@ -6,7 +6,7 @@ Tên test ghi rõ mã yêu cầu để đối chiếu với RTM khi viết báo 
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import HoSoGiaSu, NhatKy, User
+from core.models import HoSoGiaSu, NhatKy, User, MonHoc
 
 MK = "MatKhau@Manh123"
 
@@ -78,12 +78,14 @@ class PB01PhanQuyenTest(TestCase):
 class PB01QuanLyTaiKhoanTest(TestCase):
     def setUp(self):
         self.admin = tao_user("ad", User.VaiTro.ADMIN)
+        self.ts = tao_user("ts_phu_trach", User.VaiTro.TUYEN_SINH)
         self.client.login(username="ad", password=MK)
 
     def _tao(self, **kw):
         data = {"username": "moi", "ho_ten": "Người Mới", "email": "moi@test.local",
                 "so_dien_thoai": "", "vai_tro": User.VaiTro.GIA_SU,
-                "mat_khau": MK, "nhap_lai_mat_khau": MK}
+                "mat_khau": MK, "nhap_lai_mat_khau": MK,
+                "tuyen_sinh_phu_trach": self.ts.pk, "mon_day": [MonHoc.objects.get_or_create(ma="TOAN", defaults={"ten": "Toán"})[0].pk]}
         data.update(kw)
         return self.client.post(reverse("tai_khoan_tao"), data)
 

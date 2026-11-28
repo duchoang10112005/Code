@@ -74,6 +74,9 @@ def tao(request):
         with transaction.atomic():
             user = form.save()
             dv_tk.dam_bao_ho_so(user)
+            if user.la_gia_su:
+                dv_tk.tao_gia_su(request.user, user, form.cleaned_data["tuyen_sinh_phu_trach"],
+                                 list(form.cleaned_data["mon_day"]))
             ghi_nhat_ky(request.user, "Tạo tài khoản", user.username, f"Vai trò: {user.get_vai_tro_display()}")
         if form.mat_khau_tam:
             if form.cleaned_data.get("gui_email") and user.email:

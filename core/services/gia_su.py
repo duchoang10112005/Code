@@ -248,50 +248,6 @@ def doi_trang_thai_ho_so(admin, ho_so, trang_thai_moi):
                 f"Hồ sơ gia sư của bạn chuyển sang trạng thái: {ho_so.get_trang_thai_display()}.")
 
 
-# ---------- Mời gia sư đăng ký qua link (SD-04) ------------------------------
-def tao_ma_moi(tuyen_sinh):
-    """Dùng lại mã đang mở của Tuyển sinh này, chưa có thì sinh mới (12 ký tự, không dễ đoán)."""
-    import secrets
-    from core.models import MaMoiGiaSu
-    ma = MaMoiGiaSu.objects.filter(tuyen_sinh=tuyen_sinh, dang_mo=True).order_by("-tao_luc").first()
-    if ma and ma.con_hieu_luc:
-        return ma
-    while True:
-        chuoi = secrets.token_urlsafe(9)[:12]
-        if not MaMoiGiaSu.objects.filter(ma=chuoi).exists():
-            break
-    ma = MaMoiGiaSu.objects.create(ma=chuoi, tuyen_sinh=tuyen_sinh)
-    ghi_nhat_ky(tuyen_sinh, "Tạo link mời gia sư đăng ký", chuoi, loai="TAI_KHOAN")
-    return ma
-
-
-def dang_ky_tai_khoan(ma_moi, du_lieu):
-    """Gia sư tự đăng ký qua link mời: User(GIA_SU) + HoSoGiaSu(CHO_DUYET, nguoi_moi = Tuyển sinh tạo link)."""
-    from core.models import User
-    from core.services.thong_bao import thong_bao, thong_bao_quan_tri
-    if not ma_moi.con_hieu_luc:
-        raise ValidationError("Link mời không còn hiệu lực.")
-    email = du_lieu["email"].strip().lower()
-    if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username__iexact=email).exists():
-        raise ValidationError({"email": "Email này đã có tài khoản."})
-    with transaction.atomic():
-        u = User.objects.create_user(username=email, email=email, password=du_lieu["mat_khau"],
-                                     vai_tro=User.VaiTro.GIA_SU, ho_ten=du_lieu["ho_ten"].strip(),
-                                     so_dien_thoai=du_lieu.get("so_dien_thoai", "").strip())
-        ho_so = HoSoGiaSu.objects.create(user=u, trang_thai=HoSoGiaSu.TrangThai.CHO_DUYET, nguoi_moi=ma_moi.tuyen_sinh,
-                                         ma_moi=ma_moi, truong_hoc=du_lieu.get("truong_hoc", "").strip())
-        ghi_nhat_ky(None, "Gia sư đăng ký qua link mời", u.ho_ten, f"Mã {ma_moi.ma} của {ma_moi.tuyen_sinh.ho_ten}",
-                    loai="TAI_KHOAN")
-    from django.urls import reverse
-    url = reverse("gia_su_chi_tiet", args=[ho_so.pk])
-    thong_bao(ma_moi.tuyen_sinh, "Gia sư mới đăng ký qua link của bạn", u.ho_ten, url, "HO_SO")
-    thong_bao_quan_tri("Có hồ sơ gia sư mới chờ duyệt", u.ho_ten, url, "HO_SO")
-    gui_email(u, "Chào mừng đến Gia Sư Online",
-              f"Chào {u.ho_ten},\n\nTài khoản gia sư của bạn đã được tạo. Hãy đăng nhập, cập nhật giờ rảnh và đăng ký "
-              "môn dạy (làm bài test, nộp minh chứng). Quản trị viên sẽ duyệt trong 1–2 ngày làm việc.")
-    return u
-
-
 def chi_so_gia_su(ho_so, now=None):
     """Lớp đang dạy, % xác nhận đúng hạn (90 ngày), số buổi tháng này, tình trạng hiển thị."""
     from datetime import timedelta

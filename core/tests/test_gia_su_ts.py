@@ -1,68 +1,51 @@
-"""Bước 4d – Danh sách gia sư cho Tuyển sinh và mời gia sư đăng ký qua link (SD-04)."""
+"""Bước 4d – Danh sách gia sư cho Tuyển sinh; Admin tạo tài khoản gia sư (thay cho link mời)."""
 
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import HoSoGiaSu, MaMoiGiaSu, MonGiaSu, MonHoc, ThongBao, User
+from core.models import HoSoGiaSu, MonGiaSu, MonHoc, ThongBao, User
 
 MK = "MatKhau@Manh123"
 
 
-class MoiDangKyTest(TestCase):
+class AdminTaoGiaSuTest(TestCase):
+    """Admin tạo tài khoản gia sư (sau phỏng vấn) kèm môn được duyệt sẵn và NV tuyển sinh phụ trách; không còn link mời / tự đăng ký."""
+
     def setUp(self):
         self.ts = User.objects.create_user("ts", password=MK, vai_tro=User.VaiTro.TUYEN_SINH, ho_ten="TS Lan")
         self.ad = User.objects.create_user("ad", password=MK, vai_tro=User.VaiTro.ADMIN, ho_ten="QTV")
+        self.mon = MonHoc.objects.create(ma="TOAN", ten="Toán")
+        self.url = reverse("tai_khoan_tao")
+        self.du_lieu = {"ho_ten": "Nguyễn Văn Mới", "email": "moi@x.vn", "so_dien_thoai": "0905111222",
+                        "vai_tro": "GIA_SU", "username": "", "tuyen_sinh_phu_trach": self.ts.pk, "mon_day": [self.mon.pk]}
 
-    def tao_link(self):
-        self.client.force_login(self.ts)
-        r = self.client.post(reverse("api_ma_moi"), HTTP_X_REQUESTED_WITH="fetch")
-        self.assertEqual(r.status_code, 200)
-        self.client.logout()
-        return r.json()["data"]
-
-    def test_link_dung_lai_ma_dang_mo(self):
-        a, b = self.tao_link(), self.tao_link()
-        self.assertEqual(a["ma"], b["ma"])
-        self.assertIn(reverse("dang_ky_gia_su", args=[a["ma"]]), a["url"])
-
-    def test_gia_su_khong_tao_duoc_link(self):
-        gs = User.objects.create_user("gs", password=MK, vai_tro=User.VaiTro.GIA_SU)
-        self.client.force_login(gs)
-        self.assertEqual(self.client.post(reverse("api_ma_moi"), HTTP_X_REQUESTED_WITH="fetch").status_code, 403)
-
-    def test_dang_ky_tao_ho_so_cho_duyet_nguoi_moi_la_ts(self):
-        ma = self.tao_link()["ma"]
-        url = reverse("dang_ky_gia_su", args=[ma])
-        self.assertContains(self.client.get(url), "TS Lan")
-        r = self.client.post(url, {"ho_ten": "Nguyễn Văn Mới", "email": "Moi@x.vn", "so_dien_thoai": "0905111222",
-                                   "truong_hoc": "ĐHSP", "mat_khau": "Abcdefg1", "nhap_lai": "Abcdefg1"})
-        self.assertRedirects(r, reverse("ho_so_cua_toi"), fetch_redirect_response=False)
-        u = User.objects.get(email="moi@x.vn")
-        self.assertEqual(u.vai_tro, User.VaiTro.GIA_SU)
-        hs = u.ho_so_gia_su
-        self.assertEqual(hs.trang_thai, HoSoGiaSu.TrangThai.CHO_DUYET)
+    def test_tao_gia_su_hoat_dong_co_mon_duyet_san(self):
+        self.client.force_login(self.ad)
+        r = self.client.post(self.url, self.du_lieu)
+        self.assertRedirects(r, reverse("tai_khoan_danh_sach"), fetch_redirect_response=False)
+        hs = User.objects.get(email="moi@x.vn").ho_so_gia_su
+        self.assertEqual(hs.trang_thai, HoSoGiaSu.TrangThai.HOAT_DONG)
         self.assertEqual(hs.nguoi_moi, self.ts)
-        self.assertTrue(ThongBao.objects.filter(nguoi_nhan=self.ts).exists())
-        self.assertTrue(ThongBao.objects.filter(nguoi_nhan=self.ad).exists())
+        m = MonGiaSu.objects.get(ho_so=hs)
+        self.assertEqual((m.mon_hoc, m.trang_thai, m.duyet_boi), (self.mon, MonGiaSu.TrangThai.DA_DUYET, self.ad))
 
-    def test_email_trung_va_mat_khau_yeu(self):
-        User.objects.create_user("cu", email="cu@x.vn", password=MK, vai_tro=User.VaiTro.GIA_SU)
-        url = reverse("dang_ky_gia_su", args=[self.tao_link()["ma"]])
-        r = self.client.post(url, {"ho_ten": "A", "email": "cu@x.vn", "so_dien_thoai": "09", "mat_khau": "abc",
-                                   "nhap_lai": "abd"})
-        self.assertContains(r, "Hai mật khẩu chưa khớp")
-        self.assertContains(r, "ít nhất 8 ký tự")
-        r = self.client.post(url, {"ho_ten": "A", "email": "cu@x.vn", "so_dien_thoai": "09", "mat_khau": "Abcdefg1",
-                                   "nhap_lai": "Abcdefg1"})
-        self.assertContains(r, "Email này đã có tài khoản")
+    def test_gia_su_bat_buoc_co_ts_va_mon(self):
+        self.client.force_login(self.ad)
+        r = self.client.post(self.url, {**self.du_lieu, "tuyen_sinh_phu_trach": "", "mon_day": []})
+        self.assertContains(r, "Chọn nhân viên tuyển sinh phụ trách")
+        self.assertContains(r, "Chọn ít nhất một môn")
+        self.assertFalse(User.objects.filter(email="moi@x.vn").exists())
 
-    def test_link_dong_bao_het_hieu_luc(self):
-        ma = self.tao_link()["ma"]
-        MaMoiGiaSu.objects.filter(ma=ma).update(dang_mo=False)
-        r = self.client.get(reverse("dang_ky_gia_su", args=[ma]))
-        self.assertEqual(r.status_code, 404)
-        self.assertContains(r, "hết hiệu lực", status_code=404)
-        self.assertEqual(self.client.get(reverse("dang_ky_gia_su", args=["khongco"])).status_code, 404)
+    def test_tao_tuyen_sinh_khong_can_mon(self):
+        self.client.force_login(self.ad)
+        self.client.post(self.url, {"ho_ten": "TS Mới", "email": "ts2@x.vn", "vai_tro": "TUYEN_SINH", "username": ""})
+        self.assertTrue(User.objects.filter(email="ts2@x.vn", vai_tro="TUYEN_SINH").exists())
+
+    def test_khong_con_link_moi(self):
+        from django.urls import NoReverseMatch
+        for ten in ("api_ma_moi", "dang_ky_gia_su"):
+            with self.assertRaises(NoReverseMatch):
+                reverse(ten, args=["x"] if ten == "dang_ky_gia_su" else [])
 
 
 class DanhSachGiaSuTest(TestCase):
@@ -82,7 +65,7 @@ class DanhSachGiaSuTest(TestCase):
         self.assertEqual(r.context["dem"][""], 2)
         self.assertEqual(r.context["dem"]["dang_nhan"], 1)
         self.assertEqual(r.context["dem"]["cho_duyet_hs"], 1)
-        self.assertContains(r, "Mời gia sư đăng ký")
+        self.assertNotContains(r, "Mời gia sư đăng ký")
         r = self.client.get(url, {"tinh_trang": "cho_duyet_hs"})
         self.assertEqual([x["hs"] for x in r.context["dong"]], [self.hs_b])
         r = self.client.get(url, {"toi": "1"})

@@ -43,7 +43,7 @@ VI_SAO = {
     "su_co_zoom": "Phòng Zoom của buổi lỗi hoặc gia sư báo sự cố. Có thể tạo lại phòng bằng tài khoản host khác.",
     "doi_gia_su": "Khóa đã đổi gia sư trước đây nên lần đổi này cần Quản trị viên duyệt. Trong lúc chờ, các buổi vẫn do "
                   "gia sư cũ dạy.",
-    "ho_so": "Gia sư mới đăng ký qua link mời. Kiểm tra minh chứng, bài test rồi duyệt hồ sơ và từng môn.",
+    "ho_so": "Hồ sơ gia sư chờ duyệt. Kiểm tra minh chứng, bài test rồi duyệt hồ sơ và từng môn.",
     "mon": "Gia sư đang hoạt động đăng ký thêm môn. Kiểm tra minh chứng, bài test rồi duyệt môn.",
 }
 

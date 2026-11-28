@@ -153,6 +153,13 @@ class TaoTaiKhoanForm(GsoMixin, forms.ModelForm):
     mat_khau = forms.CharField(label="Mật khẩu", widget=forms.PasswordInput, required=False)
     nhap_lai_mat_khau = forms.CharField(label="Nhập lại mật khẩu", widget=forms.PasswordInput, required=False)
     gui_email = forms.BooleanField(label="Gửi email mật khẩu tạm cho người dùng", required=False, initial=True)
+    # Chỉ dùng khi vai trò = Gia sư: Admin tạo tài khoản sau khi gia sư qua phỏng vấn, gắn sẵn môn đã được xác nhận năng lực.
+    tuyen_sinh_phu_trach = forms.ModelChoiceField(
+        label="Nhân viên tuyển sinh phụ trách", required=False, queryset=User.objects.none(),
+        empty_label="— Chọn nhân viên tuyển sinh —", help_text="Người chịu trách nhiệm hậu kiểm các buổi học của gia sư này.")
+    mon_day = forms.ModelMultipleChoiceField(
+        label="Môn được phép dạy", required=False, queryset=MonHoc.objects.none(), widget=forms.CheckboxSelectMultiple,
+        help_text="Môn gia sư đã qua phỏng vấn. Các môn này được duyệt sẵn, mọi cấp độ.")
 
     class Meta:
         model = User
@@ -164,7 +171,12 @@ class TaoTaiKhoanForm(GsoMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["username"].required = False
         self.fields["ho_ten"].required = True
+        self.fields["tuyen_sinh_phu_trach"].queryset = User.objects.filter(
+            vai_tro=User.VaiTro.TUYEN_SINH, is_active=True).order_by("ho_ten")
+        self.fields["mon_day"].queryset = MonHoc.objects.all().order_by("ten")
         self.mat_khau_tam = None
+        self.order_fields(["ho_ten", "email", "so_dien_thoai", "vai_tro", "tuyen_sinh_phu_trach", "mon_day", "username",
+                           "mat_khau", "nhap_lai_mat_khau", "gui_email"])
 
     def clean_email(self):
         e = (self.cleaned_data.get("email") or "").strip().lower()
@@ -182,6 +194,11 @@ class TaoTaiKhoanForm(GsoMixin, forms.ModelForm):
             self.add_error("username", "Nhập tên đăng nhập hoặc email.")
         if data.get("vai_tro") == User.VaiTro.GIA_SU and not data.get("email"):
             self.add_error("email", "Gia sư bắt buộc có email để nhận thông báo.")
+        if data.get("vai_tro") == User.VaiTro.GIA_SU:
+            if not data.get("tuyen_sinh_phu_trach"):
+                self.add_error("tuyen_sinh_phu_trach", "Chọn nhân viên tuyển sinh phụ trách gia sư này.")
+            if not data.get("mon_day"):
+                self.add_error("mon_day", "Chọn ít nhất một môn gia sư được phép dạy.")
         mk, mk2 = data.get("mat_khau"), data.get("nhap_lai_mat_khau")
         if mk and mk != mk2:
             self.add_error("nhap_lai_mat_khau", "Mật khẩu nhập lại không khớp.")
@@ -564,25 +581,3 @@ class LocBuoiForm(BootstrapMixin, forms.Form):
                                    choices=[("", "Mọi trạng thái")] + list(BuoiHoc.TrangThai.choices))
     loai = forms.ChoiceField(label="Loại buổi", required=False,
                              choices=[("", "Mọi loại buổi")] + list(BuoiHoc.Loai.choices))
-
-
-class DangKyGiaSuForm(GsoMixin, forms.Form):
-    """Gia sư tự đăng ký qua link mời (SD-04)."""
-
-    ho_ten = forms.CharField(label="Họ tên", max_length=150)
-    email = forms.EmailField(label="Email")
-    so_dien_thoai = forms.CharField(label="Số điện thoại / Zalo", max_length=20)
-    truong_hoc = forms.CharField(label="Trường / học vấn", max_length=200, required=False,
-                                 widget=forms.TextInput(attrs={"placeholder": "VD: SV năm 4 Sư phạm Toán · ĐHSP Đà Nẵng"}))
-    mat_khau = forms.CharField(label="Mật khẩu", widget=forms.PasswordInput)
-    nhap_lai = forms.CharField(label="Nhập lại mật khẩu", widget=forms.PasswordInput)
-
-    def clean(self):
-        d = super().clean()
-        mk = d.get("mat_khau") or ""
-        if mk and mk != d.get("nhap_lai"):
-            self.add_error("nhap_lai", "Hai mật khẩu chưa khớp.")
-        if mk:
-            if len(mk) < 8 or not any(c.isupper() for c in mk) or not any(c.isdigit() for c in mk):
-                self.add_error("mat_khau", "Mật khẩu cần ít nhất 8 ký tự, có chữ hoa và chữ số.")
-        return d

@@ -51,11 +51,11 @@
     <div class="stack" style="gap:14px;padding:18px 22px;flex:1;overflow:auto">
       {% if form.non_field_errors %}<div class="banner" role="alert" style="background:#FDECEC;border-color:#F8C9CA">{{ form.non_field_errors.0 }}</div>{% endif %}
       {% for f in form %}{% if f.name == 'gui_email' %}<label class="row sm" style="gap:8px;cursor:pointer">{{ f }}{{ f.label }}</label>
-      {% elif f.name == 'mat_khau' or f.name == 'nhap_lai_mat_khau' %}{% if forloop.counter0 == 5 %}<details{% if f.errors %} open{% endif %}><summary class="sm" style="cursor:pointer;color:#4F46E5">Tự đặt mật khẩu (mặc định hệ thống sinh mật khẩu tạm)</summary><div class="stack" style="gap:12px;margin-top:10px">{% endif %}
+      {% elif f.name == 'mat_khau' or f.name == 'nhap_lai_mat_khau' %}{% if f.name == 'mat_khau' %}<details{% if f.errors %} open{% endif %}><summary class="sm" style="cursor:pointer;color:#4F46E5">Tự đặt mật khẩu (mặc định hệ thống sinh mật khẩu tạm)</summary><div class="stack" style="gap:12px;margin-top:10px">{% endif %}
         <div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}</div>
         {% if f.name == 'nhap_lai_mat_khau' %}</div></details>{% endif %}
-      {% else %}<div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</label>{{ f }}{% if f.help_text %}<span class="sm muted">{{ f.help_text }}</span>{% endif %}{% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}</div>{% endif %}{% endfor %}
-      <div class="banner sm" style="background:#F5F6FF;border-color:#DCDFFB"><span class="ic" style="color:#4F46E5"><i class="bi bi-info-circle"></i></span><span>Người dùng phải đặt mật khẩu mới ở lần đăng nhập đầu. Gia sư tạo tay chưa có người mời: mọi Tuyển sinh thấy buổi của họ ở Hậu kiểm.</span></div>
+      {% else %}<div class="field"{% if f.name == 'tuyen_sinh_phu_trach' or f.name == 'mon_day' %} data-chi-gia-su hidden{% endif %}><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="req">*</span>{% endif %}</label>{{ f }}{% if f.help_text %}<span class="sm muted">{{ f.help_text }}</span>{% endif %}{% for e in f.errors %}<span class="err" role="alert"><i class="bi bi-exclamation-circle"></i>{{ e }}</span>{% endfor %}</div>{% endif %}{% endfor %}
+      <div class="banner sm" style="background:#F5F6FF;border-color:#DCDFFB"><span class="ic" style="color:#4F46E5"><i class="bi bi-info-circle"></i></span><span>Người dùng phải đặt mật khẩu mới ở lần đăng nhập đầu. Với gia sư: chọn nhân viên tuyển sinh phụ trách và các môn đã qua phỏng vấn, tài khoản hoạt động ngay.</span></div>
     </div>
     <div class="row" style="padding:14px 22px;border-top:1px solid #EEF0F5;gap:8px;justify-content:flex-end"><button type="button" class="btn" data-dong-hop>Hủy</button><button class="btn pri" data-dang-gui="Đang tạo…"><i class="bi bi-person-plus"></i>Tạo tài khoản</button></div>
   </form>
@@ -84,6 +84,12 @@
 {% block scripts %}
 <script>
 (function () {
+  /* Tạo tài khoản: chỉ hiện "NV tuyển sinh phụ trách" và "Môn được phép dạy" khi vai trò = Gia sư. */
+  var dt = document.getElementById("drawer-tao"), vt = dt && dt.querySelector("[name=vai_tro]");
+  if (vt) {
+    var hien = function () { dt.querySelectorAll("[data-chi-gia-su]").forEach(function (e) { e.hidden = vt.value !== "GIA_SU"; }); };
+    vt.addEventListener("change", hien); hien();
+  }
   /* Khóa: nhập lý do → toast "Hoàn tác" 6 giây rồi mới gửi (SD-03). */
   var hop = document.getElementById("hop-khoa"), f = hop.querySelector("[data-form-khoa]");
   document.querySelectorAll("[data-khoa]").forEach(function (b) {

@@ -329,28 +329,3 @@ def doi_trang_thai(request, pk):
             messages.error(request, _loi(e))
     return redirect("gia_su_chi_tiet", pk=pk)
 
-
-# =============================================================================
-# SD-04 – Mời gia sư đăng ký qua link
-# =============================================================================
-def dang_ky_qua_ma(request, ma):
-    """Trang công khai: gia sư mở link mời của Tuyển sinh để tự tạo tài khoản."""
-    from django.contrib.auth import login
-    from core.forms import DangKyGiaSuForm
-    from core.models import MaMoiGiaSu
-    ma_moi = MaMoiGiaSu.objects.select_related("tuyen_sinh").filter(ma=ma).first()
-    if not ma_moi or not ma_moi.con_hieu_luc:
-        return render(request, "core/gia_su/dang_ky_qua_ma.html", {"het_hieu_luc": True}, status=404)
-    form = DangKyGiaSuForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        try:
-            u = dv.dang_ky_tai_khoan(ma_moi, form.cleaned_data)
-        except ValidationError as e:
-            loi = e.message_dict if hasattr(e, "error_dict") else {"__all__": e.messages}
-            for k, v in loi.items():
-                form.add_error(k if k in form.fields else None, v)
-        else:
-            login(request, u, backend="core.auth.DangNhapLinhHoatBackend")
-            messages.success(request, "Chào mừng bạn! Hãy cập nhật giờ rảnh và đăng ký môn dạy để trung tâm duyệt hồ sơ.")
-            return redirect("ho_so_cua_toi")
-    return render(request, "core/gia_su/dang_ky_qua_ma.html", {"form": form, "ma_moi": ma_moi})

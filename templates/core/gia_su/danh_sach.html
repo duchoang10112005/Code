@@ -3,8 +3,7 @@
 {% block title %}Gia sư{% endblock %}
 {% block tieu_de_trang %}Gia sư{% endblock %}
 {% block content %}
-<div class="head"><div><h2 class="h2">Gia sư</h2><p class="lead">Xem môn đã duyệt, giờ rảnh và số lớp đang dạy để mời đúng người. Gia sư do bạn mời là người bạn chịu trách nhiệm hậu kiểm.</p></div>
-  {% if user.la_tuyen_sinh %}<button type="button" class="btn pri" style="margin-left:auto" data-moi-dang-ky="{% url 'api_ma_moi' %}"><i class="bi bi-person-plus"></i>Mời gia sư đăng ký</button>{% endif %}</div>
+<div class="head"><div><h2 class="h2">Gia sư</h2><p class="lead">Xem môn đã duyệt, giờ rảnh và số lớp đang dạy để mời đúng người. Gia sư do Admin gắn cho bạn phụ trách là người bạn chịu trách nhiệm hậu kiểm.</p></div></div>
 
 <div class="kpis card" style="grid-template-columns:repeat(3,minmax(0,1fr))">
   <div class="kpi row" style="gap:12px"><span class="tile" style="background:#EEF0FF;color:#4F46E5"><i class="bi bi-mortarboard"></i></span><div><div class="v">{{ kpi.hoat_dong }}</div><div class="l">gia sư đang hoạt động</div></div></div>
@@ -64,17 +63,4 @@
 </aside>
 {% endwith %}{% endif %}
 </div>
-{% endblock %}
-{% block scripts %}
-<script>
-(function () {
-  var b = document.querySelector("[data-moi-dang-ky]"); if (!b) { return; }
-  b.onclick = function () {
-    GSO.post(b.dataset.moiDangKy, {}).then(function (j) {
-      if (!j.ok) { GSO.toast(j.message, "loi"); return; }
-      GSO.saoChep(j.data.url, j.message);
-    });
-  };
-})();
-</script>
 {% endblock %}

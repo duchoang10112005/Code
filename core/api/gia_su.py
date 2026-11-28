@@ -29,11 +29,3 @@ def muc_tieu(request):
     ho_so.save(update_fields=["muc_tieu_buoi_thang"])
     return tra_ve(True, f"Mục tiêu tháng: {ho_so.muc_tieu_buoi_thang} buổi")
 
-
-@api(vai_tro=("TUYEN_SINH",), phuong_thuc=("POST",))
-def ma_moi(request):
-    """SD-04: link mời gia sư đăng ký (dùng lại mã đang mở)."""
-    from django.urls import reverse
-    ma = dv.tao_ma_moi(request.user)
-    url = request.build_absolute_uri(reverse("dang_ky_gia_su", args=[ma.ma]))
-    return tra_ve(True, "Đã sao chép đường dẫn đăng ký. Gửi cho gia sư qua Zalo.", data={"url": url, "ma": ma.ma})

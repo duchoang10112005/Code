@@ -25,6 +25,25 @@ def dam_bao_ho_so(user):
         HoSoGiaSu.objects.get_or_create(user=user)
 
 
+def tao_gia_su(admin, user, tuyen_sinh, ds_mon):
+    """Admin tạo gia sư sau phỏng vấn: hồ sơ HOẠT ĐỘNG ngay, gắn nhân viên tuyển sinh phụ trách (người chịu trách nhiệm hậu kiểm),
+    mỗi môn chọn được duyệt sẵn với mọi cấp độ của môn đó."""
+    from core.models import MonGiaSu
+    ho_so, _ = HoSoGiaSu.objects.get_or_create(user=user)
+    ho_so.trang_thai, ho_so.nguoi_moi = HoSoGiaSu.TrangThai.HOAT_DONG, tuyen_sinh
+    ho_so.save(update_fields=["trang_thai", "nguoi_moi"])
+    now = timezone.now()
+    for mon in ds_mon:
+        cap = list(mon.cap_do.all())
+        m = MonGiaSu.objects.create(
+            ho_so=ho_so, mon_hoc=mon, cap_do=", ".join(c.ten for c in cap)[:100], trang_thai=MonGiaSu.TrangThai.DA_DUYET,
+            gui_luc=now, duyet_boi=admin, duyet_luc=now, ghi_chu_duyet="Admin gắn môn khi tạo tài khoản (đã qua phỏng vấn)")
+        m.cap_do_duyet.set(cap)
+    ghi_nhat_ky(admin, "Tạo gia sư", user.username,
+                f"Phụ trách: {tuyen_sinh.ho_ten}. Môn: {', '.join(m.ten for m in ds_mon)}", loai="TAI_KHOAN")
+    return ho_so
+
+
 def gui_mat_khau(user, mk, lan_dau=True):
     gui_email(user, "Tài khoản Gia Sư Online" if lan_dau else "Mật khẩu tạm mới",
               f"Chào {user.ho_ten},\n\nTên đăng nhập: {user.username}\nMật khẩu tạm: {mk}\n\n"
