@@ -12,6 +12,7 @@ from core.views import buoi_hoc, chung, gia_su, khoa_hoc, ngoai_le, thu_lao, tai
 urlpatterns = [
     path("", chung.trang_chu, name="trang_chu"),
     path("dang-nhap/", chung.DangNhapView.as_view(), name="dang_nhap"),
+    path("bai-test/", chung.bai_test_demo, name="bai_test_demo"),
     path("dang-xuat/", auth_views.LogoutView.as_view(), name="dang_xuat"),
     path(
         "doi-mat-khau/",

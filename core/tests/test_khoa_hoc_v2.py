@@ -186,3 +186,22 @@ class LocLoaiBuoiTest(NgoaiLe):
         self.assertContains(r, 'name="loai"')
         r = self.client.get(reverse("buoi_cua_toi"), {"loai": "CHINH_THUC"})
         self.assertTrue(all(d["b"].loai == "CHINH_THUC" for d in r.context["ds"]))
+
+
+class BaiTestDemoTest(NgoaiLe):
+    """Trang công khai /bai-test/ liệt kê bài test mọi môn đang mở; lệnh gan_bai_test gắn link cho từng môn."""
+
+    def test_trang_cong_khai_liet_ke_mon(self):
+        from core.models import MonHoc
+        MonHoc.objects.update_or_create(ma="HOA", defaults={"ten": "Hóa học", "dang_mo": True})
+        r = self.client.get(reverse("bai_test_demo"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Bài test năng lực Hóa học")
+
+    def test_gan_link_bai_test(self):
+        from django.core.management import call_command
+        from core.models import MonHoc
+        m, _ = MonHoc.objects.update_or_create(ma="LY", defaults={"ten": "Vật lý", "bai_test_url": ""})
+        call_command("gan_bai_test", verbosity=0)
+        m.refresh_from_db()
+        self.assertTrue(m.bai_test_url.endswith("/bai-test/#ly"))

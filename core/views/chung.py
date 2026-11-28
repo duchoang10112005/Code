@@ -109,3 +109,9 @@ def trang_chu(request):
     if ctx["tiep"]:
         ctx["link_lop_tiep"] = link_lop(ctx["tiep"], request)
     return render(request, "core/trang_chu_gia_su.html", ctx)
+
+
+def bai_test_demo(request):
+    """Trang công khai (DEMO): gom bài test năng lực của mọi môn vào MỘT đường dẫn. Chỉ hiển thị, không chấm điểm thật."""
+    from core.models import MonHoc
+    return render(request, "core/bai_test_demo.html", {"ds_mon": MonHoc.objects.filter(dang_mo=True).order_by("ten")})

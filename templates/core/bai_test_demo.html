@@ -1,0 +1,59 @@
+{% load static %}<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài test năng lực gia sư · Gia Sư Online</title>
+<style>
+  :root { --nen:#F5F6FA; --the:#fff; --chu:#1E2235; --mo:#6B7390; --vien:#E6E8F0; --chinh:#6366F1; --xanh:#0F766E; --nen-xanh:#E6FAF7; }
+  @media (prefers-color-scheme: dark) { :root { --nen:#12141D; --the:#1B1E2B; --chu:#ECEEF6; --mo:#9AA1B8; --vien:#2A2E3F; --nen-xanh:#12332F; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--nen); color:var(--chu); font-family:Inter,"Segoe UI",system-ui,sans-serif; line-height:1.5; }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 20px 56px; }
+  header { padding:48px 0 28px; }
+  .nhan { display:inline-block; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--chinh); background:rgba(99,102,241,.12); padding:4px 10px; border-radius:999px; }
+  h1 { font-size:32px; line-height:1.2; margin:14px 0 8px; }
+  .lead { color:var(--mo); max-width:640px; margin:0; font-size:16px; }
+  .luu-y { margin:22px 0 0; padding:12px 16px; border:1px dashed var(--vien); border-radius:12px; color:var(--mo); font-size:14px; background:var(--the); }
+  .luoi { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:24px; }
+  .the { background:var(--the); border:1px solid var(--vien); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:12px; scroll-margin-top:24px; }
+  .the:target { border-color:var(--chinh); box-shadow:0 0 0 3px rgba(99,102,241,.18); }
+  .the h2 { margin:0; font-size:18px; }
+  .ma { font-size:12px; color:var(--mo); font-weight:600; letter-spacing:.04em; }
+  .so { display:flex; gap:8px; flex-wrap:wrap; }
+  .so span { font-size:13px; padding:4px 10px; border-radius:8px; background:var(--nen); color:var(--mo); }
+  .nut { margin-top:auto; border:0; cursor:pointer; font:inherit; font-weight:600; font-size:14px; padding:10px 14px; border-radius:10px; background:var(--chinh); color:#fff; }
+  .nut:hover { filter:brightness(1.08); }
+  .xong { display:none; font-size:13px; padding:10px 12px; border-radius:10px; background:var(--nen-xanh); color:var(--xanh); }
+  .the.da .xong { display:block; } .the.da .nut { display:none; }
+  footer { margin-top:36px; color:var(--mo); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="nhan">BẢN DEMO</span>
+    <h1>Bài test năng lực gia sư</h1>
+    <p class="lead">Mỗi môn có một bài test riêng. Gia sư làm xong, chụp màn hình trang kết quả rồi nhập điểm và nộp ảnh trong hồ sơ để trung tâm duyệt môn.</p>
+    <p class="luu-y">Đây là trang minh họa cho buổi demo: các bài test bên dưới không có câu hỏi thật và không chấm điểm.</p>
+  </header>
+
+  <main class="luoi" aria-label="Danh sách bài test theo môn">
+    {% for m in ds_mon %}
+    <section class="the" id="{{ m.ma|lower }}">
+      <div><div class="ma">TEST · {{ m.ma }}</div><h2>Bài test năng lực {{ m.ten }}</h2></div>
+      <div class="so"><span>{{ m.bai_test_so_cau|default:30 }} câu</span><span>{{ m.bai_test_phut|default:45 }} phút</span><span>Điểm đạt {{ m.diem_dat|default:"7,0" }}/10</span></div>
+      <button type="button" class="nut" data-lam>Bắt đầu làm bài</button>
+      <div class="xong" role="status">Đã mở bài test {{ m.ten }} (demo). Trong hệ thống thật, bạn sẽ làm bài ở đây rồi chụp màn hình kết quả.</div>
+    </section>
+    {% empty %}
+    <p class="lead">Chưa có môn nào đang mở.</p>
+    {% endfor %}
+  </main>
+  <footer>Gia Sư Online · Trung tâm gia sư trực tuyến</footer>
+</div>
+<script>
+  document.querySelectorAll("[data-lam]").forEach(function (b) { b.addEventListener("click", function () { b.closest(".the").classList.add("da"); }); });
+</script>
+</body>
+</html>
